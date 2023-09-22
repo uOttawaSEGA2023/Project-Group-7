@@ -1,3 +1,4 @@
 Ange-Emmanuel Kouakou  
 Anthony Le  
-Aryan Pandit
+Aryan Pandit  
+Eknoor Goraya
