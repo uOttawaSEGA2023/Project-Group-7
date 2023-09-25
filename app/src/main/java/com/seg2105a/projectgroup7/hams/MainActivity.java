@@ -1,4 +1,4 @@
-package com.seg2015a.projectgroup7.hams;
+package com.seg2105a.projectgroup7.hams;
 
 import androidx.appcompat.app.AppCompatActivity;
 
