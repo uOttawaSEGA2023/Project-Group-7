@@ -8,6 +8,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,7 +21,8 @@ public abstract class User {
 
    // private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public static List<Map<String,Object>> registeredUsers;
+    public static List<Map<String,Object>> registeredPatients = new LinkedList<>();
+    public static List<Map<String,Object>> registeredDoctors = new LinkedList<>();
     private final UserType _userType;
     private String _firstName;
     private String _lastName;
@@ -55,7 +58,18 @@ public abstract class User {
         _phone = phone;
         _address = address;
         _userType = userType;
+        Log.w("pass", Arrays.toString(User.hashPassword("123".toCharArray())));
     }
+    public User(String firstName, String lastName, byte[] hashedPassword, String email, String phone, String address, UserType userType) {
+        _firstName = firstName;
+        _lastName = lastName;
+        _hashedPassword = hashedPassword;
+        _email = email;
+        _phone = phone;
+        _address = address;
+        _userType = userType;
+    }
+
 
     private static byte[] hashPassword(char[] password) {
         byte[] salt = new byte[16];
@@ -80,36 +94,56 @@ public abstract class User {
     protected abstract void signUp();
     protected abstract void changeView();
 
-    public static LoginReturnCodes login(String email, char[] password) {
+    //TODO: Remove login return codes.
+    public static LoginReturnCodes login(String email, char[] password, UserType userType) {
 
         Map<String, Object> userData = null;
-        for (Map<String, Object> userDataStored : registeredUsers) {
-            userData = userDataStored;
-            if(!Objects.equals(userData.get("email"), email)) continue;
-            if(Objects.equals(userData.get("password"), hashPassword(password))) {
+        User loggedInUser = null;
+        switch (userType) {
+            case DOCTOR:
+                userData = searchLoop(registeredDoctors,email);
+                if(userData != null) {
+                    if(checkPassword(password,(byte[]) userData.get("password"))) {
+                        //loggedInUser = new Doctor();
+                    } else {
+                        return LoginReturnCodes.IncorrectPassword;
+                    }
+                }
                 break;
-            } else {
-                return LoginReturnCodes.IncorrectPassword;
-            }
+            case PATIENT:
+                userData = searchLoop(registeredPatients,email);
+                if(userData != null) {
+                    if(checkPassword(password,(byte[]) userData.get("password"))) {
+                        //loggedInUser = new Doctor();
+                    } else {
+                        return LoginReturnCodes.IncorrectPassword;
+                    }
+                }
+                break;
+            case ADMIN:
+                if(Administrator.getInstance().getEmail().equals(email)) {
+                    if(checkPassword(password,(byte[]) userData.get("password"))) {
+                        loggedInUser = Administrator.getInstance();
+                    } else {
+                        return LoginReturnCodes.IncorrectPassword;
+                    }
+                } else {
+                    return LoginReturnCodes.UserDoesNotExist;
+                }
+                break;
         }
-        if(userData != null) {
-            switch ((UserType) Objects.requireNonNull(userData.get("userType"))) {
-                case DOCTOR:
-                    //Doctor doctor = new Doctor();
-                    //doctor.changeView();
-                    break;
-                case PATIENT:
-                    //Patient patient = new Patient();
-                    //doctor.changeView();
-                    break;
-                case ADMIN:
-                    Administrator.getInstance().changeView();
-                    break;
-            }
-        } else {
-            return LoginReturnCodes.UserDoesNotExist;
+        loggedInUser.changeView();
+        return LoginReturnCodes.UserDoesNotExist;
+    }
+    private static Map<String, Object> searchLoop(List<Map<String, Object>> toSearch, String emailToSearch) {
+        for (Map<String, Object> userData : toSearch) {
+            if(!Objects.equals(userData.get("email"), emailToSearch)) continue;
+            return userData;
         }
-        return LoginReturnCodes.Success;
+        return null;
+    }
+    private static boolean checkPassword(char[] password, byte[] hashedPassword) {
+        return hashPassword(password) == hashedPassword;
     }
 
     //<editor-fold desc="Getters & Setters">
