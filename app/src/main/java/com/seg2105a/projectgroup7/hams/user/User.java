@@ -23,7 +23,6 @@ public abstract class User {
 
     public static List<Map<String,Object>> registeredPatients = new LinkedList<>();
     public static List<Map<String,Object>> registeredDoctors = new LinkedList<>();
-    private final UserType _userType;
     private String _firstName;
     private String _lastName;
 
@@ -50,28 +49,53 @@ public abstract class User {
 //                });
 //    }
 
-    public User(String firstName, String lastName, char[] password, String email, String phone, String address, UserType userType) {
+    /***
+     *
+     * @param firstName The user's first name
+     * @param lastName The user's last name
+     * @param password The user's password
+     * @param email The user's email
+     * @param phone The user's phone number
+     * @param address The user's address
+     */
+    public User(String firstName, String lastName, char[] password, String email, String phone, String address) {
         _firstName = firstName;
         _lastName = lastName;
         _hashedPassword = hashPassword(password);
         _email = email;
         _phone = phone;
         _address = address;
-        _userType = userType;
         Log.w("pass", Arrays.toString(User.hashPassword("123".toCharArray())));
     }
-    public User(String firstName, String lastName, byte[] hashedPassword, String email, String phone, String address, UserType userType) {
+    /***
+     *
+     * @param firstName The user's first name
+     * @param lastName The user's last name
+     * @param hashedPassword The user's password hashed.
+     * @param email The user's email
+     * @param phone The user's phone number
+     * @param address The user's address
+     */
+    public User(String firstName, String lastName, byte[] hashedPassword, String email, String phone, String address) {
         _firstName = firstName;
         _lastName = lastName;
         _hashedPassword = hashedPassword;
         _email = email;
         _phone = phone;
         _address = address;
-        _userType = userType;
+    }
+
+    public User() {
+
     }
 
 
-    private static byte[] hashPassword(char[] password) {
+    /***
+     *
+     * @param password The password to hash
+     * @return The password hashed using PBKDF2WithHmacSHA1
+     */
+    protected static byte[] hashPassword(char[] password) {
         byte[] salt = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(salt);
@@ -81,8 +105,9 @@ public abstract class User {
 
             return factory.generateSecret(spec).getEncoded();
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ignored) {
-
+            //TODO: Handle Exceptions
         }
+        //TODO: Do not return a blank password, do something else... Possibly throw exception?
         return new byte[0];
     }
 
@@ -95,6 +120,14 @@ public abstract class User {
     protected abstract void changeView();
 
     //TODO: Remove login return codes.
+
+    /***
+     *
+     * @param email The email to look for the user with
+     * @param password The inputted password
+     * @param userType The type of user trying to login
+     * @return Login codes that represent success or failure to login
+     */
     public static LoginReturnCodes login(String email, char[] password, UserType userType) {
 
         Map<String, Object> userData = null;
@@ -202,8 +235,8 @@ public abstract class User {
         _address = address;
         return this;
     }
-    public UserType getUserType() {
-        return _userType;
+    public Class getUserType() {
+        return getClass();
     }
     // </editor-fold>
 }
