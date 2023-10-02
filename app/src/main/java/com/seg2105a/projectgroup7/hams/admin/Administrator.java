@@ -1,28 +1,15 @@
 package com.seg2105a.projectgroup7.hams.admin;
 
-import com.google.firebase.firestore.Blob;
 import com.seg2105a.projectgroup7.hams.user.User;
-import com.seg2105a.projectgroup7.hams.user.UserType;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public class Administrator extends User {
 
     private static final Administrator instance = new Administrator();
-    private boolean isRegistered = false;
     private Administrator() {
-        super("Admin", "", "12345".toCharArray(), "Administrator", "000-000-000", "");
-        this.signUp();
+        super("Admin", "", new byte[]{-24, -75, -102, -39, 80, -12, 115, 64, 23, 90, 96, -36, 15, 103, -14, -123}, "Administrator", "000-000-000", "");
     }
 
     @Override
     protected void signUp() {
-        if(isRegistered) return;
-        Map<String,Object> user = new HashMap<>();
-        user.put("username","Admin");
-        user.put("password", Blob.fromBytes(this.getPassword()));
-        isRegistered = true;
     }
     public static Administrator getInstance() {
         return instance;
