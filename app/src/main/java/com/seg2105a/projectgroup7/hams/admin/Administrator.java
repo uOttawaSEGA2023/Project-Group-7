@@ -12,7 +12,7 @@ public class Administrator extends User {
     private static final Administrator instance = new Administrator();
     private boolean isRegistered = false;
     private Administrator() {
-        super("Admin", "", "12345".toCharArray(), "Administrator", "000-000-000", "", UserType.ADMIN);
+        super("Admin", "", "12345".toCharArray(), "Administrator", "000-000-000", "");
         this.signUp();
     }
 
@@ -22,7 +22,6 @@ public class Administrator extends User {
         Map<String,Object> user = new HashMap<>();
         user.put("username","Admin");
         user.put("password", Blob.fromBytes(this.getPassword()));
-        User.registeredUsers.add(user);
         isRegistered = true;
     }
     public static Administrator getInstance() {
