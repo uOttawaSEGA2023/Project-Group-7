@@ -65,7 +65,6 @@ public abstract class User {
         _email = email;
         _phone = phone;
         _address = address;
-        Log.w("pass", Arrays.toString(User.hashPassword("123".toCharArray())));
     }
     /***
      *
@@ -85,17 +84,12 @@ public abstract class User {
         _address = address;
     }
 
-    public User() {
-
-    }
-
-
     /***
      *
      * @param password The password to hash
      * @return The password hashed using PBKDF2WithHmacSHA1
      */
-    protected static byte[] hashPassword(char[] password) {
+    private static byte[] hashPassword(char[] password) {
         byte[] salt = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(salt);
@@ -105,10 +99,8 @@ public abstract class User {
 
             return factory.generateSecret(spec).getEncoded();
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ignored) {
-            //TODO: Handle Exceptions
         }
-        //TODO: Do not return a blank password, do something else... Possibly throw exception?
-        return new byte[0];
+        throw new BadPasswordException("Password was: " + Arrays.toString(password));
     }
 
     /*
@@ -141,6 +133,8 @@ public abstract class User {
                     } else {
                         return LoginReturnCodes.IncorrectPassword;
                     }
+                } else {
+                    return LoginReturnCodes.UserDoesNotExist;
                 }
                 break;
             case PATIENT:
@@ -151,6 +145,8 @@ public abstract class User {
                     } else {
                         return LoginReturnCodes.IncorrectPassword;
                     }
+                } else {
+                    return LoginReturnCodes.UserDoesNotExist;
                 }
                 break;
             case ADMIN:
@@ -166,7 +162,7 @@ public abstract class User {
                 break;
         }
         loggedInUser.changeView();
-        return LoginReturnCodes.UserDoesNotExist;
+        return LoginReturnCodes.Success;
     }
     private static Map<String, Object> searchLoop(List<Map<String, Object>> toSearch, String emailToSearch) {
         for (Map<String, Object> userData : toSearch) {
@@ -203,7 +199,7 @@ public abstract class User {
     }
 
     public User setPassword(char[] oldPassword, char[] newPassword) {
-        if(hashPassword(oldPassword).equals(_hashedPassword)) {
+        if(Arrays.equals(hashPassword(oldPassword), _hashedPassword)) {
             _hashedPassword = hashPassword(newPassword);
         }
         return this;
@@ -234,9 +230,6 @@ public abstract class User {
     public User setAddress(String address) {
         _address = address;
         return this;
-    }
-    public Class getUserType() {
-        return getClass();
     }
     // </editor-fold>
 }
