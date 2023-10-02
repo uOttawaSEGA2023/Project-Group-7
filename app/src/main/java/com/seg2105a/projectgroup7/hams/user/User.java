@@ -23,7 +23,6 @@ public abstract class User {
 
     public static List<Map<String,Object>> registeredPatients = new LinkedList<>();
     public static List<Map<String,Object>> registeredDoctors = new LinkedList<>();
-    private final UserType _userType;
     private String _firstName;
     private String _lastName;
 
@@ -58,16 +57,14 @@ public abstract class User {
      * @param email The user's email
      * @param phone The user's phone number
      * @param address The user's address
-     * @param userType The type of user represented by this instance
      */
-    public User(String firstName, String lastName, char[] password, String email, String phone, String address, UserType userType) {
+    public User(String firstName, String lastName, char[] password, String email, String phone, String address) {
         _firstName = firstName;
         _lastName = lastName;
         _hashedPassword = hashPassword(password);
         _email = email;
         _phone = phone;
         _address = address;
-        _userType = userType;
         Log.w("pass", Arrays.toString(User.hashPassword("123".toCharArray())));
     }
     /***
@@ -78,16 +75,18 @@ public abstract class User {
      * @param email The user's email
      * @param phone The user's phone number
      * @param address The user's address
-     * @param userType The type of user represented by this instance
      */
-    public User(String firstName, String lastName, byte[] hashedPassword, String email, String phone, String address, UserType userType) {
+    public User(String firstName, String lastName, byte[] hashedPassword, String email, String phone, String address) {
         _firstName = firstName;
         _lastName = lastName;
         _hashedPassword = hashedPassword;
         _email = email;
         _phone = phone;
         _address = address;
-        _userType = userType;
+    }
+
+    public User() {
+
     }
 
 
@@ -96,7 +95,7 @@ public abstract class User {
      * @param password The password to hash
      * @return The password hashed using PBKDF2WithHmacSHA1
      */
-    private static byte[] hashPassword(char[] password) {
+    protected static byte[] hashPassword(char[] password) {
         byte[] salt = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(salt);
@@ -236,8 +235,8 @@ public abstract class User {
         _address = address;
         return this;
     }
-    public UserType getUserType() {
-        return _userType;
+    public Class getUserType() {
+        return getClass();
     }
     // </editor-fold>
 }
