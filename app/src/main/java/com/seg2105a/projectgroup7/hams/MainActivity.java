@@ -2,10 +2,13 @@ package com.seg2105a.projectgroup7.hams;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import com.seg2105a.projectgroup7.hams.patient.activities.PatientSignUpActivity;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -27,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         else if (accountTypeSelection.getCheckedRadioButtonId() == R.id.toPatient){
-            setContentView(R.layout.patient_register_form);
+            Intent patientRegistrationForm = new Intent(this, PatientSignUpActivity.class);
+            startActivity(patientRegistrationForm);
         }
         else{
             //TODO: Make it so this goes to the Doctor Registration Form
