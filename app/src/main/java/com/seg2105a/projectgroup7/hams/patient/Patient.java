@@ -13,6 +13,11 @@ import java.util.Map;
 public class Patient extends User {
 
     private static List<Map<String, Object>> registeredPatients = new ArrayList<Map<String, Object>>();
+
+    public HashMap<String, Object> getNewUserInformation() {
+        return newUserInformation;
+    }
+
     private HashMap<String, Object> newUserInformation = new HashMap<String, Object>(7);
 
     private String _healthCardNumber;
@@ -56,6 +61,10 @@ public class Patient extends User {
     @Override
     protected void changeView() {
 
+    }
+
+    public static List<Map<String, Object>> getRegisteredPatients(){
+        return registeredPatients;
     }
 
     public String getHealthCardNumber() {
