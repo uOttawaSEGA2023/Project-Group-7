@@ -11,36 +11,35 @@ import java.util.List;
 import java.util.Map;
 
 public class Patient extends User {
+
     private static List<Map<String, Object>> registeredPatients = new ArrayList<Map<String, Object>>();
     private HashMap<String, Object> newUserInformation = new HashMap<String, Object>(7);
-    private String _firstName, _lastName;
-    private String _emailAddress;
-    private byte[] _hashedPassword;
 
-    private String _phoneNumber;
-    private String _postalAddress;
     private String _healthCardNumber;
 
-    public Patient(String firstName, String lastName, char[] password, String emailAddress, String phoneNumber, String postalAddress, UserType userType){
-        super();
-        //Stores the info in attributes
-        _firstName = firstName;
-        _lastName = lastName;
-        _emailAddress = emailAddress;
-        _hashedPassword = hashPassword(password);
-        _phoneNumber = phoneNumber;
-        _postalAddress = postalAddress;
+    //Used during account creation
+    public Patient(String firstName, String lastName, char[] rawPassword, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
+        super(firstName, lastName, rawPassword, emailAddress, phoneNumber, postalAddress);
+        _healthCardNumber = healthCardNumber;
 
-        //Stores the info to map
-        newUserInformation.put("firstName", _firstName);
-        newUserInformation.put("lastName", _lastName);
-        newUserInformation.put("emailAddress", _emailAddress);
-        newUserInformation.put("password", _hashedPassword);
-        newUserInformation.put("phoneNumber",phoneNumber);
-        newUserInformation.put("postalAddress", postalAddress);
+
+        //Stores the info to user map
+        newUserInformation.put("firstName", getFirstName());
+        newUserInformation.put("lastName", getLastName());
+        newUserInformation.put("emailAddress", getEmail());
+        newUserInformation.put("hashedPassword", getPassword());
+        newUserInformation.put("phoneNumber",getPhone());
+        newUserInformation.put("postalAddress", getAddress());
+        newUserInformation.put("healthCardNumber", _healthCardNumber);
 
         //Uploads the map to Class List
         registeredPatients.add(newUserInformation);
+    }
+
+    //Used for logins
+    public Patient(String firstName, String lastName, byte[] hashedPassword, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
+        super(firstName, lastName, hashedPassword, emailAddress, phoneNumber, postalAddress);
+        _healthCardNumber = healthCardNumber;
     }
 
     @Override
@@ -58,6 +57,15 @@ public class Patient extends User {
     protected void changeView() {
 
     }
+
+    public String getHealthCardNumber() {
+        return _healthCardNumber;
+    }
+
+    public void setHealthCardNumber(String _healthCardNumber) {
+        this._healthCardNumber = _healthCardNumber;
+    }
+
 
 
 }
