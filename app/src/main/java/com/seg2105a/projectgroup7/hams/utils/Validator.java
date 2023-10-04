@@ -3,12 +3,39 @@ package com.seg2105a.projectgroup7.hams.utils;
 import static java.net.InetAddress.getByName;
 
 
+import android.os.AsyncTask;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutionException;
 
-public class Validator {
+public final class Validator {
+    //Inner Class
+
+    /**
+     *
+     */
+    private static class DomainValidationTask extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... domains) {
+            if (domains.length == 0) {
+                return false; //No domains to validate
+            }
+            try {
+                for (int i = 0; i < domains.length; i++) {
+                    String domain = domains[i];
+                    InetAddress address = InetAddress.getByName(domain);
+                }
+                return true; // Domain is/are all valid.
+            } catch (UnknownHostException e) {
+                return false; // At least one domain is not valid.
+            }
+        }
+    }
 
     /**
      * Checks if the string that was passed by user is empty.
@@ -25,19 +52,41 @@ public class Validator {
      * checking if the local part has a suitable format (checked through regex)
      *
      * @param emailAddress: The email address to validate
-     * @return {@code -1} if the domain is invalid, {@code -2} if the localPart is invalid, {@code 1} if everything is fine.
+     * @return {@code -1} if the email is not formatted as an email, {@code -2} if the domain is invalid, {@code -3} if the localPart is invalid, {@code 1} if everything is fine.
      */
-    public static int emailAddressIsValid(@NonNull String emailAddress) {
+
+    public static int emailAddressIsValid(@NonNull String emailAddress) throws ExecutionException, InterruptedException{
+        //First check the email has a @
+        if (!emailAddress.contains("@")){
+            return -1;
+        }
         //Split the email address
         String[] splitEmail = emailAddress.split("@");
-        String localPart = splitEmail[0];
-        String domainPart = splitEmail[1];
 
-        if (domainIsValid(domainPart)) {
-            if (localPart.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$")) {
-                return 1;
+        //Check if the resulting string got a domain part to validate
+        boolean proceed = splitEmail.length == 2;
+
+        if (proceed) {
+            String localPart = splitEmail[0];
+            String domainPart = splitEmail[1];
+
+            // Create and execute the DomainValidationTask
+            DomainValidationTask validationTask = new DomainValidationTask();
+
+            Boolean domainIsValid;
+
+            domainIsValid = validationTask.execute(domainPart).get();
+
+
+            if (domainIsValid) {
+                if (!textFieldIsEmpty(localPart) && localPart.matches("^\\S+$")) {
+                    return 1;
+                }
+                return -3;
+            } else {
+                return -2;
             }
-            return -2;
+
         }
         return -1;
     }
@@ -56,7 +105,7 @@ public class Validator {
     }
 
     public static boolean passwordIsValid(@NonNull String password) {
-        return password.matches("^(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8}$\n");
+        return password.matches("^(?=[^a-z]*[a-z])(?=[^A-Z]*[A-Z])(?=\\D*\\d)(?=[^!#%]*[!#%])[A-Za-z0-9!#%]{8,}$");
     }
 
     /**
@@ -70,24 +119,14 @@ public class Validator {
         return (phoneNumber.matches("[0-9]+") && phoneNumber.length() == 10);
     }
 
-    /**
-     * Validates a domain, by checking if there is an IP address associated with that hostname.
-     * Makes use of INetAddress.getByName method.
-     *
-     * @param domain : The domain to validate
-     * @return {@code true} if the domain is associated with an IP address, and {@code false} if not
-     */
-    private static boolean domainIsValid(String domain) {
-        try {
-            InetAddress address = getByName(domain);
 
-        } catch (UnknownHostException e) {
-            return false;
-        }
-        return true;
+
+
 
     }
-}
+
+
+
 
 
 
