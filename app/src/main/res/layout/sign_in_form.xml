@@ -1,6 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-</LinearLayout>
+
+    <EditText
+        android:id="@+id/PasswordSlot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:ems="10"
+        android:height="48dp"
+        android:hint="Password"
+        android:inputType="textPassword"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/emailAddressSlot" />
+
+    <EditText
+        android:id="@+id/emailAddressSlot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:ems="10"
+        android:hint="Email Address"
+        android:inputType="textEmailAddress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/MessageUnderSignIn" />
+
+    <TextView
+        android:id="@+id/LogInHeading"
+        android:layout_width="218dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="32dp"
+        android:text="Sign in Form"
+        android:textSize="25sp"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        tools:layout_editor_absoluteY="94dp"
+        tools:ignore="MissingConstraints" />
+    <!-- remove tools:ignore ="MissingConstraints" later on. -->
+
+
+    <TextView
+        android:id="@+id/MessageUnderSignIn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:text="Please sign in with your email and password"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@+id/LogInHeading"
+        tools:layout_editor_absoluteX="67dp"
+        tools:ignore="MissingConstraints" />
+    <!-- remove tools:ignore ="MissingConstraints" later on. -->
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_constraintTop_toBottomOf="@+id/PasswordSlot"
+        android:text="Button"
+        tools:layout_editor_absoluteX="160dp"
+        tools:layout_editor_absoluteY="506dp"
+        tools:ignore="MissingConstraints" />
+    <!-- remove tools:ignore ="MissingConstraints" later on. -->
+</androidx.constraintlayout.widget.ConstraintLayout>

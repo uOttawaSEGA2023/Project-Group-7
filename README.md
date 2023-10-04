@@ -22,3 +22,4 @@ Password: P@ssW0rd!
 - Aryan Pandit
 - Eknoor Goraya
 - Mathew Oliveira
+- Ali Zaidi
