@@ -32,23 +32,6 @@ public abstract class User {
     private String _phone;
     private String _address;
 
-
-//    public static void read() {
-//        String TAG = "Firebase";
-//        db.collection("users")
-//                .get()
-//                .addOnCompleteListener(task -> {
-//
-//                    if (task.isSuccessful()) {
-//                        for (QueryDocumentSnapshot document : task.getResult()) {
-//                            Log.d(TAG, document.getId() + " => " + document.getData());
-//                        }
-//                    } else {
-//                        Log.w(TAG, "Error getting documents.", task.getException());
-//                    }
-//                });
-//    }
-
     /***
      *
      * @param firstName The user's first name
@@ -89,7 +72,7 @@ public abstract class User {
      * @param password The password to hash
      * @return The password hashed using PBKDF2WithHmacSHA1
      */
-    private static byte[] hashPassword(char[] password) {
+    public static byte[] hashPassword(char[] password) {
         byte[] salt = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(salt);
@@ -129,7 +112,7 @@ public abstract class User {
                 userData = searchLoop(registeredDoctors,email);
                 if(userData != null) {
                     if(checkPassword(password,(byte[]) userData.get("password"))) {
-                        //loggedInUser = new Doctor();
+                        //loggedInUser = new com.seg2105a.projectgroup7.hams.doctor.Doctor();
                     } else {
                         return LoginReturnCodes.IncorrectPassword;
                     }
@@ -141,7 +124,7 @@ public abstract class User {
                 userData = searchLoop(registeredPatients,email);
                 if(userData != null) {
                     if(checkPassword(password,(byte[]) userData.get("password"))) {
-                        //loggedInUser = new Doctor();
+                        //loggedInUser = new com.seg2105a.projectgroup7.hams.doctor.Doctor();
                     } else {
                         return LoginReturnCodes.IncorrectPassword;
                     }
