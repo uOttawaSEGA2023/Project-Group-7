@@ -1,6 +1,6 @@
-package com.seg2105a.projectgroup7.hams.doctor;
+package com.quantumSamurais.hams.doctor;
 
-import com.seg2105a.projectgroup7.hams.user.User;
+import com.quantumSamurais.hams.user.User;
 
 import java.util.Set;
 

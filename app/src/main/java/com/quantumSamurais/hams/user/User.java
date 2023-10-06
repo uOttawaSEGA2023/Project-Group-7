@@ -1,8 +1,6 @@
-package com.seg2105a.projectgroup7.hams.user;
+package com.quantumSamurais.hams.user;
 
-import android.util.Log;
-
-import com.seg2105a.projectgroup7.hams.admin.Administrator;
+import com.quantumSamurais.hams.admin.Administrator;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
