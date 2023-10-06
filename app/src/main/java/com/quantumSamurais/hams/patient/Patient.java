@@ -1,6 +1,5 @@
 package com.quantumSamurais.hams.patient;
 import com.quantumSamurais.hams.user.User;
-import com.seg2105a.projectgroup7.hams.user.*;
 
 
 import java.util.ArrayList;

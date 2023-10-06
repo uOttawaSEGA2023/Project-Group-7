@@ -8,7 +8,7 @@ android {
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.seg2105a.projectgroup7.hams"
+        applicationId = "com.quantumSamurais.hams"
         minSdk = 24
         targetSdk = 33
         versionCode = 1
