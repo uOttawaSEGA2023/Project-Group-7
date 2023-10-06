@@ -1,4 +1,4 @@
-package com.seg2105a.projectgroup7.hams;
+package com.quantumSamurais.hams;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -8,7 +8,8 @@ import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.seg2105a.projectgroup7.hams.patient.activities.PatientSignUpActivity;
+import com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;
+import com.seg2105a.projectgroup7.hams.R;
 
 
 public class MainActivity extends AppCompatActivity {

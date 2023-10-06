@@ -1,4 +1,4 @@
-package com.seg2105a.projectgroup7.hams.utils;
+package com.quantumSamurais.hams.utils;
 
 import static java.net.InetAddress.getByName;
 

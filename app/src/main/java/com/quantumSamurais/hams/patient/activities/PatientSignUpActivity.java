@@ -1,10 +1,10 @@
-package com.seg2105a.projectgroup7.hams.patient.activities;
+package com.quantumSamurais.hams.patient.activities;
 
-import static com.seg2105a.projectgroup7.hams.utils.Validator.emailAddressIsValid;
-import static com.seg2105a.projectgroup7.hams.utils.Validator.nameIsValid;
-import static com.seg2105a.projectgroup7.hams.utils.Validator.passwordIsValid;
-import static com.seg2105a.projectgroup7.hams.utils.Validator.phoneNumberIsValid;
-import static com.seg2105a.projectgroup7.hams.utils.Validator.textFieldIsEmpty;
+import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
+import static com.quantumSamurais.hams.utils.Validator.nameIsValid;
+import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
+import static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;
+import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 
 import android.os.Bundle;
 import android.widget.Button;
@@ -15,7 +15,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.seg2105a.projectgroup7.hams.R;
-import com.seg2105a.projectgroup7.hams.patient.Patient;
+import com.quantumSamurais.hams.patient.Patient;
 
 
 import java.util.List;

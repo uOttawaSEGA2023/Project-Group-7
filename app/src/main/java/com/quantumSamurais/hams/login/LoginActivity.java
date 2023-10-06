@@ -1,18 +1,12 @@
-package com.seg2105a.projectgroup7.hams.login;
+package com.quantumSamurais.hams.login;
 
 
-import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.seg2105a.projectgroup7.hams.R;
-import com.seg2105a.projectgroup7.hams.user.User;
-
-import java.util.List;
-import java.util.Map;
+import com.quantumSamurais.hams.user.User;
 
 public class LoginActivity extends AppCompatActivity {
 

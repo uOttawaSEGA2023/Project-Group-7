@@ -1,9 +1,7 @@
-package com.seg2105a.projectgroup7.hams.patient;
+package com.quantumSamurais.hams.patient;
+import com.quantumSamurais.hams.user.User;
 import com.seg2105a.projectgroup7.hams.user.*;
-import android.widget.EditText;
 
-
-import com.seg2105a.projectgroup7.hams.user.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.seg2105a.projectgroup7.hams.user;
+package com.quantumSamurais.hams.user;
 
 public class BadPasswordException extends RuntimeException {
 

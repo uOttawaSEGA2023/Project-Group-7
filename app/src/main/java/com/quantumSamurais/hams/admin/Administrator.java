@@ -1,6 +1,7 @@
-package com.seg2105a.projectgroup7.hams.admin;
+package com.quantumSamurais.hams.admin;
 
-import com.seg2105a.projectgroup7.hams.user.User;
+import com.quantumSamurais.hams.user.User;
+
 public class Administrator extends User {
 
     private static final Administrator instance = new Administrator();

@@ -1,4 +1,4 @@
-package com.seg2105a.projectgroup7.hams.doctor;
+package com.quantumSamurais.hams.doctor;
 
 public enum Specialties {
     FAMILY_MEDICINE,

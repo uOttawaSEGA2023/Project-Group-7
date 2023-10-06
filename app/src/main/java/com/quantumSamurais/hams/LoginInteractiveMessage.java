@@ -1,12 +1,9 @@
-package com.seg2105a.projectgroup7.hams;
+package com.quantumSamurais.hams;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.seg2105a.projectgroup7.hams.user.User;
-import com.seg2105a.projectgroup7.hams.user.UserType;
-
-import java.util.List;
-import java.util.Map;
+import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.user.UserType;
 
 public class LoginInteractiveMessage extends AppCompatActivity {
     User tmpUser;

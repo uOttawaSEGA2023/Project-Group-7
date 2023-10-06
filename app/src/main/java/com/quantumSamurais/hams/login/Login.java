@@ -1,4 +1,4 @@
-package com.seg2105a.projectgroup7.hams.login;
+package com.quantumSamurais.hams.login;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
