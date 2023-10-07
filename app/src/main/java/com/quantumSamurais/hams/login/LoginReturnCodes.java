@@ -1,4 +1,4 @@
-package com.quantumSamurais.hams.user;
+package com.quantumSamurais.hams.login;
 
 public enum LoginReturnCodes {
     //Types of login returns
