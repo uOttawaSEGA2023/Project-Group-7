@@ -1,24 +1,13 @@
 package com.quantumSamurais.hams.user;
 
-import com.quantumSamurais.hams.admin.Administrator;
+import com.quantumSamurais.hams.login.Login;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 public abstract class User {
-
-   // private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
-
     public static List<Map<String,Object>> registeredPatients = new LinkedList<>();
     public static List<Map<String,Object>> registeredDoctors = new LinkedList<>();
     private String _firstName;
@@ -42,7 +31,7 @@ public abstract class User {
     public User(String firstName, String lastName, char[] password, String email, String phone, String address) {
         _firstName = firstName;
         _lastName = lastName;
-        _hashedPassword = hashPassword(password);
+        _hashedPassword = Login.hashPassword(password);
         _email = email;
         _phone = phone;
         _address = address;
@@ -64,26 +53,6 @@ public abstract class User {
         _phone = phone;
         _address = address;
     }
-
-    /***
-     *
-     * @param password The password to hash
-     * @return The password hashed using PBKDF2WithHmacSHA1
-     */
-    public static byte[] hashPassword(char[] password) {
-        byte[] salt = new byte[16];
-        SecureRandom random = new SecureRandom();
-        random.nextBytes(salt);
-        KeySpec spec = new PBEKeySpec(password, salt, 65536, 128);
-        try {
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-
-            return factory.generateSecret(spec).getEncoded();
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException ignored) {
-        }
-        throw new BadPasswordException("Password was: " + Arrays.toString(password));
-    }
-
     /*
     * signUp should generate a map with strings for keys and objects for values
     * the keys should match the names of the private variables, with the underscore removed.
@@ -91,67 +60,6 @@ public abstract class User {
     **/
     public abstract void changeView();
 
-    /***
-     *
-     * @param email The email to look for the user with
-     * @param password The inputted password
-     * @param userType The type of user trying to login
-     * @return Login codes that represent success or failure to login
-     */
-    public static LoginReturnCodes login(String email, char[] password, UserType userType) {
-
-        Map<String, Object> userData = null;
-        User loggedInUser = null;
-        switch (userType) {
-            case DOCTOR:
-                userData = searchLoop(registeredDoctors,email);
-                if(userData != null) {
-                    if(checkPassword(password,(byte[]) userData.get("password"))) {
-                        //loggedInUser = new com.seg2105a.projectgroup7.hams.doctor.Doctor();
-                    } else {
-                        return LoginReturnCodes.IncorrectPassword;
-                    }
-                } else {
-                    return LoginReturnCodes.UserDoesNotExist;
-                }
-                break;
-            case PATIENT:
-                userData = searchLoop(registeredPatients,email);
-                if(userData != null) {
-                    if(checkPassword(password,(byte[]) userData.get("password"))) {
-                        //loggedInUser = new com.seg2105a.projectgroup7.hams.doctor.Doctor();
-                    } else {
-                        return LoginReturnCodes.IncorrectPassword;
-                    }
-                } else {
-                    return LoginReturnCodes.UserDoesNotExist;
-                }
-                break;
-            case ADMIN:
-                if(Administrator.getInstance().getEmail().equals(email)) {
-                    if(checkPassword(password,(byte[]) userData.get("password"))) {
-                        loggedInUser = Administrator.getInstance();
-                    } else {
-                        return LoginReturnCodes.IncorrectPassword;
-                    }
-                } else {
-                    return LoginReturnCodes.UserDoesNotExist;
-                }
-                break;
-        }
-        loggedInUser.changeView();
-        return LoginReturnCodes.Success;
-    }
-    private static Map<String, Object> searchLoop(List<Map<String, Object>> toSearch, String emailToSearch) {
-        for (Map<String, Object> userData : toSearch) {
-            if(!Objects.equals(userData.get("email"), emailToSearch)) continue;
-            return userData;
-        }
-        return null;
-    }
-    private static boolean checkPassword(char[] password, byte[] hashedPassword) {
-        return hashPassword(password) == hashedPassword;
-    }
 
     //<editor-fold desc="Getters & Setters">
     public String getFirstName() {
@@ -177,8 +85,8 @@ public abstract class User {
     }
 
     public User setPassword(char[] oldPassword, char[] newPassword) {
-        if(Arrays.equals(hashPassword(oldPassword), _hashedPassword)) {
-            _hashedPassword = hashPassword(newPassword);
+        if(Arrays.equals(Login.hashPassword(oldPassword), _hashedPassword)) {
+            _hashedPassword = Login.hashPassword(newPassword);
         }
         return this;
     }
