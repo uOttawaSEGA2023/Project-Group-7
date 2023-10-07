@@ -12,7 +12,7 @@ import android.view.View;
 
 
 import com.quantumSamurais.hams.login.Login;
-import com.seg2105a.projectgroup7.hams.R;
+import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.user.User;
 import java.util.List;
 import java.util.Map;

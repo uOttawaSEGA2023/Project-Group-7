@@ -8,8 +8,9 @@ import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
 import com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;
-import com.seg2105a.projectgroup7.hams.R;
+import com.quantumSamurais.hams.R;
 
 
 public class MainActivity extends AppCompatActivity {
