@@ -1,5 +1,7 @@
 package com.quantumSamurais.hams.admin;
 
+import android.content.Context;
+
 import com.quantumSamurais.hams.user.User;
 
 public class Administrator extends User {
@@ -14,7 +16,7 @@ public class Administrator extends User {
     }
 
     @Override
-    public void changeView() {
+    public void changeView(Context currentContext) {
 
     }
 }

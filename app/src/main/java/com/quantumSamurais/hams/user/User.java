@@ -1,5 +1,7 @@
 package com.quantumSamurais.hams.user;
 
+import android.content.Context;
+
 import com.quantumSamurais.hams.login.Login;
 
 import java.util.Arrays;
@@ -58,7 +60,7 @@ public abstract class User {
     * the keys should match the names of the private variables, with the underscore removed.
     * And then this map should be added to the static registeredUsers list in this class
     **/
-    public abstract void changeView();
+    public abstract void changeView(Context currentContext);
 
 
     //<editor-fold desc="Getters & Setters">
