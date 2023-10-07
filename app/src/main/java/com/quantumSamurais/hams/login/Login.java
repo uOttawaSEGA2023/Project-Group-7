@@ -1,6 +1,8 @@
 package com.quantumSamurais.hams.login;
 
 //Firebase
+import android.content.Context;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -64,8 +66,8 @@ public final class Login {
 //
 //       }
 //   }
-    public static LoginReturnCodes login(String email, char[] password, UserType userType) {
-        return  login(email,password,userType,User.registeredPatients,User.registeredDoctors);
+    public static LoginReturnCodes login(String email, char[] password, UserType userType, Context currentContext) {
+        return  login(email,password,userType,currentContext,User.registeredPatients,User.registeredDoctors);
     };
 
     /**
@@ -75,7 +77,7 @@ public final class Login {
      * @param userType The type of user trying to login
      * @return Login codes that represent success or failure to login
      */
-    private static LoginReturnCodes login(String email, char[] password, UserType userType,
+    private static LoginReturnCodes login(String email, char[] password, UserType userType, Context currentContext,
                                          List<Map<String, Object>> patientList, List<Map<String, Object>> doctorList) {
         Map<String, Object> userData = null;
         User loggedInUser = null;
@@ -123,7 +125,7 @@ public final class Login {
                 loggedInUser = Administrator.getInstance();
                 break;
         }
-        loggedInUser.changeView();
+        loggedInUser.changeView(currentContext);
         return LoginReturnCodes.Success;
     }
     private static Map<String, Object> searchLoop(List<Map<String, Object>> toSearch, String emailToSearch) {

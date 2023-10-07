@@ -1,4 +1,8 @@
 package com.quantumSamurais.hams.patient;
+import android.content.Context;
+import android.content.Intent;
+
+import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 
 
@@ -45,8 +49,9 @@ public class Patient extends User {
     }
 
     @Override
-    public void changeView() {
-
+    public void changeView(Context currentContext) {
+        Intent patientView = new Intent(currentContext, LoginInteractiveMessage.class);
+        currentContext.startActivity(patientView);
     }
 
     public static List<Map<String, Object>> getRegisteredPatients(){

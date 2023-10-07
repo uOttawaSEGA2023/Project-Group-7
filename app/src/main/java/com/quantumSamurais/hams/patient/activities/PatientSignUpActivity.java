@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.seg2105a.projectgroup7.hams.R;
+import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.patient.Patient;
 
 
@@ -102,6 +102,7 @@ public class PatientSignUpActivity extends AppCompatActivity {
                 // Registration successful
                 Toast.makeText(PatientSignUpActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
                 // Redirect to the login screen or do something else
+                newUser.changeView(this);
             } else {
                 // Error while saving to the database
                 Toast.makeText(PatientSignUpActivity.this, "Error occurred. Please try again.", Toast.LENGTH_SHORT).show();
