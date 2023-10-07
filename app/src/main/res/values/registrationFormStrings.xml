@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="doctorRegistrationFormText">Doctor Registration Form</string>
+    <string name="patientRegistrationFormText">Patient Registration Form</string>
 
     <string name="firstNameHint">First Name</string>
     <string name="phoneHint">(123)–456–7890</string>
@@ -10,4 +11,6 @@
     <string name="emailHint">Email Address</string>
     <string name="employeeNumberHint">ABCD 1234 5678</string>
     <string name="singUpBtnText">Sign me Up!</string>
+    <string name="healthCardHint">ABCD 1234 5678</string>
+
 </resources>
