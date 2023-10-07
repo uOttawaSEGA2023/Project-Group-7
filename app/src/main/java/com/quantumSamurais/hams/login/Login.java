@@ -66,6 +66,14 @@ public final class Login {
 //
 //       }
 //   }
+    /**
+     *
+     * @param email The email to look for the user with
+     * @param password The inputted password
+     * @param userType The type of user trying to login
+     * @param currentContext The current context so that we can switch the activity
+     * @return Login codes that represent success or failure to login
+     */
     public static LoginReturnCodes login(String email, char[] password, UserType userType, Context currentContext) {
         return  login(email,password,userType,currentContext,User.registeredPatients,User.registeredDoctors);
     };
@@ -75,6 +83,9 @@ public final class Login {
      * @param email The email to look for the user with
      * @param password The inputted password
      * @param userType The type of user trying to login
+     * @param currentContext The current context so that we can switch the activity
+     * @param patientList List of registered patients
+     * @param doctorList List of registered doctors
      * @return Login codes that represent success or failure to login
      */
     private static LoginReturnCodes login(String email, char[] password, UserType userType, Context currentContext,
