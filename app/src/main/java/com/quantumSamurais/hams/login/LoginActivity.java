@@ -8,10 +8,6 @@ import android.widget.Toast;
 import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.RadioGroup;
-import android.widget.Toast;
 import android.view.View;
 
 
@@ -22,27 +18,32 @@ import java.util.List;
 import java.util.Map;
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 import static com.quantumSamurais.hams.patient.Patient.getRegisteredPatients;
-import com.quantumSamurais.hams.user.User;
-// need to import DoctorsList; also need searchLoop method.. don't know how.
+
 public class LoginActivity extends AppCompatActivity {
     private EditText emailEditText, passwordEditText;
-    private Button signInButton;
+    private Button signInButton, backButton;
     private User loggedInUser;
     private List<Map<String, Object>> patientsList;
     private List<Map<String, Object>> doctorsList;
     // not too sure what this will be used for. Might need to call for methods with this activity message.
 
-    protected void onSignIn(Bundle savedInstanceState) {
+
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_in_form);
+    }
+
+    public void clickedSignInButton(View view) {
+
         emailEditText = findViewById(R.id.EmailAddressSlot);
         passwordEditText = findViewById(R.id.PasswordSlot);
-        signInButton = findViewById(R.id.Button2);
+        signInButton = findViewById(R.id.signInButton);
 
         //getting user input from
         signInButton.setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString().trim();
+
 
             //we verify that the email and password is not empty.
             if (textFieldIsEmpty(email) || textFieldIsEmpty(password)) {
@@ -50,10 +51,11 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-
-            //we check to see the email or password is in the database. If not, we print saying otherwise.
+            // we get list of registered patients and doctors.
             patientsList = getRegisteredPatients();
             doctorsList = //getRegisteredDoctors();
+
+            //we check to see the email or password is in the database. If not, we print saying otherwise
             // when doctor implements a getDoctorsList, replace this.
 
             //if (searchLoop(List, email)) {
@@ -65,6 +67,14 @@ public class LoginActivity extends AppCompatActivity {
             // we connect this to Aryan's code.
         }
         );
+    }
+
+    public void onBackButton() {
+        backButton = findViewById(R.id.backButton);
+
+        backButton.setOnClickListener(v -> {
+            setContentView(R.layout.activity_main);
+        });
     }
 
 }

@@ -18,10 +18,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/emailAddressSlot" />
+        app:layout_constraintTop_toBottomOf="@+id/EmailAddressSlot" />
 
     <EditText
-        android:id="@+id/emailAddressSlot"
+        android:id="@+id/EmailAddressSlot"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="64dp"
@@ -61,13 +61,21 @@
         tools:ignore="MissingConstraints" />
     <!-- remove tools:ignore ="MissingConstraints" later on. -->
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/signInButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_constraintTop_toBottomOf="@+id/PasswordSlot"
-        android:text="Button"
+        android:text="Sign In!"
         tools:layout_editor_absoluteX="160dp"
         tools:layout_editor_absoluteY="506dp"
         tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Go Back"
+        tools:layout_editor_absoluteX="291dp"
+        tools:layout_editor_absoluteY="651dp" />
     <!-- remove tools:ignore ="MissingConstraints" later on. -->
 </androidx.constraintlayout.widget.ConstraintLayout>
