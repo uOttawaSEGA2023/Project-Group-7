@@ -50,7 +50,6 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         String phoneNumber = trimText(phoneNumberET);
         String postalAddress = trimText(postalAddressET);
         String employeeNumber = trimText(employeeNumberET);
-        boolean result = textFieldsAreEmpty();
 
         if(textFieldsAreEmpty(firstName,lastName,emailAddress,password,phoneNumber,postalAddress,employeeNumber)) {
             shortToast("Please make sure to fill all the fields.");
