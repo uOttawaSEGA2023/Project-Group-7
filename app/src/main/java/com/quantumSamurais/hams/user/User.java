@@ -89,10 +89,7 @@ public abstract class User {
     * the keys should match the names of the private variables, with the underscore removed.
     * And then this map should be added to the static registeredUsers list in this class
     **/
-    protected abstract void signUp();
-    protected abstract void changeView();
-
-    //TODO: Remove login return codes.
+    public abstract void changeView();
 
     /***
      *

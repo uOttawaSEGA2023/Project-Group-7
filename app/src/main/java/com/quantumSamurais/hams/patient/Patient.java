@@ -45,18 +45,7 @@ public class Patient extends User {
     }
 
     @Override
-    public void signUp(){
-        //Gathers information from fields
-        //Check if the email, and other fields respect formats (no numbers in names, actual email format for email, etc.)
-        //Check email address and Health Card Number are unique (for now, just access the hashmap and see if there's a user with them)
-        //If everything is fine, call constructor
-        //Else change the text on the page to notify user when something doesn't work
-        //All this is done each time user pressed "Sign Up" button.
-
-    }
-
-    @Override
-    protected void changeView() {
+    public void changeView() {
 
     }
 
