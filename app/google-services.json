@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "806448883380",
-    "project_id": "seg2105-hams-72db5",
-    "storage_bucket": "seg2105-hams-72db5.appspot.com"
+    "project_number": "71346210677",
+    "project_id": "quantumsamurais-hams",
+    "storage_bucket": "quantumsamurais-hams.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:806448883380:android:5739f54c57fefc2c0099e1",
+        "mobilesdk_app_id": "1:71346210677:android:630fa1240153b9ab91b53c",
         "android_client_info": {
           "package_name": "com.quantumSamurais.hams"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAbcCuvYzYCUCSh2_aZOtzVyVoii8EWzcY"
+          "current_key": "AIzaSyB_7Ho9cQvsC-fOWMkRkJlaTixot0FvJiw"
         }
       ],
       "services": {

@@ -46,6 +46,14 @@ public final class Validator {
     public static boolean textFieldIsEmpty(String stringField) {
         return (stringField == null || stringField.isEmpty());
     }
+    public static boolean textFieldsAreEmpty(String ...fields) {
+        for(String i : fields) {
+            if(i == null || i.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Validates an email address by first checking if the domain associated with it exists, and then
@@ -105,7 +113,7 @@ public final class Validator {
     }
 
     public static boolean passwordIsValid(@NonNull String password) {
-        return password.matches("^(?=[^a-z]*[a-z])(?=[^A-Z]*[A-Z])(?=\\D*\\d)(?=[^!#%]*[!#%])[A-Za-z0-9!#%]{8,}$");
+        return password.matches("^(?=[^a-z]*[a-z])(?=[^A-Z]*[A-Z])(?=\\D*\\d)(?=[^!@#$%^&\\*]*[!@#$%^&\\**])[A-Za-z0-9!@#$%^&\\**]{8,}$");
     }
 
     /**

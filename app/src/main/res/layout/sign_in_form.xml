@@ -64,8 +64,13 @@
         android:id="@+id/signInButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+<<<<<<< HEAD
         android:layout_constraintTop_toBottomOf="@+id/PasswordSlot"
         android:text="Sign In!"
+=======
+        app:layout_constraintTop_toBottomOf="@+id/PasswordSlot"
+        android:text="Button"
+>>>>>>> 9d8f93d7ec0864600a45217a84ce47c3621f952f
         tools:layout_editor_absoluteX="160dp"
         tools:layout_editor_absoluteY="506dp"
         tools:ignore="MissingConstraints" />

@@ -24,6 +24,10 @@
 
         <activity android:name="com.quantumSamurais.hams.patient.activities.PatientSignUpActivity">
         </activity>
+        <activity android:name="com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity">
+        </activity>
+        <activity android:name=".LoginInteractiveMessage">
+        </activity>
     </application>
 
 </manifest>
