@@ -8,28 +8,28 @@
 
     <EditText
         android:id="@+id/PasswordSlot"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:ems="10"
+        android:layout_width="219dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
         android:height="48dp"
+        android:ems="10"
         android:hint="Password"
         android:inputType="textPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/emailAddressSlot" />
+        app:layout_constraintEnd_toEndOf="@+id/EmailAddressSlot"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/EmailAddressSlot"
+        app:layout_constraintTop_toBottomOf="@+id/EmailAddressSlot" />
 
     <EditText
-        android:id="@+id/emailAddressSlot"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
+        android:id="@+id/EmailAddressSlot"
+        android:layout_width="218dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="32dp"
         android:ems="10"
         android:hint="Email Address"
         android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/MessageUnderSignIn" />
 
@@ -37,14 +37,13 @@
         android:id="@+id/LogInHeading"
         android:layout_width="218dp"
         android:layout_height="61dp"
-        android:layout_marginTop="32dp"
         android:text="Sign in Form"
-        android:textSize="25sp"
         android:textAlignment="center"
+        android:textSize="25sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
-        tools:layout_editor_absoluteY="94dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline"
         tools:ignore="MissingConstraints" />
     <!-- remove tools:ignore ="MissingConstraints" later on. -->
 
@@ -56,18 +55,54 @@
         android:layout_marginTop="100dp"
         android:text="Please sign in with your email and password"
         android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="@+id/LogInHeading"
+        app:layout_constraintStart_toStartOf="@+id/LogInHeading"
         app:layout_constraintTop_toBottomOf="@+id/LogInHeading"
-        tools:layout_editor_absoluteX="67dp"
         tools:ignore="MissingConstraints" />
     <!-- remove tools:ignore ="MissingConstraints" later on. -->
+
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/signInButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+
+
+        android:layout_marginTop="40dp"
+        android:text="Sign In!"
+
+
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintEnd_toEndOf="@+id/PasswordSlot"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="@+id/PasswordSlot"
         app:layout_constraintTop_toBottomOf="@+id/PasswordSlot"
-        android:text="Button"
-        tools:layout_editor_absoluteX="160dp"
-        tools:layout_editor_absoluteY="506dp"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Go Back"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.912"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline2"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="109dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="641dp" />
     <!-- remove tools:ignore ="MissingConstraints" later on. -->
 </androidx.constraintlayout.widget.ConstraintLayout>
