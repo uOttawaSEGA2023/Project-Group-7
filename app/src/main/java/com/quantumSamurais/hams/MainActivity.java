@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
             startActivity(patientRegistrationForm);
         }
         else{
-            //TODO: Make it so this goes to the Doctor Registration Form
+            Intent doctorRegistrationForm = new Intent(this, DoctorSignUpActivity.class);
+            startActivity(doctorRegistrationForm);
         }
 
     }
