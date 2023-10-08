@@ -55,7 +55,12 @@ public class LoginActivity extends AppCompatActivity {
             // we get list of registered patients and doctors.
             patientsList = getRegisteredPatients();
             //doctorsList = getRegisteredDoctors();
+            Boolean loggedIn = false;
 
+            if (loggedIn) {
+                Toast.makeText(LoginActivity.this, "Successfully Logged in!", Toast.LENGTH_SHORT).show();
+                SetContentView(R.layout.LoginInteractiveMessage);
+            }
             //we check to see the email or password is in the database. If not, we print saying otherwise
             // when doctor implements a getDoctorsList, replace this.
 
