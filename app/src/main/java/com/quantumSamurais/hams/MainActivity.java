@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openSignIn(View view){
-        //setContentView(R.layout.signin_acount_type_selection_view);
+        setContentView(R.layout.sign_in_form);
     }
 
 }
