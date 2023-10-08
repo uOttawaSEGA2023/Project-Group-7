@@ -4,7 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import com.quantumSamurais.hams.Logoff;
+
 
 public class LoginInteractiveMessage extends AppCompatActivity {
 
@@ -25,5 +29,14 @@ public class LoginInteractiveMessage extends AppCompatActivity {
 
         // Set the welcome message in the TextView
         welcomeMessageTextView.setText(welcomeMessage);
+        Button logoffButton = findViewById(R.id.logoffButton);
+
+        logoffButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Call the logoff method from LogoffUtil
+                Logoff.logoff(LoginInteractiveMessage.this);
+            }
+        });
     }
 }

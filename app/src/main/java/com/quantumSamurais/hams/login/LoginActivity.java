@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.content.Intent;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
@@ -59,6 +59,7 @@ public class LoginActivity extends AppCompatActivity {
             Context context = this;
             Boolean loggedIn = false; // kept as false for now; will find a boolean statement later.
 
+<<<<<<< HEAD
             UserType[] userArr = {UserType.PATIENT, UserType.ADMIN, UserType.DOCTOR};
             UserType type;
             for (int i = 0; i < userArr.length; i ++) {
@@ -70,6 +71,11 @@ public class LoginActivity extends AppCompatActivity {
                     setContentView(R.layout.login_interactive_message);
                     break;
                 }
+=======
+            if (loggedIn) {
+                Toast.makeText(LoginActivity.this, "Successfully Logged in!", Toast.LENGTH_SHORT).show();
+                setContentView(R.layout.login_interactive_message);
+>>>>>>> 25ac3aef1ffb1ac268be228ea6d4a73ea54bf1a2
             }
             // we connect this to Aryan's code.
         }
