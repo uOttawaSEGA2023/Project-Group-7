@@ -65,6 +65,7 @@ public class LoginActivity extends AppCompatActivity {
                 LoginReturnCodes tryLogin = Login.login(email, parsePass, userArr[i], LoginActivity.this);
                 if (tryLogin.equals(LoginReturnCodes.IncorrectPassword)) {
                     Toast.makeText(LoginActivity.this, "Either the email or password fields is incorrect. Please try again.", Toast.LENGTH_LONG).show();
+                    break;
                 } else if (tryLogin.equals(LoginReturnCodes.Success)) {
                     loggedIn = true;
                     break;
