@@ -59,27 +59,24 @@ public class LoginActivity extends AppCompatActivity {
             Context context = this;
             Boolean loggedIn = false; // kept as false for now; will find a boolean statement later.
 
-<<<<<<< HEAD
             UserType[] userArr = {UserType.PATIENT, UserType.ADMIN, UserType.DOCTOR};
             UserType type;
-            for (int i = 0; i < userArr.length; i ++) {
-                LoginReturnCodes tryLogin = Login.login(email,parsePass, userArr[i], LoginActivity.this);
+            for (int i = 0; i < userArr.length; i++) {
+                LoginReturnCodes tryLogin = Login.login(email, parsePass, userArr[i], LoginActivity.this);
                 if (tryLogin.equals(LoginReturnCodes.IncorrectPassword)) {
                     Toast.makeText(LoginActivity.this, "Either the email or password fields is incorrect. Please try again.", Toast.LENGTH_LONG).show();
                 } else if (tryLogin.equals(LoginReturnCodes.Success)) {
-                    Toast.makeText(LoginActivity.this, "Success! Redirecting...", Toast.LENGTH_SHORT).show();
-                    setContentView(R.layout.login_interactive_message);
+                    loggedIn = true;
                     break;
                 }
-=======
+            }
             if (loggedIn) {
                 Toast.makeText(LoginActivity.this, "Successfully Logged in!", Toast.LENGTH_SHORT).show();
                 setContentView(R.layout.login_interactive_message);
->>>>>>> 25ac3aef1ffb1ac268be228ea6d4a73ea54bf1a2
             }
             // we connect this to Aryan's code.
-        }
-        );
+
+        });
     }
 
     public void onBackButton() {
@@ -90,4 +87,5 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+}
 }
