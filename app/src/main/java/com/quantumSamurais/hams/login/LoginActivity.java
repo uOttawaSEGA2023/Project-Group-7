@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 import static com.quantumSamurais.hams.patient.Patient.getRegisteredPatients;
+import com.quantumSamurais.hams.LoginInteractiveMessage;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText emailEditText, passwordEditText;
