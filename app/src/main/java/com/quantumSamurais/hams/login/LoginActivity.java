@@ -1,11 +1,12 @@
 package com.quantumSamurais.hams.login;
 
+import android.content.Context;
 
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.content.Intent;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
@@ -16,9 +17,11 @@ import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.user.User;
 import java.util.List;
 import java.util.Map;
+
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
-import static com.quantumSamurais.hams.patient.Patient.getRegisteredPatients;
 import com.quantumSamurais.hams.LoginInteractiveMessage;
+import com.quantumSamurais.hams.user.UserType;
+import com.quantumSamurais.hams.login.LoginReturnCodes;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText emailEditText, passwordEditText;
@@ -48,31 +51,32 @@ public class LoginActivity extends AppCompatActivity {
 
             //we verify that the email and password is not empty.
             if (textFieldIsEmpty(email) || textFieldIsEmpty(password)) {
-                Toast.makeText(LoginActivity.this, "Either the email or password fields is empty. Please make sure to fill out either or both fields.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "Either the email or password fields is empty. Please make sure to fill out either or both fields.", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            // we get list of registered patients and doctors.
-            patientsList = getRegisteredPatients();
-            //doctorsList = getRegisteredDoctors();
+            char[] parsePass = password.toCharArray();
+            Context context = this;
             Boolean loggedIn = false; // kept as false for now; will find a boolean statement later.
 
+            UserType[] userArr = {UserType.PATIENT, UserType.ADMIN, UserType.DOCTOR};
+            UserType type;
+            for (int i = 0; i < userArr.length; i++) {
+                LoginReturnCodes tryLogin = Login.login(email, parsePass, userArr[i], LoginActivity.this);
+                if (tryLogin.equals(LoginReturnCodes.IncorrectPassword)) {
+                    Toast.makeText(LoginActivity.this, "Either the email or password fields is incorrect. Please try again.", Toast.LENGTH_LONG).show();
+                } else if (tryLogin.equals(LoginReturnCodes.Success)) {
+                    loggedIn = true;
+                    break;
+                }
+            }
             if (loggedIn) {
                 Toast.makeText(LoginActivity.this, "Successfully Logged in!", Toast.LENGTH_SHORT).show();
                 setContentView(R.layout.login_interactive_message);
             }
-            //we check to see the email or password is in the database. If not, we print saying otherwise
-            // when doctor implements a getDoctorsList, replace this.
-
-            //if (searchLoop(List, email)) {
-            // find if the email is within the data base.
-            // else, we say that it's not available.
-            //}
-            // still working on this.
-            // if (we find valid email and password is valid) {
             // we connect this to Aryan's code.
-        }
-        );
+
+        });
     }
 
     public void onBackButton() {
@@ -83,4 +87,5 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+}
 }
