@@ -59,7 +59,7 @@ public class LoginActivity extends AppCompatActivity {
 
             if (loggedIn) {
                 Toast.makeText(LoginActivity.this, "Successfully Logged in!", Toast.LENGTH_SHORT).show();
-                SetContentView(R.layout.LoginInteractiveMessage);
+                setContentView(R.layout.login_interactive_message);
             }
             //we check to see the email or password is in the database. If not, we print saying otherwise
             // when doctor implements a getDoctorsList, replace this.
