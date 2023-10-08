@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.doctor.activities;
 
+import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
 import static com.quantumSamurais.hams.utils.Validator.nameIsValid;
 import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
 import static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;
@@ -20,17 +21,20 @@ import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.user.User;
 
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 public class DoctorSignUpActivity extends AppCompatActivity {
 
     private EditText  firstNameET, lastNameET, emailAddressET, passwordET, phoneNumberET, postalAddressET,employeeNumberET;
     private Button signUp;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.doctor_register_form);
         setup();
         signUp.setOnClickListener(this::onSignUpClicked);
     }
+
     private void setup() {
         firstNameET = findViewById(R.id.firstNameDoctorReg);
         lastNameET = findViewById(R.id.lastNameDoctorReg);
@@ -51,16 +55,39 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         String postalAddress = trimText(postalAddressET);
         String employeeNumber = trimText(employeeNumberET);
 
-        if(textFieldsAreEmpty(firstName,lastName,emailAddress,password,phoneNumber,postalAddress,employeeNumber)) {
+        if (textFieldsAreEmpty(firstName, lastName, emailAddress, password, phoneNumber, postalAddress, employeeNumber)) {
             shortToast("Please make sure to fill all the fields.");
             return;
         }
-        if(!nameIsValid(firstName) || !nameIsValid(lastName)) {
+        if (!nameIsValid(firstName) || !nameIsValid(lastName)) {
             shortToast("Please make sure your name follows a human format (no numbers, spaces, etc.)");
             return;
         }
-        //TODO: Email Validation
-        if(!passwordIsValid(password)) {
+
+
+        try {
+            int validationResult = emailAddressIsValid(emailAddress);
+            if (validationResult < 0) {
+                if(validationResult == -1) {
+                    shortToast("This email address is not formatted like an email address.");
+                }
+                else if (validationResult == -2) {
+                    shortToast("Please ensure this email address' domain exists");
+                }
+                else {
+                shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
+                }
+                return;
+            }
+        } catch (
+                ExecutionException e) {
+           shortToast("Something went wrong during email's domain verification, please check your connection and try again.");
+            return;
+        } catch (InterruptedException e) {
+           shortToast("Something went wrong with the email address' verification thread, please wait a bit and try again.");
+            return;
+        }
+        if (!passwordIsValid(password)) {
             shortToast("Password must contain at least 8 chars, one capital letter and one small letter, one number, and one special character.");
             return;
         }
@@ -79,6 +106,7 @@ public class DoctorSignUpActivity extends AppCompatActivity {
             shortToast("An Error occurred please try again");
         }
     }
+
     private void shortToast(String text) {
         Toast.makeText(DoctorSignUpActivity.this, text, Toast.LENGTH_SHORT).show();
     }
