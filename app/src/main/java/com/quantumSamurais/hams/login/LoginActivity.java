@@ -55,7 +55,7 @@ public class LoginActivity extends AppCompatActivity {
             // we get list of registered patients and doctors.
             patientsList = getRegisteredPatients();
             //doctorsList = getRegisteredDoctors();
-            Boolean loggedIn = false;
+            Boolean loggedIn = false; // kept as false for now; will find a boolean statement later.
 
             if (loggedIn) {
                 Toast.makeText(LoginActivity.this, "Successfully Logged in!", Toast.LENGTH_SHORT).show();
