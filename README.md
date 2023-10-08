@@ -4,8 +4,8 @@
 
 This is a mobile application designed to streamline the process of appointment scheduling and management.
 
-## Admin Login:
-Username: ADMIN
+## Admin Login
+Username: ADMIN  
 Password: P@ssW0rd!
 
 ### Users
