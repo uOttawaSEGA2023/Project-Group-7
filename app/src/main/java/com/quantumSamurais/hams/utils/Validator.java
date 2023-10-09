@@ -63,9 +63,9 @@ public final class Validator {
      * @return {@code -1} if the email is not formatted as an email, {@code -2} if the domain is invalid, {@code -3} if the localPart is invalid, {@code 1} if everything is fine.
      */
 
-    public static int emailAddressIsValid(@NonNull String emailAddress) throws ExecutionException, InterruptedException{
+    public static int emailAddressIsValid(@NonNull String emailAddress) throws ExecutionException, InterruptedException {
         //First check the email has a @
-        if (!emailAddress.contains("@")){
+        if (!emailAddress.contains("@")) {
             return -1;
         }
         //Split the email address
@@ -91,13 +91,15 @@ public final class Validator {
                     return 1;
                 }
                 return -3;
-            } else {
-                return -2;
             }
+            return -2;
+
 
         }
         return -1;
     }
+
+
 
 
     /**
