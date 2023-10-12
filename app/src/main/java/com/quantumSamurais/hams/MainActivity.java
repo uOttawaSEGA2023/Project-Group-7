@@ -8,9 +8,14 @@ import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.quantumSamurais.hams.admin.Administrator;
 import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
+import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;
 import com.quantumSamurais.hams.R;
+import com.quantumSamurais.hams.user.User;
+
+import org.checkerframework.checker.units.qual.A;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     public void clickedContinueRegistration(View view){
         RadioGroup accountTypeSelection = findViewById(R.id.userTypeSelection);
         if (accountTypeSelection.getCheckedRadioButtonId() == -1){
+            User Admin = new Administrator();
+            Admin.changeView(this);
             Toast.makeText(getApplicationContext(), "Please select an option.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -42,8 +49,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // Hooks back button event to return to main view if user was in account type selection view
+    public void onBackPressed() {
+        setContentView(R.layout.activity_main);
+    }
+
     public void openSignIn(View view){
-        setContentView(R.layout.sign_in_form);
+        Intent signIn = new Intent(this, LoginActivity.class);
+        startActivity(signIn );
     }
 
 }
