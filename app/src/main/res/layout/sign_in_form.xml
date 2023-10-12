@@ -65,12 +65,9 @@
         android:id="@+id/signInButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
-
         android:layout_marginTop="40dp"
         android:text="Sign In!"
-
-
+        android:onClick="onClick"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toEndOf="@+id/PasswordSlot"
         app:layout_constraintHorizontal_bias="0.495"
@@ -78,18 +75,6 @@
         app:layout_constraintTop_toBottomOf="@+id/PasswordSlot"
         app:layout_constraintVertical_bias="0.0" />
 
-    <Button
-        android:id="@+id/backButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="Go Back"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.912"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline2"
-        app:layout_constraintVertical_bias="1.0" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
@@ -103,6 +88,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="641dp" />
+        app:layout_constraintGuide_begin="611dp" />
     <!-- remove tools:ignore ="MissingConstraints" later on. -->
 </androidx.constraintlayout.widget.ConstraintLayout>
