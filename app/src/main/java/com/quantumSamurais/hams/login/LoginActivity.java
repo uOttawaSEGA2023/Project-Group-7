@@ -11,24 +11,16 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 
-
-import com.quantumSamurais.hams.login.Login;
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.user.User;
-import java.util.List;
-import java.util.Map;
+
 
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
-import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.login.LoginReturnCodes;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText emailEditText, passwordEditText;
     private Button signInButton, backButton;
-    private User loggedInUser;
-    private List<Map<String, Object>> patientsList;
-    private List<Map<String, Object>> doctorsList;
     // not too sure what this will be used for. Might need to call for methods with this activity message.
 
 
