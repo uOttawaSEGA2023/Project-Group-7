@@ -1,16 +1,15 @@
 package com.quantumSamurais.hams.doctor;
 
-import static com.quantumSamurais.hams.utils.Validator.textFieldsAreEmpty;
-
 import android.content.Context;
 import android.content.Intent;
+
+import androidx.annotation.NonNull;
 
 import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Set;
 
 public class Doctor extends User {
 
@@ -32,14 +31,12 @@ public class Doctor extends User {
 		newUserInformation.put("postalAddress", getAddress());
 		newUserInformation.put("employeeNumber", _employeeNumber);
 		newUserInformation.put("specialties", _specialties);
-
 		registeredDoctors.add(newUserInformation);
 	}
 
 	public Doctor(String firstName, String lastName, byte[] hashedPassword, String email,
 				  String phone, String address, String employeeNumber,EnumSet<Specialties> specialties) {
 		super(firstName, lastName, hashedPassword, email, phone, address);
-
 		_employeeNumber = employeeNumber;
 		_specialties = specialties;
 	}
@@ -47,6 +44,15 @@ public class Doctor extends User {
 	public void changeView(Context currentContext) {
 		Intent doctorView = new Intent(currentContext, LoginInteractiveMessage.class);
 		currentContext.startActivity(doctorView);
+	}
+
+	@NonNull
+	@Override
+	public String toString() {
+		return super.toString() + "\nEmployee Number: " +
+				_employeeNumber +
+				"\nSpecialties: " +
+				_specialties.toString();
 	}
 
 
