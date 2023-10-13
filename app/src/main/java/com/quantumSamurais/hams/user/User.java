@@ -2,8 +2,11 @@ package com.quantumSamurais.hams.user;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.quantumSamurais.hams.login.Login;
 
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +24,8 @@ public abstract class User {
     private String _phone;
     private String _address;
 
+    private byte[] _salt;
+
     /***
      *
      * @param firstName The user's first name
@@ -33,7 +38,7 @@ public abstract class User {
     public User(String firstName, String lastName, char[] password, String email, String phone, String address) {
         _firstName = firstName;
         _lastName = lastName;
-        _hashedPassword = Login.hashPassword(password);
+        _hashedPassword = Login.hashPassword(password, generateSalt());
         _email = email;
         _phone = phone;
         _address = address;
@@ -55,12 +60,42 @@ public abstract class User {
         _phone = phone;
         _address = address;
     }
+
     /*
     * signUp should generate a map with strings for keys and objects for values
     * the keys should match the names of the private variables, with the underscore removed.
     * And then this map should be added to the static registeredUsers list in this class
     **/
     public abstract void changeView(Context currentContext);
+
+    private byte[] generateSalt() {
+        byte[] salt = new byte[16];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(salt);
+        _salt = salt;
+        return salt;
+    }
+
+
+
+    @Override
+    @NonNull
+    public String toString() {
+        return "First name: " +
+                _firstName +
+                ", Last Name: " +
+                _lastName +
+                "\nEmail: " +
+                _email +
+                "\nPassword: " +
+                Arrays.toString(_hashedPassword) +
+                "\nSalt: " +
+                Arrays.toString(_salt) +
+                "\nPhone: " +
+                _phone +
+                "\nAddress: " +
+                _address;
+    }
 
 
     //<editor-fold desc="Getters & Setters">
@@ -86,9 +121,9 @@ public abstract class User {
         return _hashedPassword;
     }
 
-    public User setPassword(char[] oldPassword, char[] newPassword) {
-        if(Arrays.equals(Login.hashPassword(oldPassword), _hashedPassword)) {
-            _hashedPassword = Login.hashPassword(newPassword);
+    public User setPassword(char[] oldPassword, char[] newPassword, byte[] salt) {
+        if(Arrays.equals(Login.hashPassword(oldPassword, salt), _hashedPassword)) {
+            _hashedPassword = Login.hashPassword(newPassword,generateSalt());
         }
         return this;
     }
@@ -118,6 +153,10 @@ public abstract class User {
     public User setAddress(String address) {
         _address = address;
         return this;
+    }
+
+    public byte[] getSalt() {
+        return _salt;
     }
     // </editor-fold>
 }
