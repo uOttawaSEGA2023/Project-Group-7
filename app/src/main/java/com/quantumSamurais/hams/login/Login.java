@@ -6,6 +6,7 @@ import android.content.Context;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 //App
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.admin.Administrator;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.Specialties;
@@ -29,41 +30,7 @@ import javax.crypto.spec.PBEKeySpec;
 
 public final class Login {
 
-//   public boolean loginSuccess(){
-//
-//        boolean success = false;
-//       final FirebaseDatabase db = FirebaseDatabase.getInstance();
-//       DatabaseReference ref=db.getReference("Email");
-//       String dbPass;
-//
-//        ref.child(this.email).addOnComplete(new OnCompleteListener<DataSnapshot>(){
-//            @Override
-//            public void onComplete(Task<DataSnapshot> Task){
-//                if(task.isSuccessful()){
-//                    if(task.getResult().exists()){
-//                        Datasnapshot datasnapshot = task.getResult();
-//                        String dbPass=String.valueOf(datasnapshot.child("password").getValue());
-//                    }
-//                }
-//            }
-//        })
-//       if(dbPass!=null && dbPass==this.password){
-//           success=true;
-//
-//
-//       }
-//       return success;
-//
-//   }
-
-//   public String loginSuccessPrompt(){
-//       if(loginSuccess()){
-//           return "Login successful: Welcome to HAMS";
-//       } else{
-//           return "Login unsuccessful: Please try again";
-//
-//       }
-//   }
+    private static FirebaseFirestore db = FirebaseFirestore.getInstance();
     /**
      *
      * @param email The email to look for the user with
@@ -75,6 +42,14 @@ public final class Login {
     public static LoginReturnCodes login(String email, char[] password, UserType userType, Context currentContext) {
         return  login(email,password,userType,currentContext,User.registeredPatients,User.registeredDoctors);
     };
+
+    private static void getUserData(UserType userType) {
+        //db code
+    }
+    private static byte[] saltFromDatabase(Map<String, Object> userData) {
+        return null;
+    }
+
 
     /**
      *
@@ -90,13 +65,15 @@ public final class Login {
                                          List<Map<String, Object>> patientList, List<Map<String, Object>> doctorList) {
         Map<String, Object> userData = null;
         User loggedInUser = null;
+        byte[] salt= null;
         switch (userType) {
             case DOCTOR:
                 userData = searchLoop(doctorList,email);
-                if(userData == null)
+                salt = saltFromDatabase(userData);
+                if(userData == null) {
                     return LoginReturnCodes.UserDoesNotExist;
+                }
 
-                byte[] salt=(byte[]) userData.get("salt");
                 if(hashPassword(password,salt) != userData.get("password"))
                     return LoginReturnCodes.IncorrectPassword;
 
@@ -115,8 +92,8 @@ public final class Login {
                 if(userData == null)
                     return LoginReturnCodes.UserDoesNotExist;
 
-                byte[] salt2=(byte[]) userData.get("salt");
-                if(hashPassword(password,salt2) != userData.get("password"))
+                salt = saltFromDatabase(userData);
+                if(hashPassword(password,salt) != userData.get("password"))
                     return LoginReturnCodes.IncorrectPassword;
 
                 loggedInUser = new Patient(
@@ -131,10 +108,10 @@ public final class Login {
                 break;
             case ADMIN:
                 User admin = new Administrator();
-                byte[] salt3=(byte[]) admin.getSalt();
+                salt=admin.getSalt();
                 if(!admin.getEmail().equals(email))
                     return LoginReturnCodes.UserDoesNotExist;
-                if(hashPassword(password,salt3) != admin.getPassword())
+                if(hashPassword(password,salt) != admin.getPassword())
                     return LoginReturnCodes.IncorrectPassword;
 
                 loggedInUser = admin;
@@ -150,7 +127,6 @@ public final class Login {
         }
         return null;
     }
-
     /**
      *
      * @param password The password to hash
