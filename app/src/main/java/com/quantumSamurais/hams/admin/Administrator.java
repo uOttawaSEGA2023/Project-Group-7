@@ -21,6 +21,9 @@ public class Administrator extends User {
 
     @Override
     public void changeView(Context currentContext) {
-
+        Intent adminView = new Intent(currentContext,LoginInteractiveMessage.class);
+        adminView.putExtra("userType", UserType.ADMIN);
+      // adminView.putExtra("user",this);
+        currentContext.startActivity(adminView);
     }
 }
