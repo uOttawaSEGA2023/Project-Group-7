@@ -95,9 +95,10 @@ public final class Login {
         switch (userType) {
             case DOCTOR:
                 userData = searchLoop(doctorList,email);
+                byte[] salt=(byte[]) userData.get("salt");
                 if(userData == null)
                     return LoginReturnCodes.UserDoesNotExist;
-                if(hashPassword(password) != userData.get("password"))
+                if(hashPassword(password,salt) != userData.get("password"))
                     return LoginReturnCodes.IncorrectPassword;
 
                 loggedInUser = new Doctor(
@@ -112,9 +113,10 @@ public final class Login {
                 break;
             case PATIENT:
                 userData = searchLoop(patientList,email);
+                byte[] salt2=(byte[]) userData.get("salt");
                 if(userData == null)
                     return LoginReturnCodes.UserDoesNotExist;
-                if(hashPassword(password) != userData.get("password"))
+                if(hashPassword(password,salt2) != userData.get("password"))
                     return LoginReturnCodes.IncorrectPassword;
 
                 loggedInUser = new Patient(
@@ -128,9 +130,10 @@ public final class Login {
                 );
                 break;
             case ADMIN:
+                byte[] salt3=(byte[]) userData.get("salt");
                 if(!Administrator.getInstance().getEmail().equals(email))
                     return LoginReturnCodes.UserDoesNotExist;
-                if(hashPassword(password) != userData.get("password"))
+                if(hashPassword(password,salt3) != userData.get("password"))
                     return LoginReturnCodes.IncorrectPassword;
 
                 loggedInUser = Administrator.getInstance();
@@ -152,8 +155,8 @@ public final class Login {
      * @param password The password to hash
      * @return The password hashed using PBKDF2WithHmacSHA1
      */
-    public static byte[] hashPassword(char[] password) {
-        byte[] salt = new byte[16];
+    public static byte[] hashPassword(char[] password, byte[] salt) {
+      //  byte[] salt = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(salt);
         KeySpec spec = new PBEKeySpec(password, salt, 65536, 128);
