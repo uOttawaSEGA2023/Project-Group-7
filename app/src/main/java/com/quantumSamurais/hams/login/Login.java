@@ -108,7 +108,7 @@ public final class Login {
                         (String)userData.get("email"),
                         (String)userData.get("phone"),
                         (String)userData.get("address"),
-                        (String)userData.get("employeeNumber"),(Set<Specialties>) userData.get("specialites")
+                        (String)userData.get("employeeNumber"),(EnumSet<Specialties>) userData.get("specialites")
                 );
                 break;
             case PATIENT:

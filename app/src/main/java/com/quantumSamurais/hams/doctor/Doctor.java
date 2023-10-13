@@ -8,17 +8,18 @@ import android.content.Intent;
 import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Set;
 
 public class Doctor extends User {
 
 	private String _employeeNumber;
-	private Set<Specialties> _specialties;
+	private EnumSet<Specialties> _specialties;
 	private final HashMap<String, Object> newUserInformation = new HashMap<>(8);
 
 	public Doctor(String firstName, String lastName, char[] hashedPassword, String email,
-			  String phone, String address, String employeeNumber,Set<Specialties> specialties) {
+			  String phone, String address, String employeeNumber,EnumSet<Specialties> specialties) {
 		super(firstName, lastName, hashedPassword, email, phone, address);
 
 		_employeeNumber = employeeNumber;
@@ -36,7 +37,7 @@ public class Doctor extends User {
 	}
 
 	public Doctor(String firstName, String lastName, byte[] hashedPassword, String email,
-				  String phone, String address, String employeeNumber,Set<Specialties> specialties) {
+				  String phone, String address, String employeeNumber,EnumSet<Specialties> specialties) {
 		super(firstName, lastName, hashedPassword, email, phone, address);
 
 		_employeeNumber = employeeNumber;
@@ -53,7 +54,7 @@ public class Doctor extends User {
 	public String getEmployeeNumber() {
 		return _employeeNumber;
 	}
-	public Set<Specialties> getSpecialties(){
+	public EnumSet<Specialties> getSpecialties(){
 		return _specialties;
 	}
 	public HashMap<String, Object> getNewUserInformation() {
@@ -63,7 +64,7 @@ public class Doctor extends User {
 		this._employeeNumber = _employeeNumber;
 		return this;
 	}
-	public Doctor setSpecialties(Set<Specialties> _specialties) {
+	public Doctor setSpecialties(EnumSet<Specialties> _specialties) {
 		this._specialties = _specialties;
 		return this;
 	}
