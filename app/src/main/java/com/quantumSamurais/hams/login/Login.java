@@ -5,9 +5,6 @@ import android.content.Context;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 //App
 import com.quantumSamurais.hams.admin.Administrator;
 import com.quantumSamurais.hams.doctor.Doctor;
@@ -21,6 +18,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -95,9 +93,10 @@ public final class Login {
         switch (userType) {
             case DOCTOR:
                 userData = searchLoop(doctorList,email);
-                byte[] salt=(byte[]) userData.get("salt");
                 if(userData == null)
                     return LoginReturnCodes.UserDoesNotExist;
+
+                byte[] salt=(byte[]) userData.get("salt");
                 if(hashPassword(password,salt) != userData.get("password"))
                     return LoginReturnCodes.IncorrectPassword;
 
@@ -113,9 +112,10 @@ public final class Login {
                 break;
             case PATIENT:
                 userData = searchLoop(patientList,email);
-                byte[] salt2=(byte[]) userData.get("salt");
                 if(userData == null)
                     return LoginReturnCodes.UserDoesNotExist;
+
+                byte[] salt2=(byte[]) userData.get("salt");
                 if(hashPassword(password,salt2) != userData.get("password"))
                     return LoginReturnCodes.IncorrectPassword;
 
@@ -130,13 +130,14 @@ public final class Login {
                 );
                 break;
             case ADMIN:
-                byte[] salt3=(byte[]) userData.get("salt");
-                if(!Administrator.getInstance().getEmail().equals(email))
+                User admin = new Administrator();
+                byte[] salt3=(byte[]) admin.getSalt();
+                if(!admin.getEmail().equals(email))
                     return LoginReturnCodes.UserDoesNotExist;
-                if(hashPassword(password,salt3) != userData.get("password"))
+                if(hashPassword(password,salt3) != admin.getPassword())
                     return LoginReturnCodes.IncorrectPassword;
 
-                loggedInUser = Administrator.getInstance();
+                loggedInUser = admin;
                 break;
         }
         loggedInUser.changeView(currentContext);
