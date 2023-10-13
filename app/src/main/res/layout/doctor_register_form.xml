@@ -1,143 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/doctorConstraintLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal">
+
 
     <TextView
         android:id="@+id/doctorRegistrationFormText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:layout_marginBottom="15dp"
         android:text="@string/doctorRegistrationFormText"
         android:textAlignment="center"
         android:textSize="20sp"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/firstNameDoctorReg"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/firstNameDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:autofillHints="name"
         android:ems="10"
         android:hint="@string/firstNameHint"
         android:inputType="textPersonName"
-        android:autofillHints="name"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/doctorRegistrationFormText"
-        app:layout_constraintStart_toStartOf="@+id/doctorRegistrationFormText"
-        app:layout_constraintTop_toBottomOf="@+id/doctorRegistrationFormText"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintBottom_toTopOf="@+id/lastNameDoctorReg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/doctorRegistrationFormText" />
 
     <EditText
         android:id="@+id/lastNameDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:autofillHints="name"
         android:ems="10"
         android:hint="@string/lastNameHint"
         android:inputType="textPersonName"
-        android:autofillHints="name"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/emailAddressDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/firstNameDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/firstNameDoctorReg"
-        app:layout_constraintTop_toBottomOf="@+id/firstNameDoctorReg"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/firstNameDoctorReg" />
+
     <EditText
         android:id="@+id/emailAddressDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:autofillHints="emailAddress"
         android:ems="10"
         android:hint="@string/emailHint"
         android:inputType="textEmailAddress"
-        android:autofillHints="emailAddress"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/passwordDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/lastNameDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/lastNameDoctorReg"
-        app:layout_constraintTop_toBottomOf="@+id/lastNameDoctorReg"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/lastNameDoctorReg" />
+
     <EditText
         android:id="@+id/passwordDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginBottom="14dp"
+        android:autofillHints="password"
         android:ems="10"
         android:hint="@string/passwordHint"
         android:inputType="textPassword"
-        android:autofillHints="password"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/phoneNumberDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/emailAddressDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/emailAddressDoctorReg"
-        app:layout_constraintTop_toBottomOf="@+id/emailAddressDoctorReg"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/emailAddressDoctorReg" />
 
     <EditText
         android:id="@+id/phoneNumberDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:autofillHints="phone"
         android:ems="10"
         android:hint="@string/phoneHint"
         android:inputType="phone"
-        android:autofillHints="phone"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/postalAddressDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/passwordDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/passwordDoctorReg"
-        app:layout_constraintTop_toBottomOf="@+id/passwordDoctorReg"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/passwordDoctorReg" />
 
     <EditText
         android:id="@+id/postalAddressDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:autofillHints="postalAddress"
         android:ems="10"
         android:hint="@string/addressHint"
         android:inputType="textPostalAddress"
-        android:autofillHints="postalAddress"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/employeeNumberDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/phoneNumberDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/phoneNumberDoctorReg"
-        app:layout_constraintTop_toBottomOf="@+id/phoneNumberDoctorReg"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/phoneNumberDoctorReg" />
+
     <EditText
         android:id="@+id/employeeNumberDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:autofillHints=""
         android:ems="10"
         android:hint="@string/employeeNumberHint"
         android:inputType="number"
-        android:autofillHints=""
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/specialtiesSelect"
         app:layout_constraintEnd_toEndOf="@+id/postalAddressDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/postalAddressDoctorReg"
-        app:layout_constraintTop_toBottomOf="@+id/postalAddressDoctorReg"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/postalAddressDoctorReg" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/specialtiesSelect"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="15dp"
+        app:layout_constrainedHeight="false"
+        app:layout_constraintBottom_toTopOf="@+id/signUpButtonDoctorReg"
+        app:layout_constraintEnd_toEndOf="@+id/employeeNumberDoctorReg"
+        app:layout_constraintStart_toStartOf="@+id/employeeNumberDoctorReg"
+        app:layout_constraintTop_toBottomOf="@+id/employeeNumberDoctorReg" />
+
     <Button
         android:id="@+id/signUpButtonDoctorReg"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginTop="15dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
         android:text="@string/singUpBtnText"
-        android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/employeeNumberDoctorReg"
-        app:layout_constraintStart_toStartOf="@+id/employeeNumberDoctorReg"
-        app:layout_constraintTop_toBottomOf="@+id/employeeNumberDoctorReg"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/specialtiesSelect" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
