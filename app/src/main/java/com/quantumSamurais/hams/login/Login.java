@@ -6,6 +6,8 @@ import android.content.Context;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 //App
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.admin.Administrator;
 import com.quantumSamurais.hams.doctor.Doctor;
@@ -43,8 +45,12 @@ public final class Login {
         return  login(email,password,userType,currentContext,User.registeredPatients,User.registeredDoctors);
     };
 
-    private static void getUserData(UserType userType) {
+    private static User getUserData(UserType userType) {
         //db code
+        dbcom L = new dbcom("123@gmail.com",userType);
+        while(!L.isDataReady()) {}
+        return L.getUser();
+
     }
     private static byte[] saltFromDatabase(Map<String, Object> userData) {
         return null;
