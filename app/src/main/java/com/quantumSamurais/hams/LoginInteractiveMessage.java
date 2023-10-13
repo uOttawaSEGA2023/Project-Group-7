@@ -36,6 +36,7 @@ public class LoginInteractiveMessage extends AppCompatActivity {
             public void onClick(View v) {
                 // Call the logoff method from LogoffUtil
                 Logoff.logoff(LoginInteractiveMessage.this);
+                finish();
             }
         });
     }
