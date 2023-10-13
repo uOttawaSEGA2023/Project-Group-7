@@ -33,8 +33,6 @@ public class MainActivity extends AppCompatActivity {
     public void clickedContinueRegistration(View view){
         RadioGroup accountTypeSelection = findViewById(R.id.userTypeSelection);
         if (accountTypeSelection.getCheckedRadioButtonId() == -1){
-            User Admin = new Administrator();
-            Admin.changeView(this);
             Toast.makeText(getApplicationContext(), "Please select an option.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -46,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             Intent doctorRegistrationForm = new Intent(this, DoctorSignUpActivity.class);
             startActivity(doctorRegistrationForm);
         }
-
+        setContentView(R.layout.activity_main);
     }
 
     // Hooks back button event to return to main view if user was in account type selection view
