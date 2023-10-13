@@ -15,9 +15,6 @@ import com.quantumSamurais.hams.MainActivity;
 import com.quantumSamurais.hams.R;
 
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
-
-import com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;
-import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
 public class LoginActivity extends AppCompatActivity {
