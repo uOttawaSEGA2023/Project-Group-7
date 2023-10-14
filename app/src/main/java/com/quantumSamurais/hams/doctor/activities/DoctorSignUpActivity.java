@@ -26,6 +26,7 @@ import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
+import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,18 +88,19 @@ public class DoctorSignUpActivity extends AppCompatActivity {
 
 
         try {
-            int validationResult = emailAddressIsValid(emailAddress);
-            if (validationResult < 0) {
-                if(validationResult == -1) {
-                    shortToast("This email address is not formatted like an email address.");
-                }
-                else if (validationResult == -2) {
-                    shortToast("Please ensure this email address' domain exists");
-                }
-                else {
+            ValidationTaskResult validationResult = emailAddressIsValid(emailAddress, UserType.DOCTOR);
+
+            if(validationResult == ValidationTaskResult.INVALID_FORMAT) {
+                shortToast("This email address is not formatted like an email address.");
+            }
+            else if (validationResult == ValidationTaskResult.INVALID_DOMAIN) {
+                shortToast("Please ensure this email address' domain exists");
+            }
+            else if (validationResult == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS) {
                 shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
-                }
-                return;
+            }
+            else if (validationResult == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED) {
+                shortToast("This email address is already in use. Try to sign in instead.");
             }
         } catch (ExecutionException e) {
            shortToast("Something went wrong during email's domain verification, please check your connection and try again.");
