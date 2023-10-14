@@ -6,6 +6,7 @@ import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.user.UserType;
 
 
 import java.util.ArrayList;
@@ -58,6 +59,7 @@ public class Patient extends User {
     @Override
     public void changeView(Context currentContext) {
         Intent patientView = new Intent(currentContext, LoginInteractiveMessage.class);
+        patientView.putExtra("userType", UserType.PATIENT);
         currentContext.startActivity(patientView);
     }
 
