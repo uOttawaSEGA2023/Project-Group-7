@@ -26,8 +26,6 @@ import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
-import com.quantumSamurais.hams.utils.ValidationTaskResult;
-import com.quantumSamurais.hams.utils.Validator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,10 +63,6 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         adapter = new CheckableItemAdapter<>(this, EnumSet.allOf(Specialties.class));
         specialtiesSelect.setLayoutManager(layoutManager);
         specialtiesSelect.setAdapter(adapter);
-        int items = adapter.getItemCount();
-        Log.d("items", Integer.toString(items));
-
-
     }
 
     private void onSignUpClicked(View view) {
@@ -93,18 +87,18 @@ public class DoctorSignUpActivity extends AppCompatActivity {
 
 
         try {
-            ValidationTaskResult validationResult = emailAddressIsValid(emailAddress, UserType.DOCTOR);
-            if (validationResult == ValidationTaskResult.INVALID_FORMAT) {
+            int validationResult = emailAddressIsValid(emailAddress);
+            if (validationResult < 0) {
+                if(validationResult == -1) {
                     shortToast("This email address is not formatted like an email address.");
                 }
-            else if (validationResult == ValidationTaskResult.INVALID_DOMAIN) {
-                shortToast("Please ensure this email address' domain exists");
-            }
-            else  if (validationResult == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS){
+                else if (validationResult == -2) {
+                    shortToast("Please ensure this email address' domain exists");
+                }
+                else {
                 shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
-            }
-            else if (validationResult == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED){
-                shortToast("This email address already exists, please try signing in instead.");
+                }
+                return;
             }
         } catch (ExecutionException e) {
            shortToast("Something went wrong during email's domain verification, please check your connection and try again.");
@@ -121,13 +115,18 @@ public class DoctorSignUpActivity extends AppCompatActivity {
             shortToast("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
             return;
         }
+        if(specialtiesArrayList.size() < 1) {
+            shortToast("Please select one or more specialties.");
+            return;
+        }
 
-        Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, employeeNumber, specialtiesArrayList);
+        Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
         if(User.registeredDoctors.contains(newUser.getNewUserInformation())) {
             shortToast("Registration successful");
             // Switch to login
             Intent login = new Intent(this, LoginActivity.class);
             startActivity(login);
+            finish();
         } else {
             shortToast("An Error occurred please try again");
         }

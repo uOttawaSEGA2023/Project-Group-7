@@ -37,19 +37,23 @@ public class CheckableItemAdapter<E extends Enum<E>> extends RecyclerView.Adapte
 
     @Override
     public void onBindViewHolder(@NonNull checkBoxViewHolder holder, int position) {
+        choicesIter = choices.iterator();
+        for (int i = 0; i < position; i++) {
             if(choicesIter.hasNext()) {
-                String nexItem = choicesIter.next().toString();
-                StringBuilder text = new StringBuilder();
-                String[] splitString = nexItem.split("_");
-                for (int i = 0; i < splitString.length; i++) {
-                    String s = splitString[i];
-                    text.append(s.substring(0, 1).toUpperCase());
-                    text.append(s.substring(1).toLowerCase());
-                    if(i != splitString.length -1)
-                        text.append(' ');
-                }
-                holder.setData(text.toString(), position);
+                 choicesIter.next();
             }
+        }
+        String nexItem = choicesIter.next().toString();
+        StringBuilder text = new StringBuilder();
+        String[] splitString = nexItem.split("_");
+        for (int i = 0; i < splitString.length; i++) {
+            String s = splitString[i];
+            text.append(s.substring(0, 1).toUpperCase());
+            text.append(s.substring(1).toLowerCase());
+            if(i != splitString.length -1)
+                text.append(' ');
+        }
+        holder.setData(text.toString(), position);
     }
 
     public EnumSet<E> getCheckedOptions(Class<E> enumClass) {

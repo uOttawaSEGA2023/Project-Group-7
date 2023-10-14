@@ -52,13 +52,14 @@ public abstract class User {
      * @param phone The user's phone number
      * @param address The user's address
      */
-    public User(String firstName, String lastName, byte[] hashedPassword, String email, String phone, String address) {
+    public User(String firstName, String lastName, byte[] hashedPassword, byte[] salt, String email, String phone, String address) {
         _firstName = firstName;
         _lastName = lastName;
         _hashedPassword = hashedPassword;
         _email = email;
         _phone = phone;
         _address = address;
+        _salt = salt;
     }
 
     /*

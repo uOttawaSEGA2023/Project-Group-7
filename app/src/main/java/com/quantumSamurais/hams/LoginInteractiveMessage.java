@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import com.quantumSamurais.hams.Logoff;
+import com.quantumSamurais.hams.user.UserType;
 
 
 public class LoginInteractiveMessage extends AppCompatActivity {
@@ -22,10 +23,17 @@ public class LoginInteractiveMessage extends AppCompatActivity {
 
         // Get the user type from the Intent's extra
         Intent intent = getIntent();
-        String userType = intent.getStringExtra("userRole");
+        UserType userType = (UserType) intent.getSerializableExtra("userType");
 
-        // Create the welcome message
-        String welcomeMessage = "Welcome! You are logged in as " + userType;
+        // Check the user type and create the welcome message accordingly
+        String welcomeMessage;
+        if (userType == UserType.DOCTOR) {
+            welcomeMessage = "Welcome! You are logged in as a Doctor.";
+        } else if(userType == UserType.ADMIN) {
+            welcomeMessage = "Welcome! You are logged in as an Admin.";
+        } else {
+            welcomeMessage = "Welcome! You are logged in as a Patient.";
+        }
 
         // Set the welcome message in the TextView
         welcomeMessageTextView.setText(welcomeMessage);
