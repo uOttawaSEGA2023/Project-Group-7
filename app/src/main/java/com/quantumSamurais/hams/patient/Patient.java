@@ -2,6 +2,8 @@ package com.quantumSamurais.hams.patient;
 import android.content.Context;
 import android.content.Intent;
 
+import com.google.firebase.firestore.Blob;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 
@@ -13,13 +15,15 @@ import java.util.Map;
 
 public class Patient extends User {
 
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     private static List<Map<String, Object>> registeredPatients = new ArrayList<Map<String, Object>>();
 
     public HashMap<String, Object> getNewUserInformation() {
         return newUserInformation;
     }
 
-    private HashMap<String, Object> newUserInformation = new HashMap<String, Object>(7);
+    private HashMap<String, Object> newUserInformation = new HashMap<String, Object>(8);
 
     private String _healthCardNumber;
 
@@ -33,10 +37,13 @@ public class Patient extends User {
         newUserInformation.put("firstName", getFirstName());
         newUserInformation.put("lastName", getLastName());
         newUserInformation.put("emailAddress", getEmail());
-        newUserInformation.put("hashedPassword", getPassword());
+        newUserInformation.put("hashedPassword", Blob.fromBytes(getPassword()));
+        newUserInformation.put("salt", Blob.fromBytes(getSalt()));
         newUserInformation.put("phoneNumber",getPhone());
         newUserInformation.put("postalAddress", getAddress());
         newUserInformation.put("healthCardNumber", _healthCardNumber);
+
+        db.collection("users").document("software").collection("patients").add(newUserInformation);
 
         //Uploads the map to Class List
         registeredPatients.add(newUserInformation);

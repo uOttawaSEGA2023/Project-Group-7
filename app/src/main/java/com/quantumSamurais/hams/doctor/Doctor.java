@@ -5,6 +5,8 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.firestore.Blob;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 
@@ -13,6 +15,7 @@ import java.util.HashMap;
 
 public class Doctor extends User {
 
+	FirebaseFirestore db = FirebaseFirestore.getInstance();
 	private String _employeeNumber;
 	private EnumSet<Specialties> _specialties;
 	private final HashMap<String, Object> newUserInformation = new HashMap<>(8);
@@ -26,11 +29,13 @@ public class Doctor extends User {
 		newUserInformation.put("firstName", getFirstName());
 		newUserInformation.put("lastName", getLastName());
 		newUserInformation.put("emailAddress", getEmail());
-		newUserInformation.put("hashedPassword", getPassword());
+		newUserInformation.put("hashedPassword", Blob.fromBytes(getPassword()));
+		newUserInformation.put("salt", Blob.fromBytes(getSalt()));
 		newUserInformation.put("phoneNumber",getPhone());
 		newUserInformation.put("postalAddress", getAddress());
 		newUserInformation.put("employeeNumber", _employeeNumber);
 		newUserInformation.put("specialties", _specialties);
+		db.collection("users").document("software").collection("patients").add(newUserInformation);
 		registeredDoctors.add(newUserInformation);
 	}
 
