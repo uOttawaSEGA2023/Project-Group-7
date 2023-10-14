@@ -21,12 +21,11 @@
         app:layout_constraintVertical_bias="0.126" />
 
     <Button
-        android:id="@+id/buttonSignIn"
+        android:id="@+id/signInBtnMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="88dp"
         android:layout_marginTop="300dp"
-        android:onClick="openSignIn"
         android:text="Sign In"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -35,12 +34,11 @@
 
 
     <Button
-        android:id="@+id/buttonSignUp"
+        android:id="@+id/signUpBtnMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="150dp"
         android:layout_marginTop="300dp"
-        android:onClick="openSignUp"
         android:text="Sign Up"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

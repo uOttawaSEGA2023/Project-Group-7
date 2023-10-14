@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.login;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -38,11 +39,9 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             return;
         }
         char[] parsePass = password.toCharArray();
-
-        UserType[] userArr = {UserType.PATIENT,UserType.ADMIN,UserType.DOCTOR};
-        for (int i = 0; i < userArr.length; i++) {
-            Login.login(email, parsePass, userArr[i], this, this);
-        }
+        Intent intent =getIntent();
+        UserType userType = (UserType) intent.getSerializableExtra("userType");
+        Login.login(email, parsePass, userType, this, this);
     }
 
 
