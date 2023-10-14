@@ -29,6 +29,8 @@ public class LoginInteractiveMessage extends AppCompatActivity {
         String welcomeMessage;
         if (userType == UserType.DOCTOR) {
             welcomeMessage = "Welcome! You are logged in as a Doctor.";
+        } else if(userType == UserType.ADMIN) {
+            welcomeMessage = "Welcome! You are logged in as an Admin.";
         } else {
             welcomeMessage = "Welcome! You are logged in as a Patient.";
         }
