@@ -130,6 +130,7 @@ public class DoctorSignUpActivity extends AppCompatActivity {
             // Switch to login
             Intent login = new Intent(this, LoginActivity.class);
             startActivity(login);
+            finish();
         } else {
             shortToast("An Error occurred please try again");
         }

@@ -109,6 +109,7 @@ public class PatientSignUpActivity extends AppCompatActivity {
                 // Switch to login
                 Intent login = new Intent(this, LoginActivity.class);
                 startActivity(login);
+                finish();
             } else {
                 // Error while saving to the database
                 Toast.makeText(PatientSignUpActivity.this, "Error occurred. Please try again.", Toast.LENGTH_SHORT).show();
