@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.R;
+import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.UserType;
 
@@ -105,10 +106,9 @@ public class PatientSignUpActivity extends AppCompatActivity {
             if (savedUser(newUser)) {
                 // Registration successful
                 Toast.makeText(PatientSignUpActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
-                UserType userType = UserType.PATIENT;
-                Intent patientView = new Intent(PatientSignUpActivity.this, LoginInteractiveMessage.class);
-                patientView.putExtra("userType", userType);
-                startActivity(patientView);
+                // Switch to login
+                Intent login = new Intent(this, LoginActivity.class);
+                startActivity(login);
             } else {
                 // Error while saving to the database
                 Toast.makeText(PatientSignUpActivity.this, "Error occurred. Please try again.", Toast.LENGTH_SHORT).show();
