@@ -1,5 +1,12 @@
 package com.quantumSamurais.hams.utils;
 
+import static com.quantumSamurais.hams.user.UserType.DOCTOR;
+import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_IS_FREE_TO_USE;
+import static com.quantumSamurais.hams.utils.ValidationTaskResult.VALID;
+import static com.quantumSamurais.hams.utils.ValidationType.EMAIL_ADDRESS;
+import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_ID;
+import static com.quantumSamurais.hams.utils.ValidationType.HEALTH_CARD_NUMBER;
 import static java.net.InetAddress.getByName;
 
 
@@ -8,16 +15,22 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.user.UserType;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public final class Validator {
-    //Inner Class
+    private static FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    /**
-     *
-     */
     private static class DomainValidationTask extends AsyncTask<String, Void, Boolean> {
 
         @Override
@@ -37,6 +50,87 @@ public final class Validator {
         }
     }
 
+    private static class IsInDatabaseTask extends AsyncTask<String, Void, ValidationTaskResult> {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        QuerySnapshot snap;
+        String emailAddress;
+        ValidationType validationType;
+        UserType userType;
+
+        IsInDatabaseTask(String emailAddress, ValidationType validationType, UserType userType){
+            this.emailAddress = emailAddress;
+            this.validationType = validationType;
+            this.userType = userType;
+        }
+
+
+        @Override
+        protected ValidationTaskResult doInBackground(String... valuesToCheckInDatabase)    {
+            if (valuesToCheckInDatabase.length == 0) {
+                return ValidationTaskResult.INVALID_FORMAT; //No email
+            }
+            // Verifies which database to check against
+            switch (userType){
+                case PATIENT:
+                    try {
+                        snap = Tasks.await(db.collection("users").document("software").collection("patients").get());
+                    }
+                    catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+
+                case DOCTOR:
+                    try {
+                        snap = Tasks.await(db.collection("users").document("software").collection("doctors").get());
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
+                case ADMIN:
+                    break;
+            }
+            //
+            switch(validationType){
+                case EMAIL_ADDRESS:
+                    for (int i = 0; i < valuesToCheckInDatabase.length; i++) {
+                        for (QueryDocumentSnapshot profile : snap) {
+                            Map<String, Object> userData = profile.getData();
+                            if (Objects.equals(userData.get("emailAddress"), valuesToCheckInDatabase[i])) {
+                                return ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+                            }
+                        }
+                    }
+                    break;
+                case HEALTH_CARD_NUMBER:
+                    for (int i = 0; i < valuesToCheckInDatabase.length; i++) {
+                        for (QueryDocumentSnapshot profile : snap) {
+                            Map<String, Object> userData = profile.getData();
+                            if (Objects.equals(userData.get("healthCardNumber"), valuesToCheckInDatabase[i])) {
+                                return ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+                            }
+                        }
+                    }
+                    break;
+                case EMPLOYEE_ID:
+                    for (int i = 0; i < valuesToCheckInDatabase.length; i++) {
+                        for (QueryDocumentSnapshot profile : snap) {
+                            Map<String, Object> userData = profile.getData();
+                            if (Objects.equals(userData.get("employeeNumber"), valuesToCheckInDatabase[i])) {
+                                return ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+                            }
+                        }
+                    }
+                    break;
+            }
+            return ATTRIBUTE_IS_FREE_TO_USE;
+        }}
+
+
     /**
      * Checks if the string that was passed by user is empty.
      *
@@ -46,9 +140,10 @@ public final class Validator {
     public static boolean textFieldIsEmpty(String stringField) {
         return (stringField == null || stringField.isEmpty());
     }
-    public static boolean textFieldsAreEmpty(String ...fields) {
-        for(String i : fields) {
-            if(i == null || i.isEmpty()) {
+
+    public static boolean textFieldsAreEmpty(String... fields) {
+        for (String i : fields) {
+            if (i == null || i.isEmpty()) {
                 return true;
             }
         }
@@ -60,13 +155,13 @@ public final class Validator {
      * checking if the local part has a suitable format (checked through regex)
      *
      * @param emailAddress: The email address to validate
-     * @return {@code -1} if the email is not formatted as an email, {@code -2} if the domain is invalid, {@code -3} if the localPart is invalid, {@code 1} if everything is fine.
+     * @return {@code INVALID_FORMAT} if the email is not formatted as an email, {@code INVALID_DOMAIN} if the domain is invalid, {@code INVALID_LOCAL_EMAIL_ADDRESS} if the localPart is invalid, {@code VALID} if everything is fine.
      */
 
-    public static int emailAddressIsValid(@NonNull String emailAddress) throws ExecutionException, InterruptedException {
+    public static ValidationTaskResult emailAddressIsValid(String emailAddress, UserType userType) throws ExecutionException, InterruptedException {
         //First check the email has a @
         if (!emailAddress.contains("@")) {
-            return -1;
+            return ValidationTaskResult.INVALID_FORMAT;
         }
         //Split the email address
         String[] splitEmail = emailAddress.split("@");
@@ -85,21 +180,26 @@ public final class Validator {
 
             domainIsValid = validationTask.execute(domainPart).get();
 
-
             if (domainIsValid) {
                 if (!textFieldIsEmpty(localPart) && localPart.matches("^\\S+$")) {
-                    return 1;
+                    ValidationTaskResult emailIsInDatabase = new IsInDatabaseTask(emailAddress, EMAIL_ADDRESS, userType).execute(new String[]{emailAddress}).get();
+                    if (emailIsInDatabase== ATTRIBUTE_IS_FREE_TO_USE){
+                        return VALID;
+                    }
+                    else{return ATTRIBUTE_ALREADY_REGISTERED;}
                 }
-                return -3;
+                return ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS;
             }
-            return -2;
+            return ValidationTaskResult.INVALID_DOMAIN;
 
 
         }
-        return -1;
+        return ValidationTaskResult.INVALID_FORMAT;
     }
 
+    private static void checkIfEmailExists(String emailAddress, UserType userType) {
 
+    }
 
 
     /**
@@ -130,10 +230,7 @@ public final class Validator {
     }
 
 
-
-
-
-    }
+}
 
 
 
