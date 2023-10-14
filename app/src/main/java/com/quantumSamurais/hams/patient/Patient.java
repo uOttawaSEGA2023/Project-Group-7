@@ -4,7 +4,7 @@ import android.content.Intent;
 
 import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.quantumSamurais.hams.LoginInteractiveMessage;
+import com.quantumSamurais.hams.login.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
