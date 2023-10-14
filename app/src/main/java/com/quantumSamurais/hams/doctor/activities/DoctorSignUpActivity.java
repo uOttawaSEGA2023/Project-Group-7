@@ -6,6 +6,7 @@ import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
 import static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;
 import static com.quantumSamurais.hams.utils.Validator.textFieldsAreEmpty;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,12 +18,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
+import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.user.UserType;
+import com.quantumSamurais.hams.utils.ValidationTaskResult;
+import com.quantumSamurais.hams.utils.Validator;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutionException;
 
@@ -72,6 +80,7 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         String postalAddress = trimText(postalAddressET);
         String employeeNumber = trimText(employeeNumberET);
         EnumSet<Specialties> specialties = adapter.getCheckedOptions(Specialties.class);
+        ArrayList<Specialties> specialtiesArrayList = new ArrayList<>(specialties);
 
         if (textFieldsAreEmpty(firstName, lastName, emailAddress, password, phoneNumber, postalAddress, employeeNumber)) {
             shortToast("Please make sure to fill all the fields.");
@@ -84,18 +93,18 @@ public class DoctorSignUpActivity extends AppCompatActivity {
 
 
         try {
-            int validationResult = emailAddressIsValid(emailAddress);
-            if (validationResult < 0) {
-                if(validationResult == -1) {
+            ValidationTaskResult validationResult = emailAddressIsValid(emailAddress, UserType.DOCTOR);
+            if (validationResult == ValidationTaskResult.INVALID_FORMAT) {
                     shortToast("This email address is not formatted like an email address.");
                 }
-                else if (validationResult == -2) {
-                    shortToast("Please ensure this email address' domain exists");
-                }
-                else {
+            else if (validationResult == ValidationTaskResult.INVALID_DOMAIN) {
+                shortToast("Please ensure this email address' domain exists");
+            }
+            else  if (validationResult == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS){
                 shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
-                }
-                return;
+            }
+            else if (validationResult == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED){
+                shortToast("This email address already exists, please try signing in instead.");
             }
         } catch (ExecutionException e) {
            shortToast("Something went wrong during email's domain verification, please check your connection and try again.");
@@ -113,10 +122,12 @@ public class DoctorSignUpActivity extends AppCompatActivity {
             return;
         }
 
-        Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialties);
+        Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, employeeNumber, specialtiesArrayList);
         if(User.registeredDoctors.contains(newUser.getNewUserInformation())) {
             shortToast("Registration successful");
-            newUser.changeView(this);
+            // Switch to login
+            Intent login = new Intent(this, LoginActivity.class);
+            startActivity(login);
         } else {
             shortToast("An Error occurred please try again");
         }

@@ -34,8 +34,7 @@ public class Doctor extends User {
 		registeredDoctors.add(newUserInformation);
 	}
 
-	public Doctor(String firstName, String lastName, byte[] hashedPassword, String email,
-				  String phone, String address, String employeeNumber,EnumSet<Specialties> specialties) {
+	public Doctor(String firstName, String lastName, byte[] hashedPassword, String email, String phone, String address, String employeeNumber,EnumSet<Specialties> specialties) {
 		super(firstName, lastName, hashedPassword, email, phone, address);
 		_employeeNumber = employeeNumber;
 		_specialties = specialties;
