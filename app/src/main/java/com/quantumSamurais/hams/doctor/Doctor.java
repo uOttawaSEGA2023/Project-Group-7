@@ -18,7 +18,7 @@ public class Doctor extends User {
 	FirebaseFirestore db = FirebaseFirestore.getInstance();
 	private String _employeeNumber;
 	private EnumSet<Specialties> _specialties;
-	private final HashMap<String, Object> newUserInformation = new HashMap<>(8);
+	private final HashMap<String, Object> newUserInformation = new HashMap<>(9);
 
 	public Doctor(String firstName, String lastName, char[] hashedPassword, String email,
 			  String phone, String address, String employeeNumber,EnumSet<Specialties> specialties) {
@@ -37,11 +37,12 @@ public class Doctor extends User {
 		newUserInformation.put("specialties", _specialties);
 		db.collection("users").document("software").collection("patients").add(newUserInformation);
 		registeredDoctors.add(newUserInformation);
+
 	}
 
-	public Doctor(String firstName, String lastName, byte[] hashedPassword, String email,
+	public Doctor(String firstName, String lastName, byte[] hashedPassword, byte[] salt, String email,
 				  String phone, String address, String employeeNumber,EnumSet<Specialties> specialties) {
-		super(firstName, lastName, hashedPassword, email, phone, address);
+		super(firstName, lastName, hashedPassword, salt, email, phone, address);
 		_employeeNumber = employeeNumber;
 		_specialties = specialties;
 	}
