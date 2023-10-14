@@ -1,7 +1,5 @@
 package com.quantumSamurais.hams.login;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,14 +8,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 
-import com.quantumSamurais.hams.LoginInteractiveMessage;
-import com.quantumSamurais.hams.MainActivity;
 import com.quantumSamurais.hams.R;
 
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 import com.quantumSamurais.hams.user.UserType;
 
-public class LoginActivity extends AppCompatActivity implements Login.LoginEventListener {
+public class LoginActivity extends AppCompatActivity implements LoginEventListener {
     private EditText emailEditText, passwordEditText;
     private Button signInButton;
 
@@ -53,11 +49,11 @@ public class LoginActivity extends AppCompatActivity implements Login.LoginEvent
     @Override
     public void loginResponse(LoginReturnCodes tryLogin) {
         boolean loggedIn = false; // kept as false for now; will find a boolean statement later.
-        if (tryLogin == (LoginReturnCodes.IncorrectPassword)) {
+        if (tryLogin == (LoginReturnCodes.INCORRECT_PASSWORD)) {
             runOnUiThread(() -> {
                 Toast.makeText(LoginActivity.this, "Either the email or password fields is incorrect. Please try again.", Toast.LENGTH_LONG).show();
             });
-        } else if (tryLogin == (LoginReturnCodes.Success)) {
+        } else if (tryLogin == (LoginReturnCodes.SUCCESS)) {
             loggedIn = true;
         }
         if (loggedIn) {
