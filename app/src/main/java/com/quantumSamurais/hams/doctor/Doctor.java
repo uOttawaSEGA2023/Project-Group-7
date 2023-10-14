@@ -9,7 +9,9 @@ import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.user.UserType;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 
@@ -17,11 +19,11 @@ public class Doctor extends User {
 
 	FirebaseFirestore db = FirebaseFirestore.getInstance();
 	private String _employeeNumber;
-	private EnumSet<Specialties> _specialties;
+	private ArrayList<Specialties> _specialties;
 	private final HashMap<String, Object> newUserInformation = new HashMap<>(9);
 
 	public Doctor(String firstName, String lastName, char[] hashedPassword, String email,
-			  String phone, String address, String employeeNumber,EnumSet<Specialties> specialties) {
+				  String phone, String address, String employeeNumber, ArrayList<Specialties> specialties) {
 		super(firstName, lastName, hashedPassword, email, phone, address);
 
 		_employeeNumber = employeeNumber;
@@ -35,13 +37,13 @@ public class Doctor extends User {
 		newUserInformation.put("postalAddress", getAddress());
 		newUserInformation.put("employeeNumber", _employeeNumber);
 		newUserInformation.put("specialties", _specialties);
-		db.collection("users").document("software").collection("patients").add(newUserInformation);
+		db.collection("users").document("software").collection("doctors").add(newUserInformation);
 		registeredDoctors.add(newUserInformation);
 
 	}
 
 	public Doctor(String firstName, String lastName, byte[] hashedPassword, byte[] salt, String email,
-				  String phone, String address, String employeeNumber,EnumSet<Specialties> specialties) {
+				  String phone, String address, String employeeNumber,ArrayList<Specialties> specialties) {
 		super(firstName, lastName, hashedPassword, salt, email, phone, address);
 		_employeeNumber = employeeNumber;
 		_specialties = specialties;
@@ -49,6 +51,7 @@ public class Doctor extends User {
 	@Override
 	public void changeView(Context currentContext) {
 		Intent doctorView = new Intent(currentContext, LoginInteractiveMessage.class);
+		doctorView.putExtra("userType", UserType.DOCTOR);
 		currentContext.startActivity(doctorView);
 	}
 
@@ -66,7 +69,7 @@ public class Doctor extends User {
 	public String getEmployeeNumber() {
 		return _employeeNumber;
 	}
-	public EnumSet<Specialties> getSpecialties(){
+	public ArrayList<Specialties> getSpecialties(){
 		return _specialties;
 	}
 	public HashMap<String, Object> getNewUserInformation() {
@@ -76,7 +79,7 @@ public class Doctor extends User {
 		this._employeeNumber = _employeeNumber;
 		return this;
 	}
-	public Doctor setSpecialties(EnumSet<Specialties> _specialties) {
+	public Doctor setSpecialties(ArrayList<Specialties> _specialties) {
 		this._specialties = _specialties;
 		return this;
 	}
