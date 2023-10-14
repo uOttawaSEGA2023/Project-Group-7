@@ -15,11 +15,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.patient.Patient;
-import com.quantumSamurais.hams.user.UserType;
 
 
 import java.util.List;

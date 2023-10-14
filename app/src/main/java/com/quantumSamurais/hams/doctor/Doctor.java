@@ -12,7 +12,6 @@ import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 
 public class Doctor extends User {
