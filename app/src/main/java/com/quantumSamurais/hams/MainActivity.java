@@ -46,11 +46,5 @@ public class MainActivity extends AppCompatActivity {
         startActivity(accountTypeSelect);
     }
 
-    // Hooks back button event to return to main view if user was in account type selection view
-    public void onBackPressed() {
-        setContentView(R.layout.activity_main);
-    }
-
-
 
 }
