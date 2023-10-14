@@ -53,12 +53,12 @@ public final class Validator {
     private static class IsInDatabaseTask extends AsyncTask<String, Void, ValidationTaskResult> {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         QuerySnapshot snap;
-        String emailAddress;
+        String valueToCheck;
+
         ValidationType validationType;
         UserType userType;
 
-        IsInDatabaseTask(String emailAddress, ValidationType validationType, UserType userType){
-            this.emailAddress = emailAddress;
+        IsInDatabaseTask(ValidationType validationType, UserType userType){
             this.validationType = validationType;
             this.userType = userType;
         }
@@ -182,7 +182,7 @@ public final class Validator {
 
             if (domainIsValid) {
                 if (!textFieldIsEmpty(localPart) && localPart.matches("^\\S+$")) {
-                    ValidationTaskResult emailIsInDatabase = new IsInDatabaseTask(emailAddress, EMAIL_ADDRESS, userType).execute(new String[]{emailAddress}).get();
+                    ValidationTaskResult emailIsInDatabase = new IsInDatabaseTask(EMAIL_ADDRESS, userType).execute(new String[]{emailAddress}).get();
                     if (emailIsInDatabase== ATTRIBUTE_IS_FREE_TO_USE){
                         return VALID;
                     }

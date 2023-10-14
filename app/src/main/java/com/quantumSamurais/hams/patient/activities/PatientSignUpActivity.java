@@ -17,9 +17,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.R;
+import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.UserType;
+import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
 
 import java.util.List;
@@ -67,17 +69,22 @@ public class PatientSignUpActivity extends AppCompatActivity {
             }
             //emailAddressIsValid throws errors due to be a wifi/threaded method, so we require a try/catch
             try {
-                if (emailAddressIsValid(emailAddress) < 0) {
-                    if (emailAddressIsValid(emailAddress) == -1) {
-                        Toast.makeText(PatientSignUpActivity.this, "This email address is not formatted like an email address.", Toast.LENGTH_SHORT).show();
-                        return;
+                ValidationTaskResult validationResult = emailAddressIsValid(emailAddress, UserType.PATIENT);
 
-                    } else if (emailAddressIsValid(emailAddress) == -2) {
-                        Toast.makeText(PatientSignUpActivity.this, "Please ensure this email address' domain exists", Toast.LENGTH_SHORT).show();
-                        return;
-
-                    }
-                    Toast.makeText(PatientSignUpActivity.this, "Please ensure the localPart of your email address is correct, ensure there are no spaces.", Toast.LENGTH_SHORT).show();
+                if(validationResult == ValidationTaskResult.INVALID_FORMAT) {
+                    shortToast("This email address is not formatted like an email address.");
+                    return;
+                }
+                else if (validationResult == ValidationTaskResult.INVALID_DOMAIN) {
+                    shortToast("Please ensure this email address' domain exists");
+                    return;
+                }
+                else if (validationResult == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS) {
+                    shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
+                    return;
+                }
+                else if (validationResult == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED) {
+                    shortToast("This email address is already in use. Try to sign in instead.");
                     return;
                 }
             }
@@ -86,16 +93,16 @@ public class PatientSignUpActivity extends AppCompatActivity {
                 return;
             }
             catch(InterruptedException e){
-                Toast.makeText(PatientSignUpActivity.this, "Something went wrong with the email address' verification thread, please wait a bit and try again.", Toast.LENGTH_SHORT).show();
+                shortToast("Something went wrong with the email address' verification thread, please wait a bit and try again.");
                 return;
 
             }
             if (!passwordIsValid(password)){
-                Toast.makeText(PatientSignUpActivity.this, "Password must contain at least 8 chars, one capital letter and one small letter, one number, and one special character.", Toast.LENGTH_LONG).show();
+                shortToast("Password must contain at least 8 chars, one capital letter and one small letter, one number, and one special character.");
                 return;
             }
             if (!phoneNumberIsValid(phoneNumber)){
-                Toast.makeText(PatientSignUpActivity.this, "Please make sure your phone number contains exactly 10 numbers, and only numbers.", Toast.LENGTH_SHORT).show();
+                shortToast("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
                 return;
             }
 
@@ -118,6 +125,9 @@ public class PatientSignUpActivity extends AppCompatActivity {
         );
     }
 
+    private void shortToast(String text) {
+        Toast.makeText(PatientSignUpActivity.this, text, Toast.LENGTH_SHORT).show();
+    }
 
     private boolean savedUser(Patient newUser) {
         List<Map<String, Object>> registeredUsers = Patient.getRegisteredPatients();
