@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Health Management System</string>
+    <string name="selectTypeSignUp">Are you registering as ....</string>
+    <string name="selectTypeSignIn">Are you signing in as ....</string>
 </resources>
