@@ -17,14 +17,7 @@ import java.util.Map;
 public class Patient extends User {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    private static List<Map<String, Object>> registeredPatients = new ArrayList<Map<String, Object>>();
-
-    public HashMap<String, Object> getNewUserInformation() {
-        return newUserInformation;
-    }
-
-    private HashMap<String, Object> newUserInformation = new HashMap<String, Object>(8);
+    private final HashMap<String, Object> newUserInformation = new HashMap<>(8);
 
     private String _healthCardNumber;
 
@@ -56,6 +49,9 @@ public class Patient extends User {
         _healthCardNumber = healthCardNumber;
     }
 
+    public HashMap<String, Object> getNewUserInformation() {
+        return newUserInformation;
+    }
     @Override
     public void changeView(Context currentContext) {
         Intent patientView = new Intent(currentContext, LoginInteractiveMessage.class);
@@ -64,15 +60,16 @@ public class Patient extends User {
     }
 
     public static List<Map<String, Object>> getRegisteredPatients(){
-        return registeredPatients;
+        return User.registeredPatients;
     }
 
     public String getHealthCardNumber() {
         return _healthCardNumber;
     }
 
-    public void setHealthCardNumber(String _healthCardNumber) {
-        this._healthCardNumber = _healthCardNumber;
+    public Patient setHealthCardNumber(String healthCardNumber) {
+        this._healthCardNumber = healthCardNumber;
+        return this;
     }
 
 
