@@ -20,15 +20,16 @@ public class Administrator extends User {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    private static final byte[] password = new byte[]{24, 119, 82, 18, 72, 61, -68, -20, 6, 24, -96, -33, 41, 103, -43, -84};
-    private static final byte[] salt = new byte[]{-21, -20, 33, 117, 26, -112, -119, 124, -47, -58, 73, -106, 10, -5, -82, 18};
+
+    private static final byte[] PASSWORD = new byte[]{24, 119, 82, 18, 72, 61, -68, -20, 6, 24, -96, -33, 41, 103, -43, -84};
+    private static final byte[] SALT = new byte[]{-21, -20, 33, 117, 26, -112, -119, 124, -47, -58, 73, -106, 10, -5, -82, 18};
 
     public Administrator() {
         super(
                 "Admin",
                 "",
-                password,
-                salt,
+                PASSWORD,
+                SALT,
                 "Administrator",
                 "000-000-000",
                 ""
