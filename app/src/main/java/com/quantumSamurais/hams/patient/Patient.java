@@ -50,8 +50,8 @@ public class Patient extends User {
     }
 
     //Used for logins
-    public Patient(String firstName, String lastName, byte[] hashedPassword, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
-        super(firstName, lastName, hashedPassword, emailAddress, phoneNumber, postalAddress);
+    public Patient(String firstName, String lastName, byte[] hashedPassword, byte[] salt, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
+        super(firstName, lastName, hashedPassword, salt, emailAddress, phoneNumber, postalAddress);
         _healthCardNumber = healthCardNumber;
     }
 
