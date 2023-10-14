@@ -119,6 +119,10 @@ public class DoctorSignUpActivity extends AppCompatActivity {
             shortToast("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
             return;
         }
+        if(specialtiesArrayList.size() < 1) {
+            shortToast("Please select one or more specialties.");
+            return;
+        }
 
         Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
         if(User.registeredDoctors.contains(newUser.getNewUserInformation())) {
