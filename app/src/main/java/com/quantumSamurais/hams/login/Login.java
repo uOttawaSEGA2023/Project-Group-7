@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -124,7 +125,7 @@ public final class Login {
                         (String)userData.get("email"),
                         (String)userData.get("phone"),
                         (String)userData.get("address"),
-                        (String)userData.get("employeeNumber"),(EnumSet<Specialties>) userData.get("specialites")
+                        (String)userData.get("employeeNumber"),(ArrayList<Specialties>) userData.get("specialites")
                 );
                 break;
             case PATIENT:
