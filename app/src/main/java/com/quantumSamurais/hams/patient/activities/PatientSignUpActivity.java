@@ -6,6 +6,7 @@ import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
 import static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,8 +15,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.patient.Patient;
+import com.quantumSamurais.hams.user.UserType;
 
 
 import java.util.List;
@@ -94,6 +97,7 @@ public class PatientSignUpActivity extends AppCompatActivity {
                 Toast.makeText(PatientSignUpActivity.this, "Please make sure your phone number contains exactly 10 numbers, and only numbers.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.
             Patient newUser = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
 
@@ -101,8 +105,10 @@ public class PatientSignUpActivity extends AppCompatActivity {
             if (savedUser(newUser)) {
                 // Registration successful
                 Toast.makeText(PatientSignUpActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
-                // Redirect to the login screen or do something else
-                newUser.changeView(this);
+                UserType userType = UserType.PATIENT;
+                Intent patientView = new Intent(PatientSignUpActivity.this, LoginInteractiveMessage.class);
+                patientView.putExtra("userType", userType);
+                startActivity(patientView);
             } else {
                 // Error while saving to the database
                 Toast.makeText(PatientSignUpActivity.this, "Error occurred. Please try again.", Toast.LENGTH_SHORT).show();

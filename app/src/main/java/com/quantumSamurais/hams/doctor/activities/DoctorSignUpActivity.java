@@ -6,6 +6,7 @@ import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
 import static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;
 import static com.quantumSamurais.hams.utils.Validator.textFieldsAreEmpty;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,11 +18,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
 import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.user.UserType;
 
 import java.util.EnumSet;
 import java.util.concurrent.ExecutionException;
@@ -116,7 +119,13 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialties);
         if(User.registeredDoctors.contains(newUser.getNewUserInformation())) {
             shortToast("Registration successful");
-            newUser.changeView(this);
+            // Get the user type for Doctor
+            UserType userType = UserType.DOCTOR;
+
+            // Pass the user type to the next activity
+            Intent doctorView = new Intent(DoctorSignUpActivity.this, LoginInteractiveMessage.class);
+            doctorView.putExtra("userType", userType);
+            startActivity(doctorView);
         } else {
             shortToast("An Error occurred please try again");
         }
