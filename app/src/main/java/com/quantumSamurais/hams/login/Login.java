@@ -76,11 +76,7 @@ public final class Login {
             case DOCTOR:
                 userData = searchLoop(doctorList,email);
                 salt = saltFromDatabase(userData);
-                if(userData == null) {
-                    return LoginReturnCodes.UserDoesNotExist;
-                }
-
-                if(hashPassword(password,salt) != userData.get("password"))
+                if(!Arrays.equals(hashPassword(password,salt), passwordFromDatabase(userData)))
                     return LoginReturnCodes.IncorrectPassword;
 
                 loggedInUser = new Doctor(
@@ -99,7 +95,7 @@ public final class Login {
                     return LoginReturnCodes.UserDoesNotExist;
 
                 salt = saltFromDatabase(userData);
-                if(hashPassword(password,salt) != userData.get("password"))
+                if(!Arrays.equals(hashPassword(password,salt), passwordFromDatabase(userData)))
                     return LoginReturnCodes.IncorrectPassword;
 
                 loggedInUser = new Patient(
@@ -117,7 +113,7 @@ public final class Login {
                 salt=admin.getSalt();
                 if(!admin.getEmail().equals(email))
                     return LoginReturnCodes.UserDoesNotExist;
-                if(hashPassword(password,salt) != admin.getPassword())
+                if(!Arrays.equals(hashPassword(password,salt), admin.getPassword()))
                     return LoginReturnCodes.IncorrectPassword;
 
                 loggedInUser = admin;
