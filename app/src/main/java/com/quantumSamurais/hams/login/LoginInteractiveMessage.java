@@ -1,4 +1,4 @@
-package com.quantumSamurais.hams;
+package com.quantumSamurais.hams.login;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -7,26 +7,31 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import com.quantumSamurais.hams.Logoff;
+
+import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.user.UserType;
 
 
 public class LoginInteractiveMessage extends AppCompatActivity {
 
+    TextView welcomeMessageTextView;
+    Button logoffButton;
+    String welcomeMessage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_interactive_message);
-
+        setup(getIntent());
+        addListeners();
+    }
+    public void setup(Intent intent) {
         // Find the TextView in the layout
-        TextView welcomeMessageTextView = findViewById(R.id.welcomeMessageTextView);
-
+        welcomeMessageTextView = findViewById(R.id.welcomeMessageTextView);
+        logoffButton = findViewById(R.id.logoffButton);
         // Get the user type from the Intent's extra
-        Intent intent = getIntent();
         UserType userType = (UserType) intent.getSerializableExtra("userType");
-
         // Check the user type and create the welcome message accordingly
-        String welcomeMessage;
         if (userType == UserType.DOCTOR) {
             welcomeMessage = "Welcome! You are logged in as a Doctor.";
         } else if(userType == UserType.ADMIN) {
@@ -34,18 +39,17 @@ public class LoginInteractiveMessage extends AppCompatActivity {
         } else {
             welcomeMessage = "Welcome! You are logged in as a Patient.";
         }
-
         // Set the welcome message in the TextView
         welcomeMessageTextView.setText(welcomeMessage);
-        Button logoffButton = findViewById(R.id.logoffButton);
+    }
+    public void addListeners() {
+        logoffButton.setOnClickListener(this::LogoffClicked);
+    }
 
-        logoffButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Call the logoff method from LogoffUtil
-                Logoff.logoff(LoginInteractiveMessage.this);
-                finish();
-            }
-        });
+    public void LogoffClicked(View view) {
+        // Create an Intent to navigate to the login page
+        Intent intent = new Intent(this, LoginActivity.class);
+        // Start the login activity
+        startActivity(intent);
     }
 }
