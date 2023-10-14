@@ -1,8 +1,5 @@
 package com.quantumSamurais.hams.doctor.activities;
 
-import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
-import static com.quantumSamurais.hams.utils.Validator.checkIfEmployeeNumberExists;
-import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
 import static com.quantumSamurais.hams.utils.Validator.nameIsValid;
 import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
@@ -11,7 +8,6 @@ import static com.quantumSamurais.hams.utils.Validator.textFieldsAreEmpty;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,18 +17,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.user.User;
-import com.quantumSamurais.hams.user.UserType;
-import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutionException;
 
@@ -91,19 +83,18 @@ public class DoctorSignUpActivity extends AppCompatActivity {
 
 
         try {
-            ValidationTaskResult emailAddressCheckResult = emailAddressIsValid(emailAddress, UserType.DOCTOR);
-
-            if(emailAddressCheckResult == ValidationTaskResult.INVALID_FORMAT) {
-                shortToast("This email address is not formatted like an email address.");
-            }
-            else if (emailAddressCheckResult == ValidationTaskResult.INVALID_DOMAIN) {
-                shortToast("Please ensure this email address' domain exists");
-            }
-            else if (emailAddressCheckResult == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS) {
+            int validationResult = emailAddressIsValid(emailAddress);
+            if (validationResult < 0) {
+                if(validationResult == -1) {
+                    shortToast("This email address is not formatted like an email address.");
+                }
+                else if (validationResult == -2) {
+                    shortToast("Please ensure this email address' domain exists");
+                }
+                else {
                 shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
-            }
-            else if (emailAddressCheckResult == ATTRIBUTE_ALREADY_REGISTERED) {
-                shortToast("This email address is already in use. Try to sign in instead.");
+                }
+                return;
             }
         } catch (ExecutionException e) {
            shortToast("Something went wrong during email's domain verification, please check your connection and try again.");
@@ -118,38 +109,6 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         }
         if(!phoneNumberIsValid(phoneNumber)) {
             shortToast("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
-            return;
-        }
-        boolean phoneNumberIsInDatabase = true;//We assume it's in, to block registration if it can't be verified
-        try {
-            phoneNumberIsInDatabase = checkIfPhoneNumberExists(phoneNumber, UserType.DOCTOR) == ATTRIBUTE_ALREADY_REGISTERED;
-        } catch (ExecutionException e) {
-            Log.d("phoneNumberValidation", "ExecutionException occurred: " + e.getCause());
-            shortToast("Something seems to have went wrong during phone number validation, please try again.");
-            return;
-        } catch (InterruptedException e) {
-            Log.d("phoneNumberValidation", "InterruptedException occurred: " + e.getCause());
-            shortToast("Something seems to have went wrong during phone number validation, please try again.");
-            return;
-        }
-        if (phoneNumberIsInDatabase){
-            shortToast("This phone number appears to already be in the database.");
-            return;
-        }
-        boolean employeeNumberIsInDatabase = true;//We assume it's in, to block registration if it can't be verified
-        try {
-            employeeNumberIsInDatabase = checkIfEmployeeNumberExists(employeeNumber) == ATTRIBUTE_ALREADY_REGISTERED;
-        } catch (ExecutionException e) {
-            Log.d("employeeNumberValidation", "ExecutionException occurred: " + e.getCause());
-            shortToast("Something seems to have went wrong during employee number validation, please try again.");
-            return;
-        } catch (InterruptedException e) {
-            Log.d("employeeNumberValidation", "InterruptedException occurred: " + e.getCause());
-            shortToast("Something seems to have went wrong during employee number validation, please try again.");
-            return;
-        }
-        if (employeeNumberIsInDatabase){
-            shortToast("This employee number appears to already be registered. Please try signing in instead.");
             return;
         }
         if(specialtiesArrayList.size() < 1) {

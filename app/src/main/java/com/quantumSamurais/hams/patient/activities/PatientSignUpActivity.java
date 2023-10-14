@@ -1,9 +1,5 @@
 package com.quantumSamurais.hams.patient.activities;
 
-import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
-import static com.quantumSamurais.hams.utils.Validator.checkIfEmployeeNumberExists;
-import static com.quantumSamurais.hams.utils.Validator.checkIfHealthCardNumberExists;
-import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
 import static com.quantumSamurais.hams.utils.Validator.nameIsValid;
 import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
@@ -12,7 +8,6 @@ import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -20,13 +15,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.quantumSamurais.hams.LoginInteractiveMessage;
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.patient.Patient;
-import com.quantumSamurais.hams.user.UserType;
-import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
 
 import java.util.List;
@@ -74,22 +65,17 @@ public class PatientSignUpActivity extends AppCompatActivity {
             }
             //emailAddressIsValid throws errors due to be a wifi/threaded method, so we require a try/catch
             try {
-                ValidationTaskResult validationResult = emailAddressIsValid(emailAddress, UserType.PATIENT);
+                if (emailAddressIsValid(emailAddress) < 0) {
+                    if (emailAddressIsValid(emailAddress) == -1) {
+                        Toast.makeText(PatientSignUpActivity.this, "This email address is not formatted like an email address.", Toast.LENGTH_SHORT).show();
+                        return;
 
-                if(validationResult == ValidationTaskResult.INVALID_FORMAT) {
-                    shortToast("This email address is not formatted like an email address.");
-                    return;
-                }
-                else if (validationResult == ValidationTaskResult.INVALID_DOMAIN) {
-                    shortToast("Please ensure this email address' domain exists");
-                    return;
-                }
-                else if (validationResult == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS) {
-                    shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
-                    return;
-                }
-                else if (validationResult == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED) {
-                    shortToast("This email address is already in use. Try to sign in instead.");
+                    } else if (emailAddressIsValid(emailAddress) == -2) {
+                        Toast.makeText(PatientSignUpActivity.this, "Please ensure this email address' domain exists", Toast.LENGTH_SHORT).show();
+                        return;
+
+                    }
+                    Toast.makeText(PatientSignUpActivity.this, "Please ensure the localPart of your email address is correct, ensure there are no spaces.", Toast.LENGTH_SHORT).show();
                     return;
                 }
             }
@@ -98,50 +84,18 @@ public class PatientSignUpActivity extends AppCompatActivity {
                 return;
             }
             catch(InterruptedException e){
-                shortToast("Something went wrong with the email address' verification thread, please wait a bit and try again.");
+                Toast.makeText(PatientSignUpActivity.this, "Something went wrong with the email address' verification thread, please wait a bit and try again.", Toast.LENGTH_SHORT).show();
                 return;
 
             }
             if (!passwordIsValid(password)){
-                shortToast("Password must contain at least 8 chars, one capital letter and one small letter, one number, and one special character.");
+                Toast.makeText(PatientSignUpActivity.this, "Password must contain at least 8 chars, one capital letter and one small letter, one number, and one special character.", Toast.LENGTH_LONG).show();
                 return;
             }
             if (!phoneNumberIsValid(phoneNumber)){
-                shortToast("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
+                Toast.makeText(PatientSignUpActivity.this, "Please make sure your phone number contains exactly 10 numbers, and only numbers.", Toast.LENGTH_SHORT).show();
                 return;
             }
-                    boolean phoneNumberIsInDatabase = true;//We assume it's in, to block registration if it can't be verified
-                    try {
-                        phoneNumberIsInDatabase = checkIfPhoneNumberExists(phoneNumber, UserType.PATIENT) == ATTRIBUTE_ALREADY_REGISTERED;
-                    } catch (ExecutionException e) {
-                        Log.d("phoneNumberValidation", "ExecutionException occurred: " + e.getCause());
-                        shortToast("Something seems to have went wrong during phone number validation, please try again.");
-                        return;
-                    } catch (InterruptedException e) {
-                        Log.d("phoneNumberValidation", "InterruptedException occurred: " + e.getCause());
-                        shortToast("Something seems to have went wrong during phone number validation, please try again.");
-                        return;
-                    }
-                    if (phoneNumberIsInDatabase){
-                        shortToast("This phone number appears to already be in the database.");
-                        return;
-                    }
-                    boolean healthCardNumberIsInDatabase = true;//We assume it's in, to block registration if it can't be verified
-                    try {
-                        healthCardNumberIsInDatabase = checkIfHealthCardNumberExists(healthCardNumber) == ATTRIBUTE_ALREADY_REGISTERED;
-                    } catch (ExecutionException e) {
-                        Log.d("healthCardNumberValidation", "ExecutionException occurred: " + e.getCause());
-                        shortToast("Something seems to have went wrong during employee number validation, please try again.");
-                        return;
-                    } catch (InterruptedException e) {
-                        Log.d("healthCardNumberValidation", "InterruptedException occurred: " + e.getCause());
-                        shortToast("Something seems to have went wrong during employee number validation, please try again.");
-                        return;
-                    }
-                    if (healthCardNumberIsInDatabase){
-                        shortToast("This health card number appears to already be registered. Please try signing in instead.");
-                        return;
-                    }
 
             //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.
             Patient newUser = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
@@ -162,9 +116,6 @@ public class PatientSignUpActivity extends AppCompatActivity {
         );
     }
 
-    private void shortToast(String text) {
-        Toast.makeText(PatientSignUpActivity.this, text, Toast.LENGTH_SHORT).show();
-    }
 
     private boolean savedUser(Patient newUser) {
         List<Map<String, Object>> registeredUsers = Patient.getRegisteredPatients();
