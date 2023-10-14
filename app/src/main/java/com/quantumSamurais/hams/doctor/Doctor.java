@@ -75,12 +75,12 @@ public class Doctor extends User {
 	public HashMap<String, Object> getNewUserInformation() {
 		return newUserInformation;
 	}
-	public Doctor setEmployeeNumber(String _employeeNumber) {
-		this._employeeNumber = _employeeNumber;
+	public Doctor setEmployeeNumber(String employeeNumber) {
+		this._employeeNumber = employeeNumber;
 		return this;
 	}
-	public Doctor setSpecialties(ArrayList<Specialties> _specialties) {
-		this._specialties = _specialties;
+	public Doctor setSpecialties(ArrayList<Specialties> specialties) {
+		this._specialties = specialties;
 		return this;
 	}
 //</editor-fold>
