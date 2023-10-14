@@ -63,10 +63,6 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         adapter = new CheckableItemAdapter<>(this, EnumSet.allOf(Specialties.class));
         specialtiesSelect.setLayoutManager(layoutManager);
         specialtiesSelect.setAdapter(adapter);
-        int items = adapter.getItemCount();
-        Log.d("items", Integer.toString(items));
-
-
     }
 
     private void onSignUpClicked(View view) {
