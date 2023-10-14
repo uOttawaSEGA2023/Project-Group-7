@@ -123,13 +123,9 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
         if(User.registeredDoctors.contains(newUser.getNewUserInformation())) {
             shortToast("Registration successful");
-            // Get the user type for Doctor
-            UserType userType = UserType.DOCTOR;
-
-            // Pass the user type to the next activity
-            Intent doctorView = new Intent(DoctorSignUpActivity.this, LoginInteractiveMessage.class);
-            doctorView.putExtra("userType", userType);
-            startActivity(doctorView);
+            // Switch to login
+            Intent login = new Intent(this, LoginActivity.class);
+            startActivity(login);
         } else {
             shortToast("An Error occurred please try again");
         }
