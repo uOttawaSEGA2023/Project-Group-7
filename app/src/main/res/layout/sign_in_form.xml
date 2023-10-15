@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <EditText
+        android:id="@+id/PasswordSlot"
+        android:layout_width="219dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
+        android:height="48dp"
+        android:ems="10"
+        android:hint="@string/passwordHint"
+        android:inputType="textPassword"
+        app:layout_constraintEnd_toEndOf="@+id/EmailAddressSlot"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/EmailAddressSlot"
+        app:layout_constraintTop_toBottomOf="@+id/EmailAddressSlot" />
+
+    <EditText
+        android:id="@+id/EmailAddressSlot"
+        android:layout_width="218dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="32dp"
+        android:ems="10"
+        android:hint="@string/emailHint"
+        android:inputType="textEmailAddress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/MessageUnderSignIn" />
+
+    <TextView
+        android:id="@+id/LogInHeading"
+        android:layout_width="218dp"
+        android:layout_height="61dp"
+        android:text="Sign in Form"
+        android:textAlignment="center"
+        android:textSize="25sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline"
+        tools:ignore="MissingConstraints" />
+    <!-- remove tools:ignore ="MissingConstraints" later on. -->
+
+
+    <TextView
+        android:id="@+id/MessageUnderSignIn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:text="Please sign in with your email and password"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="@+id/LogInHeading"
+        app:layout_constraintStart_toStartOf="@+id/LogInHeading"
+        app:layout_constraintTop_toBottomOf="@+id/LogInHeading"
+        tools:ignore="MissingConstraints" />
+    <!-- remove tools:ignore ="MissingConstraints" later on. -->
+
+    <Button
+        android:id="@+id/signInButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="Sign In!"
+        android:onClick="onClick"
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintEnd_toEndOf="@+id/PasswordSlot"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="@+id/PasswordSlot"
+        app:layout_constraintTop_toBottomOf="@+id/PasswordSlot"
+        app:layout_constraintVertical_bias="0.0" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="109dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="611dp" />
+    <!-- remove tools:ignore ="MissingConstraints" later on. -->
+</androidx.constraintlayout.widget.ConstraintLayout>

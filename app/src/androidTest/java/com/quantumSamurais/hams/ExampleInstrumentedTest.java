@@ -1,4 +1,4 @@
-package com.seg2105a.projectgroup7.hams;
+package com.quantumSamurais.hams;
 
 import android.content.Context;
 
