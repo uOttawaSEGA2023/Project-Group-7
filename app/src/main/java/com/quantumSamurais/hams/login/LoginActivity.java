@@ -39,7 +39,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             return;
         }
         char[] parsePass = password.toCharArray();
-        Intent intent =getIntent();
+        Intent intent = getIntent();
         UserType userType = (UserType) intent.getSerializableExtra("userType");
         Login.login(email, parsePass, userType, this, this);
     }
@@ -65,7 +65,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         }
     }
 }
-    //Original method that was implemented. Will need to go back to this if necessary.
+//Original method that was implemented. Will need to go back to this if necessary.
     /* public void onSignIn(View view) {
         //getting user input from
         signInButton.setOnClickListener(v-> {
