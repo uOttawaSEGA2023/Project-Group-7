@@ -5,12 +5,15 @@ import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALRE
 import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_IS_FREE_TO_USE;
 import static com.quantumSamurais.hams.utils.ValidationTaskResult.VALID;
 import static com.quantumSamurais.hams.utils.ValidationType.EMAIL_ADDRESS;
-import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_ID;
+import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_NUMBER;
 import static com.quantumSamurais.hams.utils.ValidationType.HEALTH_CARD_NUMBER;
+import static com.quantumSamurais.hams.utils.ValidationType.PHONE_NUMBER;
 import static java.net.InetAddress.getByName;
 
 
+import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +30,7 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 public final class Validator {
     private static FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -116,11 +120,21 @@ public final class Validator {
                         }
                     }
                     break;
-                case EMPLOYEE_ID:
+                case EMPLOYEE_NUMBER:
                     for (int i = 0; i < valuesToCheckInDatabase.length; i++) {
                         for (QueryDocumentSnapshot profile : snap) {
                             Map<String, Object> userData = profile.getData();
                             if (Objects.equals(userData.get("employeeNumber"), valuesToCheckInDatabase[i])) {
+                                return ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+                            }
+                        }
+                    }
+                    break;
+                case PHONE_NUMBER:
+                    for (int i = 0; i < valuesToCheckInDatabase.length; i++) {
+                        for (QueryDocumentSnapshot profile : snap) {
+                            Map<String, Object> userData = profile.getData();
+                            if (Objects.equals(userData.get("phoneNumber"), valuesToCheckInDatabase[i])) {
                                 return ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
                             }
                         }
@@ -197,10 +211,16 @@ public final class Validator {
         return ValidationTaskResult.INVALID_FORMAT;
     }
 
-    private static void checkIfEmailExists(String emailAddress, UserType userType) {
+    public static ValidationTaskResult checkIfHealthCardNumberExists(String healthCardNumber) throws ExecutionException, InterruptedException{
+        return new IsInDatabaseTask(HEALTH_CARD_NUMBER,UserType.PATIENT).execute(new String[]{healthCardNumber}).get();
 
     }
-
+    public static ValidationTaskResult checkIfEmployeeNumberExists(String employeeNumber) throws ExecutionException, InterruptedException{
+        return new IsInDatabaseTask(EMPLOYEE_NUMBER,UserType.DOCTOR).execute(new String[]{employeeNumber}).get();
+    }
+    public static ValidationTaskResult checkIfPhoneNumberExists(String phoneNumber, UserType userType) throws ExecutionException, InterruptedException{
+        return new IsInDatabaseTask(PHONE_NUMBER,userType).execute(new String[]{phoneNumber}).get();
+    }
 
     /**
      * Validates a name to ensure it matches the regex pattern that would verify most names
@@ -228,6 +248,8 @@ public final class Validator {
     public static boolean phoneNumberIsValid(@NonNull String phoneNumber) {
         return (phoneNumber.matches("[0-9]+") && phoneNumber.length() == 10);
     }
+
+
 
 
 }
