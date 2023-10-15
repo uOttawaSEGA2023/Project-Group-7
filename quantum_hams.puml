@@ -58,15 +58,11 @@ class Doctor extends User {
 	+setSpecialties(specialties: ArrayList<Specialties>): Doctor
 }
 
-class Adminstrator extends User {
+class Administrator extends User {
 	-{static} PASSWORD: byte[] =  [24, 119, 82, 18, 72, 61, -68, -20, 6, 24, -96, -33, 41, 103, -43, -84]{read-only}
 	-{static} SALT: byte[] = [-21, -20, 33, 117, 26, -112, -119, 124, -47, -58, 73, -106, 10, -5, -82, 18]{read-only}
-	+Adminstrator()
+	+Administrator()
 	+changeView(Context currentContext): void
-}
-class BadBadPasswordException extends RuntimeException {
-	+BadBadPasswordException()
-    +BadPasswordException(message: String)
 }
 class Login {
 	-{static}getUserData(email: String, password: char[], userType: UserType, currentContext: Context)
@@ -116,5 +112,4 @@ enum LoginReturnCodes {
 }
 
 Doctor "1" -- "1..*" Specialties : has
-Login --> BadBadPasswordException : throws
 @enduml
