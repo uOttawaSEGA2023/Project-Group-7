@@ -1,5 +1,8 @@
 package com.quantumSamurais.hams.doctor.activities;
 
+import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+import static com.quantumSamurais.hams.utils.Validator.checkIfEmployeeNumberExists;
+import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
 import static com.quantumSamurais.hams.utils.Validator.nameIsValid;
 import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
@@ -88,18 +91,18 @@ public class DoctorSignUpActivity extends AppCompatActivity {
 
 
         try {
-            ValidationTaskResult validationResult = emailAddressIsValid(emailAddress, UserType.DOCTOR);
+            ValidationTaskResult emailAddressCheckResult = emailAddressIsValid(emailAddress, UserType.DOCTOR);
 
-            if(validationResult == ValidationTaskResult.INVALID_FORMAT) {
+            if(emailAddressCheckResult == ValidationTaskResult.INVALID_FORMAT) {
                 shortToast("This email address is not formatted like an email address.");
             }
-            else if (validationResult == ValidationTaskResult.INVALID_DOMAIN) {
+            else if (emailAddressCheckResult == ValidationTaskResult.INVALID_DOMAIN) {
                 shortToast("Please ensure this email address' domain exists");
             }
-            else if (validationResult == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS) {
+            else if (emailAddressCheckResult == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS) {
                 shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
             }
-            else if (validationResult == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED) {
+            else if (emailAddressCheckResult == ATTRIBUTE_ALREADY_REGISTERED) {
                 shortToast("This email address is already in use. Try to sign in instead.");
             }
         } catch (ExecutionException e) {
@@ -115,6 +118,38 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         }
         if(!phoneNumberIsValid(phoneNumber)) {
             shortToast("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
+            return;
+        }
+        boolean phoneNumberIsInDatabase = true;//We assume it's in, to block registration if it can't be verified
+        try {
+            phoneNumberIsInDatabase = checkIfPhoneNumberExists(phoneNumber, UserType.DOCTOR) == ATTRIBUTE_ALREADY_REGISTERED;
+        } catch (ExecutionException e) {
+            Log.d("phoneNumberValidation", "ExecutionException occurred: " + e.getCause());
+            shortToast("Something seems to have went wrong during phone number validation, please try again.");
+            return;
+        } catch (InterruptedException e) {
+            Log.d("phoneNumberValidation", "InterruptedException occurred: " + e.getCause());
+            shortToast("Something seems to have went wrong during phone number validation, please try again.");
+            return;
+        }
+        if (phoneNumberIsInDatabase){
+            shortToast("This phone number appears to already be in the database.");
+            return;
+        }
+        boolean employeeNumberIsInDatabase = true;//We assume it's in, to block registration if it can't be verified
+        try {
+            employeeNumberIsInDatabase = checkIfEmployeeNumberExists(employeeNumber) == ATTRIBUTE_ALREADY_REGISTERED;
+        } catch (ExecutionException e) {
+            Log.d("employeeNumberValidation", "ExecutionException occurred: " + e.getCause());
+            shortToast("Something seems to have went wrong during employee number validation, please try again.");
+            return;
+        } catch (InterruptedException e) {
+            Log.d("employeeNumberValidation", "InterruptedException occurred: " + e.getCause());
+            shortToast("Something seems to have went wrong during employee number validation, please try again.");
+            return;
+        }
+        if (employeeNumberIsInDatabase){
+            shortToast("This employee number appears to already be registered. Please try signing in instead.");
             return;
         }
         if(specialtiesArrayList.size() < 1) {

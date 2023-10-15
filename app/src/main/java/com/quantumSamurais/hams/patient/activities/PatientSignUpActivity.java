@@ -1,5 +1,9 @@
 package com.quantumSamurais.hams.patient.activities;
 
+import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+import static com.quantumSamurais.hams.utils.Validator.checkIfEmployeeNumberExists;
+import static com.quantumSamurais.hams.utils.Validator.checkIfHealthCardNumberExists;
+import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
 import static com.quantumSamurais.hams.utils.Validator.nameIsValid;
 import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
@@ -8,6 +12,7 @@ import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -105,6 +110,38 @@ public class PatientSignUpActivity extends AppCompatActivity {
                 shortToast("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
                 return;
             }
+                    boolean phoneNumberIsInDatabase = true;//We assume it's in, to block registration if it can't be verified
+                    try {
+                        phoneNumberIsInDatabase = checkIfPhoneNumberExists(phoneNumber, UserType.PATIENT) == ATTRIBUTE_ALREADY_REGISTERED;
+                    } catch (ExecutionException e) {
+                        Log.d("phoneNumberValidation", "ExecutionException occurred: " + e.getCause());
+                        shortToast("Something seems to have went wrong during phone number validation, please try again.");
+                        return;
+                    } catch (InterruptedException e) {
+                        Log.d("phoneNumberValidation", "InterruptedException occurred: " + e.getCause());
+                        shortToast("Something seems to have went wrong during phone number validation, please try again.");
+                        return;
+                    }
+                    if (phoneNumberIsInDatabase){
+                        shortToast("This phone number appears to already be in the database.");
+                        return;
+                    }
+                    boolean healthCardNumberIsInDatabase = true;//We assume it's in, to block registration if it can't be verified
+                    try {
+                        healthCardNumberIsInDatabase = checkIfHealthCardNumberExists(healthCardNumber) == ATTRIBUTE_ALREADY_REGISTERED;
+                    } catch (ExecutionException e) {
+                        Log.d("healthCardNumberValidation", "ExecutionException occurred: " + e.getCause());
+                        shortToast("Something seems to have went wrong during employee number validation, please try again.");
+                        return;
+                    } catch (InterruptedException e) {
+                        Log.d("healthCardNumberValidation", "InterruptedException occurred: " + e.getCause());
+                        shortToast("Something seems to have went wrong during employee number validation, please try again.");
+                        return;
+                    }
+                    if (healthCardNumberIsInDatabase){
+                        shortToast("This health card number appears to already be registered. Please try signing in instead.");
+                        return;
+                    }
 
             //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.
             Patient newUser = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
