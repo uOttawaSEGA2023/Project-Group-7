@@ -10,7 +10,6 @@ abstract class User {
 	__
 	+User (String firstName, String lastName, char[] password, String email, String phone, String adress)
 	+User (String firstName, String lastName, byte[] hashedPassword, byte[] salt, String email, String phone, String adress)
-	#{abstract} signUp(): void
 	#{abstract} changeView(): void
 	+toString(): String
 	..Getters..
