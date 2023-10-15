@@ -1,5 +1,8 @@
 package com.quantumSamurais.hams.doctor.activities;
 
+import static com.quantumSamurais.hams.utils.Validator.checkIfEmployeeNumberExists;
+import static com.quantumSamurais.hams.utils.Validator.checkIfHealthCardNumberExists;
+import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
 import static com.quantumSamurais.hams.utils.Validator.nameIsValid;
 import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
@@ -8,6 +11,7 @@ import static com.quantumSamurais.hams.utils.Validator.textFieldsAreEmpty;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,6 +27,8 @@ import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.user.UserType;
+import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -83,25 +89,32 @@ public class DoctorSignUpActivity extends AppCompatActivity {
 
 
         try {
-            int validationResult = emailAddressIsValid(emailAddress);
-            if (validationResult < 0) {
-                if(validationResult == -1) {
-                    shortToast("This email address is not formatted like an email address.");
-                }
-                else if (validationResult == -2) {
-                    shortToast("Please ensure this email address' domain exists");
-                }
-                else {
+            ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, UserType.DOCTOR);
+
+            if (emailValidityCheck == ValidationTaskResult.INVALID_FORMAT) {
+                shortToast("This email address is not formatted like an email address.");
+                return;
+
+            } else if (emailValidityCheck == ValidationTaskResult.INVALID_DOMAIN) {
+                shortToast("Please ensure this email address' domain exists");
+                return;
+
+            } else if (emailValidityCheck == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS) {
                 shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
-                }
+                return;
+            } else if (emailValidityCheck == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED) {
+                shortToast("This email address is already in use, please try signing in instead.");
                 return;
             }
         } catch (ExecutionException e) {
-           shortToast("Something went wrong during email's domain verification, please check your connection and try again.");
+            shortToast("Something went wrong during email's domain verification, please check your connection and try again.");
+            Log.d("emailVerificationDoctor", "ExecutionException occurred : " + e.getCause());
             return;
         } catch (InterruptedException e) {
-           shortToast("Something went wrong with the email address' verification thread, please wait a bit and try again.");
+            shortToast("Something went wrong with the email address' verification thread, please wait a bit and try again.");
+            Log.d("emailVerificationDoctor", "InterruptedException occurred : " + e.getCause());
             return;
+
         }
         if (!passwordIsValid(password)) {
             shortToast("Password must contain at least 8 chars, one capital letter and one small letter, one number, and one special character.");
@@ -110,6 +123,40 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         if(!phoneNumberIsValid(phoneNumber)) {
             shortToast("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
             return;
+        }
+        boolean phoneNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
+        try {
+            phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, UserType.PATIENT) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+            if (phoneNumberIsAlreadyInDatabase) {
+                shortToast("This phone number is already in use, please try signing in.");
+                return;
+            }
+        } catch (ExecutionException e) {
+            shortToast("Something went wrong during phone number's verification, please check your connection and try again.");
+            Log.d("phoneNumberVerificationDoctor", "ExecutionException occurred : " + e.getCause());
+            return;
+        } catch (InterruptedException e) {
+            shortToast("Something went wrong with the phone number's verification thread, please wait a bit and try again.");
+            Log.d("phoneNumberVerificationDoctor", "InterruptedException occurred : " + e.getCause());
+            return;
+
+        }
+        boolean employeeNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
+        try {
+            employeeNumberIsAlreadyInDatabase = checkIfEmployeeNumberExists(employeeNumber) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+            if (employeeNumberIsAlreadyInDatabase) {
+                shortToast("This employee number is already in use, please try signing in.");
+                return;
+            }
+        } catch (ExecutionException e) {
+            shortToast("Something went wrong during employee number's verification, please check your connection and try again.");
+            Log.d("employeeNumberVerification", "ExecutionException occurred : " + e.getCause());
+            return;
+        } catch (InterruptedException e) {
+            shortToast("Something went wrong with the employee number's verification thread, please wait a bit and try again.");
+            Log.d("employeeNumberVerification", "InterruptedException occurred : " + e.getCause());
+            return;
+
         }
         if(specialtiesArrayList.size() < 1) {
             shortToast("Please select one or more specialties.");
