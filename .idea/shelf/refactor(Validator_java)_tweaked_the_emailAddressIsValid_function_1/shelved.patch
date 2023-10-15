@@ -1,0 +1,440 @@
+Index: app/src/main/java/com/quantumSamurais/hams/MainActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.quantumSamurais.hams;\r\n\r\nimport androidx.appcompat.app.AppCompatActivity;\r\n\r\nimport android.content.Intent;\r\nimport android.os.Bundle;\r\nimport android.view.View;\r\nimport android.widget.RadioGroup;\r\nimport android.widget.Toast;\r\n\r\nimport com.quantumSamurais.hams.admin.Administrator;\r\nimport com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;\r\nimport com.quantumSamurais.hams.login.LoginActivity;\r\nimport com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;\r\nimport com.quantumSamurais.hams.R;\r\nimport com.quantumSamurais.hams.user.User;\r\n\r\nimport org.checkerframework.checker.units.qual.A;\r\n\r\n\r\npublic class MainActivity extends AppCompatActivity {\r\n\r\n    @Override\r\n    protected void onCreate(Bundle savedInstanceState) {\r\n        super.onCreate(savedInstanceState);\r\n        setContentView(R.layout.activity_main);\r\n    }\r\n\r\n    public void openSignUp(View view){\r\n        setContentView(R.layout.signup_acount_type_selection_view);\r\n    }\r\n\r\n    public void clickedContinueRegistration(View view){\r\n        RadioGroup accountTypeSelection = findViewById(R.id.userTypeSelection);\r\n        if (accountTypeSelection.getCheckedRadioButtonId() == -1){\r\n            Toast.makeText(getApplicationContext(), \"Please select an option.\", Toast.LENGTH_SHORT).show();\r\n            return;\r\n        }\r\n        else if (accountTypeSelection.getCheckedRadioButtonId() == R.id.toPatient){\r\n            Intent patientRegistrationForm = new Intent(this, PatientSignUpActivity.class);\r\n            startActivity(patientRegistrationForm);\r\n        }\r\n        else{\r\n            Intent doctorRegistrationForm = new Intent(this, DoctorSignUpActivity.class);\r\n            startActivity(doctorRegistrationForm);\r\n        }\r\n        setContentView(R.layout.activity_main);\r\n    }\r\n\r\n    // Hooks back button event to return to main view if user was in account type selection view\r\n    public void onBackPressed() {\r\n        setContentView(R.layout.activity_main);\r\n    }\r\n\r\n    public void openSignIn(View view){\r\n        Intent signIn = new Intent(this, LoginActivity.class);\r\n        startActivity(signIn );\r\n    }\r\n\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/quantumSamurais/hams/MainActivity.java b/app/src/main/java/com/quantumSamurais/hams/MainActivity.java
+--- a/app/src/main/java/com/quantumSamurais/hams/MainActivity.java	(revision 9a410475f7214b41f3193f44fb83d25dc2bb7b17)
++++ b/app/src/main/java/com/quantumSamurais/hams/MainActivity.java	(date 1697311046593)
+@@ -4,18 +4,10 @@
+ 
+ import android.content.Intent;
+ import android.os.Bundle;
++import android.util.Log;
+ import android.view.View;
+-import android.widget.RadioGroup;
+-import android.widget.Toast;
+ 
+-import com.quantumSamurais.hams.admin.Administrator;
+-import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
+ import com.quantumSamurais.hams.login.LoginActivity;
+-import com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;
+-import com.quantumSamurais.hams.R;
+-import com.quantumSamurais.hams.user.User;
+-
+-import org.checkerframework.checker.units.qual.A;
+ 
+ 
+ public class MainActivity extends AppCompatActivity {
+@@ -27,34 +19,16 @@
+     }
+ 
+     public void openSignUp(View view){
+-        setContentView(R.layout.signup_acount_type_selection_view);
+-    }
+-
+-    public void clickedContinueRegistration(View view){
+-        RadioGroup accountTypeSelection = findViewById(R.id.userTypeSelection);
+-        if (accountTypeSelection.getCheckedRadioButtonId() == -1){
+-            Toast.makeText(getApplicationContext(), "Please select an option.", Toast.LENGTH_SHORT).show();
+-            return;
+-        }
+-        else if (accountTypeSelection.getCheckedRadioButtonId() == R.id.toPatient){
+-            Intent patientRegistrationForm = new Intent(this, PatientSignUpActivity.class);
+-            startActivity(patientRegistrationForm);
+-        }
+-        else{
+-            Intent doctorRegistrationForm = new Intent(this, DoctorSignUpActivity.class);
+-            startActivity(doctorRegistrationForm);
+-        }
+-        setContentView(R.layout.activity_main);
+-    }
+-
+-    // Hooks back button event to return to main view if user was in account type selection view
+-    public void onBackPressed() {
+-        setContentView(R.layout.activity_main);
++        Intent signUp = new Intent(this, TypeSelectionActivity.class);
++        signUp.putExtra("source", "signUp");
++        startActivity(signUp);
+     }
+ 
+     public void openSignIn(View view){
+-        Intent signIn = new Intent(this, LoginActivity.class);
+-        startActivity(signIn );
++        Intent signIn = new Intent(this, TypeSelectionActivity.class);
++        signIn.putExtra("source", "signIn");
++        Log.d("MyApp", "Intent extras in TypeSelectionActivity: " + signIn.getExtras());
++        startActivity(signIn);
+     }
+ 
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/quantumSamurais/hams/patient/activities/PatientSignUpActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.quantumSamurais.hams.patient.activities;\r\n\r\nimport static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;\r\nimport static com.quantumSamurais.hams.utils.Validator.nameIsValid;\r\nimport static com.quantumSamurais.hams.utils.Validator.passwordIsValid;\r\nimport static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;\r\nimport static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;\r\n\r\nimport android.content.Intent;\r\nimport android.os.Bundle;\r\nimport android.widget.Button;\r\nimport android.widget.EditText;\r\nimport android.widget.Toast;\r\n\r\n\r\nimport androidx.appcompat.app.AppCompatActivity;\r\n\r\nimport com.quantumSamurais.hams.LoginInteractiveMessage;\r\nimport com.quantumSamurais.hams.R;\r\nimport com.quantumSamurais.hams.patient.Patient;\r\nimport com.quantumSamurais.hams.user.UserType;\r\n\r\n\r\nimport java.util.List;\r\nimport java.util.Map;\r\nimport java.util.concurrent.ExecutionException;\r\n\r\npublic class PatientSignUpActivity extends AppCompatActivity {\r\n    private EditText firstNameEditText, lastNameEditText, emailAddressEditText, passwordEditText, phoneNumberEditText, postalAddressEditText, healthCardNumberEditText;\r\n    private Button signUpButton;\r\n\r\n    @Override\r\n    protected void onCreate(Bundle savedInstanceState) {\r\n        super.onCreate(savedInstanceState);\r\n        setContentView(R.layout.patient_register_form);\r\n\r\n        firstNameEditText = findViewById(R.id.firstNameSlot);\r\n        lastNameEditText = findViewById(R.id.lastNameSlot);\r\n        emailAddressEditText = findViewById(R.id.emailAddressSlot);\r\n        passwordEditText = findViewById(R.id.passwordSlot);\r\n        phoneNumberEditText = findViewById(R.id.phoneNumberSlot);\r\n        postalAddressEditText = findViewById(R.id.postalAddressSlot);\r\n        healthCardNumberEditText = findViewById(R.id.healthCardNumberSlot);\r\n        signUpButton = findViewById(R.id.formSignUpButton);\r\n\r\n        signUpButton.setOnClickListener(v -> {\r\n            // Get user input\r\n            String firstName = firstNameEditText.getText().toString().trim();\r\n            String lastName = lastNameEditText.getText().toString().trim();\r\n            String emailAddress = emailAddressEditText.getText().toString().trim();\r\n            String password = passwordEditText.getText().toString().trim();\r\n            String phoneNumber = phoneNumberEditText.getText().toString().trim();\r\n            String postalAddress = postalAddressEditText.getText().toString().trim();\r\n            String healthCardNumber = healthCardNumberEditText.getText().toString().trim();\r\n\r\n            //First make sure no field is empty\r\n            if (textFieldIsEmpty(firstName) || textFieldIsEmpty(lastName) || textFieldIsEmpty(emailAddress) || textFieldIsEmpty(password) || textFieldIsEmpty(phoneNumber) || textFieldIsEmpty(postalAddress) || textFieldIsEmpty(healthCardNumber)){\r\n                Toast.makeText(PatientSignUpActivity.this, \"Please make sure to fill all the fields.\", Toast.LENGTH_SHORT).show();\r\n                return;\r\n            }\r\n            //Validations Gauntlet\r\n            // Validate names\r\n            if (!(nameIsValid(firstName) && nameIsValid(lastName))) {\r\n                Toast.makeText(PatientSignUpActivity.this, \"Please make sure your name follows a human format (no numbers, spaces, etc.)\", Toast.LENGTH_LONG).show();\r\n                return;\r\n            }\r\n            //emailAddressIsValid throws errors due to be a wifi/threaded method, so we require a try/catch\r\n            try {\r\n                if (emailAddressIsValid(emailAddress) < 0) {\r\n                    if (emailAddressIsValid(emailAddress) == -1) {\r\n                        Toast.makeText(PatientSignUpActivity.this, \"This email address is not formatted like an email address.\", Toast.LENGTH_SHORT).show();\r\n                        return;\r\n\r\n                    } else if (emailAddressIsValid(emailAddress) == -2) {\r\n                        Toast.makeText(PatientSignUpActivity.this, \"Please ensure this email address' domain exists\", Toast.LENGTH_SHORT).show();\r\n                        return;\r\n\r\n                    }\r\n                    Toast.makeText(PatientSignUpActivity.this, \"Please ensure the localPart of your email address is correct, ensure there are no spaces.\", Toast.LENGTH_SHORT).show();\r\n                    return;\r\n                }\r\n            }\r\n            catch(ExecutionException e){\r\n                Toast.makeText(PatientSignUpActivity.this, \"Something went wrong during email's domain verification, please check your connection and try again.\", Toast.LENGTH_SHORT).show();\r\n                return;\r\n            }\r\n            catch(InterruptedException e){\r\n                Toast.makeText(PatientSignUpActivity.this, \"Something went wrong with the email address' verification thread, please wait a bit and try again.\", Toast.LENGTH_SHORT).show();\r\n                return;\r\n\r\n            }\r\n            if (!passwordIsValid(password)){\r\n                Toast.makeText(PatientSignUpActivity.this, \"Password must contain at least 8 chars, one capital letter and one small letter, one number, and one special character.\", Toast.LENGTH_LONG).show();\r\n                return;\r\n            }\r\n            if (!phoneNumberIsValid(phoneNumber)){\r\n                Toast.makeText(PatientSignUpActivity.this, \"Please make sure your phone number contains exactly 10 numbers, and only numbers.\", Toast.LENGTH_SHORT).show();\r\n                return;\r\n            }\r\n\r\n            //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.\r\n            Patient newUser = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);\r\n\r\n            // Store the user data in the database\r\n            if (savedUser(newUser)) {\r\n                // Registration successful\r\n                Toast.makeText(PatientSignUpActivity.this, \"Registration successful\", Toast.LENGTH_SHORT).show();\r\n                UserType userType = UserType.PATIENT;\r\n                Intent patientView = new Intent(PatientSignUpActivity.this, LoginInteractiveMessage.class);\r\n                patientView.putExtra(\"userType\", userType);\r\n                startActivity(patientView);\r\n            } else {\r\n                // Error while saving to the database\r\n                Toast.makeText(PatientSignUpActivity.this, \"Error occurred. Please try again.\", Toast.LENGTH_SHORT).show();\r\n            }\r\n        }\r\n        );\r\n    }\r\n\r\n\r\n    private boolean savedUser(Patient newUser) {\r\n        List<Map<String, Object>> registeredUsers = Patient.getRegisteredPatients();\r\n        return registeredUsers.contains(newUser.getNewUserInformation());\r\n    }\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n}\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/quantumSamurais/hams/patient/activities/PatientSignUpActivity.java b/app/src/main/java/com/quantumSamurais/hams/patient/activities/PatientSignUpActivity.java
+--- a/app/src/main/java/com/quantumSamurais/hams/patient/activities/PatientSignUpActivity.java	(revision 9a410475f7214b41f3193f44fb83d25dc2bb7b17)
++++ b/app/src/main/java/com/quantumSamurais/hams/patient/activities/PatientSignUpActivity.java	(date 1697311036242)
+@@ -6,7 +6,6 @@
+ import static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;
+ import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
+ 
+-import android.content.Intent;
+ import android.os.Bundle;
+ import android.widget.Button;
+ import android.widget.EditText;
+@@ -15,10 +14,8 @@
+ 
+ import androidx.appcompat.app.AppCompatActivity;
+ 
+-import com.quantumSamurais.hams.LoginInteractiveMessage;
+ import com.quantumSamurais.hams.R;
+ import com.quantumSamurais.hams.patient.Patient;
+-import com.quantumSamurais.hams.user.UserType;
+ 
+ 
+ import java.util.List;
+@@ -97,7 +94,6 @@
+                 Toast.makeText(PatientSignUpActivity.this, "Please make sure your phone number contains exactly 10 numbers, and only numbers.", Toast.LENGTH_SHORT).show();
+                 return;
+             }
+-
+             //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.
+             Patient newUser = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
+ 
+@@ -105,10 +101,8 @@
+             if (savedUser(newUser)) {
+                 // Registration successful
+                 Toast.makeText(PatientSignUpActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
+-                UserType userType = UserType.PATIENT;
+-                Intent patientView = new Intent(PatientSignUpActivity.this, LoginInteractiveMessage.class);
+-                patientView.putExtra("userType", userType);
+-                startActivity(patientView);
++                // Redirect to the login screen or do something else
++                newUser.changeView(this);
+             } else {
+                 // Error while saving to the database
+                 Toast.makeText(PatientSignUpActivity.this, "Error occurred. Please try again.", Toast.LENGTH_SHORT).show();
+Index: app/src/main/res/layout/signup_acount_type_selection_view.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/layout/signup_acount_type_selection_view.xml b/app/src/main/res/layout/acount_type_selection_form.xml
+rename from app/src/main/res/layout/signup_acount_type_selection_view.xml
+rename to app/src/main/res/layout/acount_type_selection_form.xml
+--- a/app/src/main/res/layout/signup_acount_type_selection_view.xml	(revision 9a410475f7214b41f3193f44fb83d25dc2bb7b17)
++++ b/app/src/main/res/layout/acount_type_selection_form.xml	(date 1697311046614)
+@@ -34,7 +34,7 @@
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="168dp"
+-        android:text="Are you registering as ...."
++        android:text="Are you a ...."
+         android:textSize="24sp"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintStart_toStartOf="parent"
+@@ -45,7 +45,7 @@
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="32dp"
+-        android:onClick="clickedContinueRegistration"
++        android:onClick="clickedContinue"
+         android:text="Continue"
+         app:layout_constraintEnd_toEndOf="@+id/userTypeSelection"
+         app:layout_constraintStart_toStartOf="@+id/userTypeSelection"
+Index: app/src/main/java/com/quantumSamurais/hams/Logoff.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.quantumSamurais.hams;\r\nimport android.content.Context;\r\nimport android.content.Intent;\r\nimport com.quantumSamurais.hams.login.LoginActivity;\r\n\r\npublic class Logoff {\r\n    public static void logoff(Context context) {\r\n        // Create an Intent to navigate to the login page\r\n        Intent intent = new Intent(context, LoginActivity.class);\r\n\r\n        // Start the login activity\r\n        context.startActivity(intent);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/quantumSamurais/hams/Logoff.java b/app/src/main/java/com/quantumSamurais/hams/Logoff.java
+--- a/app/src/main/java/com/quantumSamurais/hams/Logoff.java	(revision 9a410475f7214b41f3193f44fb83d25dc2bb7b17)
++++ b/app/src/main/java/com/quantumSamurais/hams/Logoff.java	(date 1697311046581)
+@@ -5,8 +5,8 @@
+ 
+ public class Logoff {
+     public static void logoff(Context context) {
+-        // Create an Intent to navigate to the login page
+-        Intent intent = new Intent(context, LoginActivity.class);
++        // Create an Intent to navigate to the Main page
++        Intent intent = new Intent(context, MainActivity.class);
+ 
+         // Start the login activity
+         context.startActivity(intent);
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\">\r\n\r\n    <application\r\n        android:allowBackup=\"true\"\r\n        android:dataExtractionRules=\"@xml/data_extraction_rules\"\r\n        android:fullBackupContent=\"@xml/backup_rules\"\r\n        android:icon=\"@mipmap/ic_launcher\"\r\n        android:label=\"@string/app_name\"\r\n        android:roundIcon=\"@mipmap/ic_launcher_round\"\r\n        android:supportsRtl=\"true\"\r\n        android:theme=\"@style/Theme.Material3.Dark\"\r\n        tools:targetApi=\"31\">\r\n        <activity\r\n            android:name=\"com.quantumSamurais.hams.MainActivity\"\r\n            android:exported=\"true\">\r\n            <intent-filter>\r\n                <action android:name=\"android.intent.action.MAIN\" />\r\n\r\n                <category android:name=\"android.intent.category.LAUNCHER\" />\r\n            </intent-filter>\r\n        </activity>\r\n\r\n        <activity android:name=\"com.quantumSamurais.hams.patient.activities.PatientSignUpActivity\">\r\n        </activity>\r\n        <activity android:name=\"com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity\">\r\n        </activity>\r\n        <activity android:name=\".LoginInteractiveMessage\">\r\n        </activity>\r\n        <activity android:name=\".login.LoginActivity\">\r\n        </activity>\r\n    </application>\r\n\r\n</manifest>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+--- a/app/src/main/AndroidManifest.xml	(revision 9a410475f7214b41f3193f44fb83d25dc2bb7b17)
++++ b/app/src/main/AndroidManifest.xml	(date 1697311046647)
+@@ -30,6 +30,8 @@
+         </activity>
+         <activity android:name=".login.LoginActivity">
+         </activity>
++        <activity android:name="com.quantumSamurais.hams.TypeSelectionActivity">
++        </activity>
+     </application>
+ 
+ </manifest>
+\ No newline at end of file
+Index: app/src/main/java/com/quantumSamurais/hams/LoginInteractiveMessage.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.quantumSamurais.hams;\r\n\r\nimport androidx.appcompat.app.AppCompatActivity;\r\n\r\nimport android.content.Intent;\r\nimport android.os.Bundle;\r\nimport android.view.View;\r\nimport android.widget.Button;\r\nimport android.widget.TextView;\r\nimport com.quantumSamurais.hams.Logoff;\r\nimport com.quantumSamurais.hams.user.UserType;\r\n\r\n\r\npublic class LoginInteractiveMessage extends AppCompatActivity {\r\n\r\n    @Override\r\n    protected void onCreate(Bundle savedInstanceState) {\r\n        super.onCreate(savedInstanceState);\r\n        setContentView(R.layout.login_interactive_message);\r\n\r\n        // Find the TextView in the layout\r\n        TextView welcomeMessageTextView = findViewById(R.id.welcomeMessageTextView);\r\n\r\n        // Get the user type from the Intent's extra\r\n        Intent intent = getIntent();\r\n        UserType userType = (UserType) intent.getSerializableExtra(\"userType\");\r\n\r\n        // Check the user type and create the welcome message accordingly\r\n        String welcomeMessage;\r\n        if (userType == UserType.DOCTOR) {\r\n            welcomeMessage = \"Welcome! You are logged in as a Doctor.\";\r\n        } else if(userType == UserType.ADMIN) {\r\n            welcomeMessage = \"Welcome! You are logged in as an Admin.\";\r\n        } else {\r\n            welcomeMessage = \"Welcome! You are logged in as a Patient.\";\r\n        }\r\n\r\n        // Set the welcome message in the TextView\r\n        welcomeMessageTextView.setText(welcomeMessage);\r\n        Button logoffButton = findViewById(R.id.logoffButton);\r\n\r\n        logoffButton.setOnClickListener(new View.OnClickListener() {\r\n            @Override\r\n            public void onClick(View v) {\r\n                // Call the logoff method from LogoffUtil\r\n                Logoff.logoff(LoginInteractiveMessage.this);\r\n                finish();\r\n            }\r\n        });\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/quantumSamurais/hams/LoginInteractiveMessage.java b/app/src/main/java/com/quantumSamurais/hams/LoginInteractiveMessage.java
+--- a/app/src/main/java/com/quantumSamurais/hams/LoginInteractiveMessage.java	(revision 9a410475f7214b41f3193f44fb83d25dc2bb7b17)
++++ b/app/src/main/java/com/quantumSamurais/hams/LoginInteractiveMessage.java	(date 1697311046556)
+@@ -8,7 +8,6 @@
+ import android.widget.Button;
+ import android.widget.TextView;
+ import com.quantumSamurais.hams.Logoff;
+-import com.quantumSamurais.hams.user.UserType;
+ 
+ 
+ public class LoginInteractiveMessage extends AppCompatActivity {
+@@ -23,17 +22,10 @@
+ 
+         // Get the user type from the Intent's extra
+         Intent intent = getIntent();
+-        UserType userType = (UserType) intent.getSerializableExtra("userType");
++        String userType = intent.getStringExtra("userRole");
+ 
+-        // Check the user type and create the welcome message accordingly
+-        String welcomeMessage;
+-        if (userType == UserType.DOCTOR) {
+-            welcomeMessage = "Welcome! You are logged in as a Doctor.";
+-        } else if(userType == UserType.ADMIN) {
+-            welcomeMessage = "Welcome! You are logged in as an Admin.";
+-        } else {
+-            welcomeMessage = "Welcome! You are logged in as a Patient.";
+-        }
++        // Create the welcome message
++        String welcomeMessage = "Welcome! You are logged in as " + userType;
+ 
+         // Set the welcome message in the TextView
+         welcomeMessageTextView.setText(welcomeMessage);
+Index: app/src/main/java/com/quantumSamurais/hams/login/LoginActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.quantumSamurais.hams.login;\r\n\r\nimport android.content.Context;\r\nimport android.content.Intent;\r\nimport android.os.Bundle;\r\nimport android.widget.Button;\r\nimport android.widget.EditText;\r\nimport android.widget.Toast;\r\n\r\nimport androidx.appcompat.app.AppCompatActivity;\r\nimport android.view.View;\r\n\r\nimport com.quantumSamurais.hams.LoginInteractiveMessage;\r\nimport com.quantumSamurais.hams.MainActivity;\r\nimport com.quantumSamurais.hams.R;\r\n\r\nimport static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;\r\nimport com.quantumSamurais.hams.user.UserType;\r\n\r\npublic class LoginActivity extends AppCompatActivity implements Login.LoginEventListener {\r\n    private EditText emailEditText, passwordEditText;\r\n    private Button signInButton;\r\n\r\n    // not too sure what this will be used for. Might need to call for methods with this activity message.\r\n    @Override\r\n    protected void onCreate(Bundle savedInstanceState) {\r\n        super.onCreate(savedInstanceState);\r\n        setContentView(R.layout.sign_in_form);\r\n        signInButton = findViewById(R.id.signInButton);\r\n        emailEditText = findViewById(R.id.EmailAddressSlot);\r\n        passwordEditText = findViewById(R.id.PasswordSlot);\r\n        signInButton.setOnClickListener(this::signUpBtnClicked);\r\n    }\r\n\r\n    public void signUpBtnClicked(View view) {\r\n        String email = emailEditText.getText().toString().trim();\r\n        String password = passwordEditText.getText().toString().trim();\r\n\r\n        //we verify that the email and password is not empty.\r\n        if (textFieldIsEmpty(email) || textFieldIsEmpty(password)) {\r\n            Toast.makeText(this, \"Please make sure to fill out all fields.\", Toast.LENGTH_LONG).show();\r\n            return;\r\n        }\r\n        char[] parsePass = password.toCharArray();\r\n\r\n        UserType[] userArr = {UserType.PATIENT,UserType.ADMIN,UserType.DOCTOR};\r\n        for (int i = 0; i < userArr.length; i++) {\r\n            Login.login(email, parsePass, userArr[i], this, this);\r\n        }\r\n    }\r\n\r\n\r\n    @Override\r\n    public void loginResponse(LoginReturnCodes tryLogin) {\r\n        boolean loggedIn = false; // kept as false for now; will find a boolean statement later.\r\n        if (tryLogin == (LoginReturnCodes.IncorrectPassword)) {\r\n            runOnUiThread(() -> {\r\n                Toast.makeText(LoginActivity.this, \"Either the email or password fields is incorrect. Please try again.\", Toast.LENGTH_LONG).show();\r\n            });\r\n        } else if (tryLogin == (LoginReturnCodes.Success)) {\r\n            loggedIn = true;\r\n        }\r\n        if (loggedIn) {\r\n            runOnUiThread(() -> {\r\n                Toast.makeText(LoginActivity.this, \"Successfully Logged in!\", Toast.LENGTH_SHORT).show();\r\n                // Start the login activity\r\n//                Intent interactiveMessage = new Intent(LoginActivity.this, LoginInteractiveMessage.class);\r\n//                startActivity(interactiveMessage);\r\n            });\r\n        }\r\n    }\r\n}\r\n    //Original method that was implemented. Will need to go back to this if necessary.\r\n    /* public void onSignIn(View view) {\r\n        //getting user input from\r\n        signInButton.setOnClickListener(v-> {\r\n\r\n            String email = emailEditText.getText().toString().trim();\r\n            String password = passwordEditText.getText().toString().trim();\r\n\r\n            //we verify that the email and password is not empty.\r\n            if (textFieldIsEmpty(email) || textFieldIsEmpty(password)) {\r\n                Toast.makeText(LoginActivity.this, \"Either the email or password fields is empty. Please make sure to fill out either or both fields.\", Toast.LENGTH_LONG).show();\r\n\r\n            }\r\n\r\n            char[] parsePass = password.toCharArray();\r\n            Context context = this;\r\n            Boolean loggedIn = false; // kept as false for now; will find a boolean statement later.\r\n\r\n            UserType[] userArr = {UserType.PATIENT, UserType.ADMIN, UserType.DOCTOR};\r\n            for (int i = 0; i < userArr.length; i++) {\r\n                LoginReturnCodes tryLogin = Login.login(email, parsePass, userArr[i], LoginActivity.this);\r\n                if (tryLogin.equals(LoginReturnCodes.IncorrectPassword)) {\r\n                    Toast.makeText(LoginActivity.this, \"Either the email or password fields is incorrect. Please try again.\", Toast.LENGTH_LONG).show();\r\n                    break;\r\n                } else if (tryLogin.equals(LoginReturnCodes.Success)) {\r\n                    loggedIn = true;\r\n                    break;\r\n                }\r\n            }\r\n            if (loggedIn) {\r\n                Toast.makeText(context, \"Successfully Logged in!\", Toast.LENGTH_SHORT).show();\r\n                // Start the login activity\r\n                Intent intent = new Intent(context, LoginInteractiveMessage.class);\r\n                context.startActivity(intent);\r\n            }\r\n            // we connect this to Aryan's code.\r\n\r\n        });\r\n\r\n    }*/\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/quantumSamurais/hams/login/LoginActivity.java b/app/src/main/java/com/quantumSamurais/hams/login/LoginActivity.java
+--- a/app/src/main/java/com/quantumSamurais/hams/login/LoginActivity.java	(revision 9a410475f7214b41f3193f44fb83d25dc2bb7b17)
++++ b/app/src/main/java/com/quantumSamurais/hams/login/LoginActivity.java	(date 1697311032114)
+@@ -19,6 +19,7 @@
+ 
+ public class LoginActivity extends AppCompatActivity implements Login.LoginEventListener {
+     private EditText emailEditText, passwordEditText;
++    private String userType = getIntent().getStringExtra("source");
+     private Button signInButton;
+ 
+     // not too sure what this will be used for. Might need to call for methods with this activity message.
+Index: app/src/main/java/com/quantumSamurais/hams/TypeSelectionActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/quantumSamurais/hams/TypeSelectionActivity.java b/app/src/main/java/com/quantumSamurais/hams/TypeSelectionActivity.java
+new file mode 100644
+--- /dev/null	(date 1697311046603)
++++ b/app/src/main/java/com/quantumSamurais/hams/TypeSelectionActivity.java	(date 1697311046603)
+@@ -0,0 +1,67 @@
++package com.quantumSamurais.hams;
++
++import static androidx.core.content.ContextCompat.startActivity;
++
++import android.content.Intent;
++import android.os.Bundle;
++import android.util.Log;
++import android.view.View;
++import android.widget.RadioGroup;
++import android.widget.Toast;
++
++import androidx.appcompat.app.AppCompatActivity;
++
++import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
++import com.quantumSamurais.hams.login.LoginActivity;
++import com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;
++
++public class TypeSelectionActivity extends AppCompatActivity {
++    Intent intent;
++
++
++    protected void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        setContentView(R.layout.acount_type_selection_form);
++        intent = getIntent();
++    }
++    public void clickedContinue(View view){
++        if (intent != null) {
++            Bundle extras = intent.getExtras();
++            if (extras != null) {
++                Log.d("MyApp", "Intent extras in TypeSelectionActivity: " + extras);
++                String source = intent.getStringExtra("source");
++                // Handle source here
++            }
++        }
++        Log.d("MyApp", "intent is null");
++
++        /*RadioGroup accountTypeSelection = findViewById(R.id.userTypeSelection);
++        if (accountTypeSelection.getCheckedRadioButtonId() == -1){
++            Toast.makeText(getApplicationContext(), "Please select an option.", Toast.LENGTH_SHORT).show();
++            return;
++        }
++        else if (accountTypeSelection.getCheckedRadioButtonId() == R.id.toPatient && source.equals("signUp") ){
++            Intent patientRegistrationForm = new Intent(this, PatientSignUpActivity.class);
++            startActivity(patientRegistrationForm);
++        }
++        else if (accountTypeSelection.getCheckedRadioButtonId() == R.id.toDoctor && source.equals("signUp") ){
++            Intent doctorRegistrationForm = new Intent(this, DoctorSignUpActivity.class);
++            startActivity(doctorRegistrationForm);
++        }
++        else if (accountTypeSelection.getCheckedRadioButtonId() == R.id.toPatient && source.equals("signIn") ){
++            Intent patientLogin = new Intent(this, LoginActivity.class);
++            patientLogin.putExtra("userType", "patient");
++            startActivity(patientLogin);
++        }
++        else if (accountTypeSelection.getCheckedRadioButtonId() == R.id.toDoctor && source.equals("signUp") ){
++            Intent doctorLogin = new Intent(this, LoginActivity.class);
++            doctorLogin.putExtra("userType", "doctor");
++            startActivity(doctorLogin);
++        }*/
++    }
++
++    // Hooks back button event to return to main view if user was in account type selection view
++    public void onBackPressed() {
++        setContentView(R.layout.activity_main);
++    }
++}
+Index: app/src/main/java/com/quantumSamurais/hams/utils/Validator.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.quantumSamurais.hams.utils;\r\n\r\nimport static java.net.InetAddress.getByName;\r\n\r\n\r\nimport android.os.AsyncTask;\r\nimport android.widget.Toast;\r\n\r\nimport androidx.annotation.NonNull;\r\n\r\nimport java.net.InetAddress;\r\nimport java.net.UnknownHostException;\r\nimport java.util.concurrent.ExecutionException;\r\n\r\npublic final class Validator {\r\n    //Inner Class\r\n\r\n    /**\r\n     *\r\n     */\r\n    private static class DomainValidationTask extends AsyncTask<String, Void, Boolean> {\r\n\r\n        @Override\r\n        protected Boolean doInBackground(String... domains) {\r\n            if (domains.length == 0) {\r\n                return false; //No domains to validate\r\n            }\r\n            try {\r\n                for (int i = 0; i < domains.length; i++) {\r\n                    String domain = domains[i];\r\n                    InetAddress address = InetAddress.getByName(domain);\r\n                }\r\n                return true; // Domain is/are all valid.\r\n            } catch (UnknownHostException e) {\r\n                return false; // At least one domain is not valid.\r\n            }\r\n        }\r\n    }\r\n\r\n    /**\r\n     * Checks if the string that was passed by user is empty.\r\n     *\r\n     * @param stringField: The string which we want to verify\r\n     * @return {@code true} if yes, and {@code false} if it is NOT an empty string.\r\n     */\r\n    public static boolean textFieldIsEmpty(String stringField) {\r\n        return (stringField == null || stringField.isEmpty());\r\n    }\r\n    public static boolean textFieldsAreEmpty(String ...fields) {\r\n        for(String i : fields) {\r\n            if(i == null || i.isEmpty()) {\r\n                return true;\r\n            }\r\n        }\r\n        return false;\r\n    }\r\n\r\n    /**\r\n     * Validates an email address by first checking if the domain associated with it exists, and then\r\n     * checking if the local part has a suitable format (checked through regex)\r\n     *\r\n     * @param emailAddress: The email address to validate\r\n     * @return {@code -1} if the email is not formatted as an email, {@code -2} if the domain is invalid, {@code -3} if the localPart is invalid, {@code 1} if everything is fine.\r\n     */\r\n\r\n    public static int emailAddressIsValid(@NonNull String emailAddress) throws ExecutionException, InterruptedException {\r\n        //First check the email has a @\r\n        if (!emailAddress.contains(\"@\")) {\r\n            return -1;\r\n        }\r\n        //Split the email address\r\n        String[] splitEmail = emailAddress.split(\"@\");\r\n\r\n        //Check if the resulting string got a domain part to validate\r\n        boolean proceed = splitEmail.length == 2;\r\n\r\n        if (proceed) {\r\n            String localPart = splitEmail[0];\r\n            String domainPart = splitEmail[1];\r\n\r\n            // Create and execute the DomainValidationTask\r\n            DomainValidationTask validationTask = new DomainValidationTask();\r\n\r\n            Boolean domainIsValid;\r\n\r\n            domainIsValid = validationTask.execute(domainPart).get();\r\n\r\n\r\n            if (domainIsValid) {\r\n                if (!textFieldIsEmpty(localPart) && localPart.matches(\"^\\\\S+$\")) {\r\n                    return 1;\r\n                }\r\n                return -3;\r\n            }\r\n            return -2;\r\n\r\n\r\n        }\r\n        return -1;\r\n    }\r\n\r\n\r\n\r\n\r\n    /**\r\n     * Validates a name to ensure it matches the regex pattern that would verify most names\r\n     * (Sorry Elon's son, not yours)\r\n     *\r\n     * @param name: The name to validate\r\n     * @return {@code true} if the string does match the pattern, {@code false} if not.\r\n     */\r\n    public static boolean nameIsValid(@NonNull String name) {\r\n        //Name is not valid, if contains non-alphabetic characters (sorry Elon's son)\r\n        return name.matches(\"^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$\");\r\n    }\r\n\r\n    public static boolean passwordIsValid(@NonNull String password) {\r\n        return password.matches(\"^(?=[^a-z]*[a-z])(?=[^A-Z]*[A-Z])(?=\\\\D*\\\\d)(?=[^!@#$%^&\\\\*]*[!@#$%^&\\\\**])[A-Za-z0-9!@#$%^&\\\\**]{8,}$\");\r\n    }\r\n\r\n    /**\r\n     * Validates a phone number to ensure it consists of exactly 10 digits (0-9).\r\n     *\r\n     * @param phoneNumber: The phone number to be validated.\r\n     * @return {@code true} if the phone number is valid (consists of exactly 10 digits), otherwise {@code false}.\r\n     * @throws NullPointerException if {@code phoneNumber} is {@code null}.\r\n     */\r\n    public static boolean phoneNumberIsValid(@NonNull String phoneNumber) {\r\n        return (phoneNumber.matches(\"[0-9]+\") && phoneNumber.length() == 10);\r\n    }\r\n\r\n\r\n\r\n\r\n\r\n    }\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/quantumSamurais/hams/utils/Validator.java b/app/src/main/java/com/quantumSamurais/hams/utils/Validator.java
+--- a/app/src/main/java/com/quantumSamurais/hams/utils/Validator.java	(revision 9a410475f7214b41f3193f44fb83d25dc2bb7b17)
++++ b/app/src/main/java/com/quantumSamurais/hams/utils/Validator.java	(date 1697311036284)
+@@ -13,11 +13,15 @@
+ import java.util.concurrent.ExecutionException;
+ 
+ public final class Validator {
+-    //Inner Class
++    public enum validationTaskResult{
++        //Todo: To Implement later
++        INVALID_FORMAT,
++        INVALID_DOMAIN,
++        INVALID_LOCAL_EMAIL_ADDRESS,
++        EMAIL_ALREADY_REGISTERED,
++        VALID
+ 
+-    /**
+-     *
+-     */
++    }
+     private static class DomainValidationTask extends AsyncTask<String, Void, Boolean> {
+ 
+         @Override
+@@ -60,13 +64,13 @@
+      * checking if the local part has a suitable format (checked through regex)
+      *
+      * @param emailAddress: The email address to validate
+-     * @return {@code -1} if the email is not formatted as an email, {@code -2} if the domain is invalid, {@code -3} if the localPart is invalid, {@code 1} if everything is fine.
++     * @return {@code INVALID_FORMAT} if the email is not formatted as an email, {@code INVALID_DOMAIN} if the domain is invalid, {@code INVALID_LOCAL_EMAIL_ADDRESS} if the localPart is invalid, {@code VALID} if everything is fine.
+      */
+ 
+-    public static int emailAddressIsValid(@NonNull String emailAddress) throws ExecutionException, InterruptedException {
++    public static validationTaskResult emailAddressIsValid(@NonNull String emailAddress) throws ExecutionException, InterruptedException {
+         //First check the email has a @
+         if (!emailAddress.contains("@")) {
+-            return -1;
++            return validationTaskResult.INVALID_FORMAT;
+         }
+         //Split the email address
+         String[] splitEmail = emailAddress.split("@");
+@@ -88,15 +92,15 @@
+ 
+             if (domainIsValid) {
+                 if (!textFieldIsEmpty(localPart) && localPart.matches("^\\S+$")) {
+-                    return 1;
++                    return validationTaskResult.VALID;
+                 }
+-                return -3;
++                return validationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS;
+             }
+-            return -2;
++            return validationTaskResult.INVALID_DOMAIN;
+ 
+ 
+         }
+-        return -1;
++        return validationTaskResult.INVALID_FORMAT;
+     }
+ 
+ 
+Index: app/src/main/java/com/quantumSamurais/hams/doctor/activities/DoctorSignUpActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.quantumSamurais.hams.doctor.activities;\r\n\r\nimport static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;\r\nimport static com.quantumSamurais.hams.utils.Validator.nameIsValid;\r\nimport static com.quantumSamurais.hams.utils.Validator.passwordIsValid;\r\nimport static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;\r\nimport static com.quantumSamurais.hams.utils.Validator.textFieldsAreEmpty;\r\n\r\nimport android.content.Intent;\r\nimport android.os.Bundle;\r\nimport android.util.Log;\r\nimport android.view.View;\r\nimport android.widget.Button;\r\nimport android.widget.EditText;\r\nimport android.widget.Toast;\r\n\r\nimport androidx.appcompat.app.AppCompatActivity;\r\nimport androidx.recyclerview.widget.LinearLayoutManager;\r\nimport androidx.recyclerview.widget.RecyclerView;\r\n\r\nimport com.quantumSamurais.hams.LoginInteractiveMessage;\r\nimport com.quantumSamurais.hams.R;\r\nimport com.quantumSamurais.hams.doctor.Doctor;\r\nimport com.quantumSamurais.hams.doctor.Specialties;\r\nimport com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;\r\nimport com.quantumSamurais.hams.user.User;\r\nimport com.quantumSamurais.hams.user.UserType;\r\n\r\nimport java.util.EnumSet;\r\nimport java.util.concurrent.ExecutionException;\r\n\r\npublic class DoctorSignUpActivity extends AppCompatActivity {\r\n\r\n    private EditText  firstNameET, lastNameET, emailAddressET, passwordET, phoneNumberET, postalAddressET,employeeNumberET;\r\n\r\n    private RecyclerView specialtiesSelect;\r\n\r\n    private CheckableItemAdapter<Specialties> adapter;\r\n    private Button signUp;\r\n\r\n    protected void onCreate(Bundle savedInstanceState) {\r\n        super.onCreate(savedInstanceState);\r\n        setContentView(R.layout.doctor_register_form);\r\n        setup();\r\n        signUp.setOnClickListener(this::onSignUpClicked);\r\n    }\r\n\r\n    private void setup() {\r\n        firstNameET = findViewById(R.id.firstNameDoctorReg);\r\n        lastNameET = findViewById(R.id.lastNameDoctorReg);\r\n        emailAddressET = findViewById(R.id.emailAddressDoctorReg);\r\n        passwordET = findViewById(R.id.passwordDoctorReg);\r\n        phoneNumberET = findViewById(R.id.phoneNumberDoctorReg);\r\n        postalAddressET = findViewById(R.id.postalAddressDoctorReg);\r\n        employeeNumberET = findViewById(R.id.employeeNumberDoctorReg);\r\n        signUp = findViewById(R.id.signUpButtonDoctorReg);\r\n        specialtiesSelect = findViewById(R.id.specialtiesSelect);\r\n        // Setup RecyclerView\r\n        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);\r\n        adapter = new CheckableItemAdapter<>(this, EnumSet.allOf(Specialties.class));\r\n        specialtiesSelect.setLayoutManager(layoutManager);\r\n        specialtiesSelect.setAdapter(adapter);\r\n        int items = adapter.getItemCount();\r\n        Log.d(\"items\", Integer.toString(items));\r\n\r\n\r\n    }\r\n\r\n    private void onSignUpClicked(View view) {\r\n        String firstName = trimText(firstNameET);\r\n        String lastName = trimText(lastNameET);\r\n        String emailAddress = trimText(emailAddressET);\r\n        String password = trimText(passwordET);\r\n        String phoneNumber = trimText(phoneNumberET);\r\n        String postalAddress = trimText(postalAddressET);\r\n        String employeeNumber = trimText(employeeNumberET);\r\n        EnumSet<Specialties> specialties = adapter.getCheckedOptions(Specialties.class);\r\n\r\n        if (textFieldsAreEmpty(firstName, lastName, emailAddress, password, phoneNumber, postalAddress, employeeNumber)) {\r\n            shortToast(\"Please make sure to fill all the fields.\");\r\n            return;\r\n        }\r\n        if (!nameIsValid(firstName) || !nameIsValid(lastName)) {\r\n            shortToast(\"Please make sure your name follows a human format (no numbers, spaces, etc.)\");\r\n            return;\r\n        }\r\n\r\n\r\n        try {\r\n            int validationResult = emailAddressIsValid(emailAddress);\r\n            if (validationResult < 0) {\r\n                if(validationResult == -1) {\r\n                    shortToast(\"This email address is not formatted like an email address.\");\r\n                }\r\n                else if (validationResult == -2) {\r\n                    shortToast(\"Please ensure this email address' domain exists\");\r\n                }\r\n                else {\r\n                shortToast(\"Please ensure the localPart of your email address is correct, ensure there are no spaces.\");\r\n                }\r\n                return;\r\n            }\r\n        } catch (ExecutionException e) {\r\n           shortToast(\"Something went wrong during email's domain verification, please check your connection and try again.\");\r\n            return;\r\n        } catch (InterruptedException e) {\r\n           shortToast(\"Something went wrong with the email address' verification thread, please wait a bit and try again.\");\r\n            return;\r\n        }\r\n        if (!passwordIsValid(password)) {\r\n            shortToast(\"Password must contain at least 8 chars, one capital letter and one small letter, one number, and one special character.\");\r\n            return;\r\n        }\r\n        if(!phoneNumberIsValid(phoneNumber)) {\r\n            shortToast(\"Please make sure your phone number contains exactly 10 numbers, and only numbers.\");\r\n            return;\r\n        }\r\n\r\n        Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialties);\r\n        if(User.registeredDoctors.contains(newUser.getNewUserInformation())) {\r\n            shortToast(\"Registration successful\");\r\n            // Get the user type for Doctor\r\n            UserType userType = UserType.DOCTOR;\r\n\r\n            // Pass the user type to the next activity\r\n            Intent doctorView = new Intent(DoctorSignUpActivity.this, LoginInteractiveMessage.class);\r\n            doctorView.putExtra(\"userType\", userType);\r\n            startActivity(doctorView);\r\n        } else {\r\n            shortToast(\"An Error occurred please try again\");\r\n        }\r\n    }\r\n\r\n    private void shortToast(String text) {\r\n        Toast.makeText(DoctorSignUpActivity.this, text, Toast.LENGTH_SHORT).show();\r\n    }\r\n\r\n    private String trimText(EditText e) {\r\n        return e.getText().toString().trim();\r\n    }\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/quantumSamurais/hams/doctor/activities/DoctorSignUpActivity.java b/app/src/main/java/com/quantumSamurais/hams/doctor/activities/DoctorSignUpActivity.java
+--- a/app/src/main/java/com/quantumSamurais/hams/doctor/activities/DoctorSignUpActivity.java	(revision 9a410475f7214b41f3193f44fb83d25dc2bb7b17)
++++ b/app/src/main/java/com/quantumSamurais/hams/doctor/activities/DoctorSignUpActivity.java	(date 1697311032073)
+@@ -6,7 +6,6 @@
+ import static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;
+ import static com.quantumSamurais.hams.utils.Validator.textFieldsAreEmpty;
+ 
+-import android.content.Intent;
+ import android.os.Bundle;
+ import android.util.Log;
+ import android.view.View;
+@@ -18,13 +17,11 @@
+ import androidx.recyclerview.widget.LinearLayoutManager;
+ import androidx.recyclerview.widget.RecyclerView;
+ 
+-import com.quantumSamurais.hams.LoginInteractiveMessage;
+ import com.quantumSamurais.hams.R;
+ import com.quantumSamurais.hams.doctor.Doctor;
+ import com.quantumSamurais.hams.doctor.Specialties;
+ import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
+ import com.quantumSamurais.hams.user.User;
+-import com.quantumSamurais.hams.user.UserType;
+ 
+ import java.util.EnumSet;
+ import java.util.concurrent.ExecutionException;
+@@ -119,13 +116,7 @@
+         Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialties);
+         if(User.registeredDoctors.contains(newUser.getNewUserInformation())) {
+             shortToast("Registration successful");
+-            // Get the user type for Doctor
+-            UserType userType = UserType.DOCTOR;
+-
+-            // Pass the user type to the next activity
+-            Intent doctorView = new Intent(DoctorSignUpActivity.this, LoginInteractiveMessage.class);
+-            doctorView.putExtra("userType", userType);
+-            startActivity(doctorView);
++            newUser.changeView(this);
+         } else {
+             shortToast("An Error occurred please try again");
+         }
