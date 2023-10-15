@@ -1,0 +1,120 @@
+@startuml
+!theme carbon-gray
+abstract class User {
+	-_firstName: String
+	-_lastName: String
+	-_hashedPassword: byte[]
+	-_email: String
+	-_phone: String
+	-_address: String
+	__
+	+User (String firstName, String lastName, char[] password, String email, String phone, String adress)
+	+User (String firstName, String lastName, byte[] hashedPassword, byte[] salt, String email, String phone, String adress)
+	#{abstract} signUp(): void
+	#{abstract} changeView(): void
+	+toString(): String
+	..Getters..
+	+getFirstName(): String
+	+getLastName(): String
+	+getEmail(): String
+	+getPassword(): byte[]
+	+getAddress(): String
+	+getPhone(): String
+	..Setters..
+	+setFirstName(String firstName): User
+	+setLastName(String lastName): User
+	+setEmail (String email): User
+	+setPassword(char[] oldPassword, char[] newPassword): User
+	+setAddress (String adress): User
+	+setPhone(String phone): User
+}
+
+
+class Patient extends User {
+	db: FirebaseFirestore
+	-_healthCardNumber: String
+	+Patient (String firstName, String lastName, char[] password, String email, String phone, String adress, String healthCardNumber)
+	+Patient (String firstName, String lastName, byte[] password, byte[] salt, String email, String phone, String adress, String healthCardNumber)
+	+toString(): String
+	..Getters..
+	+getNewUserInformation(): HashMap<String, Object>
+	+getRegisteredPatient: List<Map<String, Object>>
+	+getHealthCardNumber(): String
+	..Setters..
+	+setHealthCardNumber(healthCardNumber: String): Patient
+}
+class Doctor extends User {
+	-_employeeNumber: String
+	-_specialties: ArrayList<Specialties>
+	-newUserInformation: HashMap<String, Object> = new HashMap<>(9){read-only};
+	+Doctor (firstName: String, lastName: String, password: char[], email: String, phone: String, adress: String, employeeNumber: String, specialties: ArrayList<Specialties>)
+	+ Doctor (firstName: String, lastName: String, password: byte[], salt: byte[], email: String, phone: String, adress: String, employeeNumber: String, specialties: ArrayList<Specialties>))
+	+toString(): String
+	..Getters..
+	+getEmpolyeeNumber(): String
+	+getSpecialties(): ArrayList<Specialties>
+	..Setters..
+	+setEmployeeNumber(employeeNumber: String): Doctor
+	+setSpecialties(specialties: ArrayList<Specialties>): Doctor
+}
+
+class Adminstrator extends User {
+	-{static} PASSWORD: byte[] =  [24, 119, 82, 18, 72, 61, -68, -20, 6, 24, -96, -33, 41, 103, -43, -84]{read-only}
+	-{static} SALT: byte[] = [-21, -20, 33, 117, 26, -112, -119, 124, -47, -58, 73, -106, 10, -5, -82, 18]{read-only}
+	+Adminstrator()
+	+changeView(Context currentContext): void
+}
+class BadBadPasswordException extends RuntimeException {
+	+BadBadPasswordException()
+    +BadPasswordException(message: String)
+}
+class Login {
+	-{static}getUserData(email: String, password: char[], userType: UserType, currentContext: Context)
+	-{static}passwordFromDatabase(userData: Map<String,Object>): byte[]
+	-{static}saltFromDatabase(userData: Map<String,Object>): byte[]
+	-{static}login(email: String, password: char[], userType: UserType, currentContext: Context, patientList: QuerySnapshot, doctorList: QuerySnapshot)
+	-{static}searchLoop(toSearch: QuerySnapshot, emailToSearch: String)
+	+{static}login(email: String, password: char[], userType: UserType, currentContext: Context, loginEventListener: LoginEventListener)
+	+{static}hashPassword(password: char[], salt: byte[]): byte[]
+}
+interface LoginEventListener {
+	+loginResponse(LoginReturnCodes returnCode): void
+}
+class Validator {
+	+{static}textFieldIsEmpty(stringField: String..): boolean
+	+{static}textFieldsAreEmpty(fields: String...): boolean
+	+{static}emailAddressIsValid(): ValidationTaskResult
+	+{static}nameIsValid(): boolean
+	+{static}passwordIsValid(): boolean
+	+{static}phoneNumberIsValid(): boolean
+}
+enum ValidationTaskResult {
+        INVALID_FORMAT,
+        INVALID_DOMAIN,
+        INVALID_LOCAL_EMAIL_ADDRESS,
+        ATTRIBUTE_ALREADY_REGISTERED,
+        ATTRIBUTE_IS_FREE_TO_USE,
+        VALID
+}
+enum Specialties {
+	FAMILY_MEDICINE,
+	INTERNAL_MEDICINE,
+	PEDIATRICS,
+	OBSTETRICS,
+	GYNECOLOGY
+}
+enum UserType {
+	PATIENT,
+	DOCTOR,
+	ADMIN
+}
+
+enum LoginReturnCodes {
+    SUCCESS,
+    USER_DOES_NOT_EXIST,
+    INCORRECT_PASSWORD
+}
+
+Doctor "1" -- "1..*" Specialties : has
+Login --> BadBadPasswordException : throws
+@enduml
