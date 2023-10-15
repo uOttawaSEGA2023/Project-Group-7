@@ -47,9 +47,7 @@ public class LoginInteractiveMessage extends AppCompatActivity {
     }
 
     public void LogoffClicked(View view) {
-        // Create an Intent to navigate to the login page
-        Intent intent = new Intent(this, LoginActivity.class);
-        // Start the login activity
-        startActivity(intent);
+        // Call finish to navigate to the login page
+        finish();
     }
 }
