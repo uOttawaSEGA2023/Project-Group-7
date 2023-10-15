@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void signUpClicked(View view){
         Intent accountTypeSelect = new Intent(this, AccountTypeSelectionActivity.class);
-        accountTypeSelect.putExtra("selectType","signUn");
+        accountTypeSelect.putExtra("selectType","signUp");
         startActivity(accountTypeSelect);
     }
     public void signInClicked(View view){
