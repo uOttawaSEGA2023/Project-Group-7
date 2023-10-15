@@ -4,10 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.quantumSamurais.hams.MainActivity;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.user.UserType;
 
@@ -31,6 +33,7 @@ public class LoginInteractiveMessage extends AppCompatActivity {
         logoffButton = findViewById(R.id.logoffButton);
         // Get the user type from the Intent's extra
         UserType userType = (UserType) intent.getSerializableExtra("userType");
+        Log.d("loginInteractiveMessage", "intent userType : " + userType);
         // Check the user type and create the welcome message accordingly
         if (userType == UserType.DOCTOR) {
             welcomeMessage = "Welcome! You are logged in as a Doctor.";
@@ -43,11 +46,12 @@ public class LoginInteractiveMessage extends AppCompatActivity {
         welcomeMessageTextView.setText(welcomeMessage);
     }
     public void addListeners() {
-        logoffButton.setOnClickListener(this::LogoffClicked);
+        logoffButton.setOnClickListener(this::logOffClicked);
     }
 
-    public void LogoffClicked(View view) {
-        // Call finish to navigate to the login page
+    public void logOffClicked(View view) {
         finish();
+        Intent backToMain = new Intent(this, MainActivity.class);
+        startActivity(backToMain);
     }
 }
