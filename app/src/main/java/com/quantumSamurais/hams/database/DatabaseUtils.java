@@ -10,30 +10,62 @@ import com.quantumSamurais.hams.patient.Patient;
 
 public class DatabaseUtils {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private static int currentRequestID;
+    private static int currentSignUpRequestID;
+    // Deliverable 2
     public DatabaseUtils() {
         //Tasks.await(db.collection("users").document("software").collection("requests").get().addOnSuccessListener(this));
     }
-    public void addPatientRequest(Patient patient) {
+    public void addPatientSignUpRequest(Patient patient) {
 
     }
 
-    public void addDoctorRequest(Doctor doctor) {
+    public void addDoctorSignUpRequest(Doctor doctor) {
 
     }
-    public void approveRequest(int id) {
+    public void approveSignUpRequest(int id) {
 
     }
-    public void rejectRequest(int id) {
+    public void rejectSignUpRequest(int id) {
 
     }
-    public void getRequests(RequestsResponseListener listener) {
+
+    // <editor-fold desc="Deliverable 3 & 4">
+    public void addAppointmentRequest() {
+
+    }
+    public void approveAppointment(int id) {
+
+    }
+    public void rejectAppointment(int id) {
+
+    }
+    public void cancelAppointment(int id) {
+
+    }
+    public void addShift() {
+
+    }
+    public void deleteShift(int id) {
+
+    }
+    public void getPatientAppointments() {
+
+    }
+    public void getDoctorAppointments() {
+
+    }
+    public void getShifts() {
+
+    }
+    // </editor-fold>
+
+    // Deliverable 2
+    public void getSignUpRequests(RequestsResponseListener listener) {
 
     }
     public void getPatients(PatientsResponseListener listener) {
 
     }
-
     public void getDoctors(DoctorsResponseListener listener) {
 
     }
