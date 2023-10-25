@@ -1,69 +1,75 @@
+package com.quantumSamurais.hams.user;
+
+import com.quantumSamurais.hams.doctor.Doctor;
+import com.quantumSamurais.hams.patient.Patient;
+
+import java.io.Serializable;
 import java.util.HashMap;
 
 public class UserWrappedDB {
-    private Pateint patient;
+    private Patient patient;
     private Doctor doctor;
     private User user;
-    private HashMap<String,E ? implements Serializable> mainData;
+    private HashMap<String,Serializable> mainData;
     private UserType curtype;
 
     public UserWrappedDB(){
         if(mainData==null){
-            this.mainData= new HashMap<String,E ? implements Serializable>;
+            this.mainData= new HashMap<String,Serializable>();
         }
     }
-    public UserWrappedDB(Pateint patient){
+    public UserWrappedDB(Patient patient){
         this.patient=patient;
         this.user=patient;
-        this.curtype=PATIENT;
+        this.curtype=UserType.PATIENT;
         if(mainData==null){
-            this.mainData= new HashMap<String,E ? implements Serializable>;
+            this.mainData= new HashMap<String,Serializable>();
         }
         
     }
     public UserWrappedDB(Doctor doctor){
         this.doctor=doctor;
         this.user=doctor;
-        this.curtype=DOCTOR;
+        this.curtype=UserType.DOCTOR;
         if(mainData==null){
-            this.mainData= new HashMap<String,E ? implements Serializable>;
+            this.mainData= new HashMap<String,Serializable>();
         }
     }
     public UserWrappedDB(User user){
         this.user=user;
         if(mainData==null){
-            this.mainData= new HashMap<String,E ? implements Serializable>;
+            this.mainData= new HashMap<String,Serializable>();
         }
     }
     public void userToPatient(){
-        if(curtype==PATIENT){return;
+        if(curtype==UserType.PATIENT){return;
         }else{
-            this.patient= (Pateint) user;
-            curtype=PATIENT;
+            this.patient= (Patient) user;
+            curtype=UserType.PATIENT;
         }
     }
     public void userToDoctor(){
-        if(curtype==DOCTOR){return;
+        if(curtype==UserType.DOCTOR){return;
         }else{
-            this.DOCTOR= (DOCTOR) user;
-            curtype=DOCTOR;
+            this.doctor= (Doctor) user;
+            curtype=UserType.DOCTOR;
         }
     }
-    public void storeData(String key, E implements Serializable data) throws Exception{
-        if(curtype==null){throw new Exception("User type not defined")}
+    public void storeData(String key, Serializable data) throws Exception{
+        if(curtype==null){throw new Exception("User type not defined");}
 
         if(mainData==null){
-            this.mainData= new HashMap<String,E ? implements Serializable>;
+            this.mainData= new HashMap<String,Serializable>();
         }
 
         this.mainData.put(key,data);
     }
-    public E getData(String key) throws Exception{
+    public Serializable getData(String key) throws Exception{
         if(mainData==null){
             throw new Exception("Data hash is null");
         }
         if(this.mainData.get(key)==null){
-            throw new Exception("Key not found")
+            throw new Exception("Key not found");
         }
         return this.mainData.get(key);
 
