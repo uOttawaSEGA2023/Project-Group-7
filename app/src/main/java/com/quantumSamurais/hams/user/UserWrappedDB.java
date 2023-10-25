@@ -11,6 +11,7 @@ public class UserWrappedDB {
     private Doctor doctor;
     private User user;
     private HashMap<String,Serializable> mainData;
+    private HashMap<String,Serializable> classData;
     private UserType curtype;
 
     public UserWrappedDB(){
@@ -25,6 +26,14 @@ public class UserWrappedDB {
         if(mainData==null){
             this.mainData= new HashMap<String,Serializable>();
         }
+        classData.put("firstName", Patient.getFirstName());
+		classData.put("lastName", PatientgetLastName());
+		classData.put("emailAddress", Patient.getEmail());
+		classData.put("hashedPassword", Blob.fromBytes(Patient.getPassword()));
+		classData.put("salt", Blob.fromBytes(Patient.getSalt()));
+		classData.put("phoneNumber",Patient.getPhone());
+        classData.put("postalAddress", Patient.getAddress());
+        classData.put("healthCardNumber", Patient.getHealthCardNumber());
         
     }
     public UserWrappedDB(Doctor doctor){
@@ -34,7 +43,46 @@ public class UserWrappedDB {
         if(mainData==null){
             this.mainData= new HashMap<String,Serializable>();
         }
+        classData.put("firstName", Doctor.getFirstName());
+		classData.put("lastName", Doctor.getLastName());
+		classData.put("emailAddress", Doctor.getEmail());
+		classData.put("hashedPassword", Blob.fromBytes(Doctor.getPassword()));
+		classData.put("salt", Blob.fromBytes(Doctor.getSalt()));
+		classData.put("phoneNumber",Doctor.getPhone());
+		classData.put("postalAddress", Doctor.getAddress());
+		classData.put("employeeNumber", Doctor.getEmployeeNumber());
+		classData.put("specialties", Doctor.getSpecialties());
     }
+
+    public HashMap<String,Serializable> getClassData(){
+        return this.classData;
+    }
+    public void reconstruct(){
+        if(curtype==UserType.PATIENT){
+            Patient tempat = new Patient(classData.get("firstName"),
+            classData.get("lastName"),
+            classData.get("hashedPassword"),
+            classData.get("salt"),
+            classData.get("emailAddress"),
+            classData.get("phoneNumber"),
+            classData.get("postalAddress"),
+            classData.get("healthCardNumber"));
+            this.Patient=tempat;
+        } else if(curtype==UserType.DOCTOR){
+            Doctor doctemp = new Doctor(classData.get("firstName"),
+            classData.get("lastName"),
+            classData.get("hashedPassword"),
+            classData.get("salt"),
+            classData.get("emailAddress"),
+            classData.get("phoneNumber"),
+            classData.get("postalAddress"),
+            classData.get("employeeNumber"),
+            classData.get("specialties"))
+        }
+    }
+
+
+
     public UserWrappedDB(User user){
         this.user=user;
         if(mainData==null){
