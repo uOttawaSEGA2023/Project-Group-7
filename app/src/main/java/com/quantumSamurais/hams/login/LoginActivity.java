@@ -59,8 +59,6 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             runOnUiThread(() -> {
                 Toast.makeText(LoginActivity.this, "Successfully Logged in!", Toast.LENGTH_SHORT).show();
                 // Start the login activity
-//                Intent interactiveMessage = new Intent(LoginActivity.this, LoginInteractiveMessage.class);
-//                startActivity(interactiveMessage);
             });
         }
     }
