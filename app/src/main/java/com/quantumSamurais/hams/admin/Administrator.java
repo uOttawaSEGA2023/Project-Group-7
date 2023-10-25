@@ -31,4 +31,20 @@ public class Administrator extends User {
       // adminView.putExtra("user",this);
         currentContext.startActivity(adminView);
     }
+
+    public void viewRegistrationRequests() {
+        // a list of registration requests from Patients and Doctors
+    }
+
+    public void approveRegistrationRequest(User user) {
+        // Approve the registration request for the given user
+    }
+
+    public void rejectRegistrationRequest(User user) {
+        // Reject the registration request for the given user
+    }
+
+    public void viewRejectedRequests() {
+        // Display a list of previously rejected registration requests
+    }
 }
