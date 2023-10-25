@@ -76,5 +76,12 @@ public class UserWrappedDB {
 
     }
 
+    public UserType getUserType() {
+        return this.curtype;
+    }
+
+    public HashMap<String, Serializable> getMainData() {
+        return mainData;
+    }
 
 }
