@@ -3,9 +3,12 @@ package com.quantumSamurais.hams.admin;
 import android.content.Context;
 import android.content.Intent;
 
+import com.quantumSamurais.hams.database.Request;
+import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
 import com.quantumSamurais.hams.login.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
+import com.quantumSamurais.hams.database.DatabaseUtils;
 
 public class Administrator extends User {
 
@@ -31,4 +34,8 @@ public class Administrator extends User {
       // adminView.putExtra("user",this);
         currentContext.startActivity(adminView);
     }
+
+
+
+
 }

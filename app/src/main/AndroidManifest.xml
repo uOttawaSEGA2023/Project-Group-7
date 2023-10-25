@@ -31,6 +31,7 @@
         <activity android:name=".login.LoginActivity">
         </activity>
         <activity android:name=".AccountTypeSelectionActivity" />
+        <activity android:name="com.quantumSamurais.hams.admin.activities.ViewRequestsActivity" />
     </application>
 
 </manifest>
