@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,7 +18,19 @@ import com.quantumSamurais.hams.admin.adapters.RequestItemAdapter;
 import com.quantumSamurais.hams.admin.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.DatabaseUtils;
 import com.quantumSamurais.hams.database.Request;
+import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
+import com.quantumSamurais.hams.login.LoginActivity;
+import com.quantumSamurais.hams.user.User;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
 
 import java.util.ArrayList;
 
@@ -104,5 +118,56 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
     public void onShowMoreClick(int position, Intent showMore) {
 
 
+    }
+    /* implementation of a sendEmail method meant to be used to send an email to users
+    *   this confirms whether or not they have been granted access to the system.
+    *   This implementation uses the an instance of the user and RequestStatus;
+    *   however, these two variables can be swapped out given a change in the implementation.
+    *
+    *
+    * @param */
+    public void sendEmail(User user, RequestStatus status) {
+        // should be put into an on click for both the approve and reject buttons.
+        final String username = "admin@gmail.com"; // template admin email for the time being.
+        final String password = "12345678"; // '' password.
+        String msgToSend = new String(), msgSbjct = new String(); // message to send and message subject.
+        switch (status) {
+            case APPROVED:
+                msgToSend = "Your request to the health Management app has been approved.\n";
+                msgSbjct = "your account has been approved! :D";
+            case DENIED:
+                msgToSend = "Your request to the health Management app has been denied. \n ";
+                msgSbjct = "your account has been denied. >:0 ";
+        }
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com"); // set as smtp.gmail.com because of email domain.
+        // change if we the email has another domain.
+        props.put("mail.smtp.port", "587"); // 587 most common port for sending emails.
+
+
+        Session session = Session.getInstance(props,
+                new javax.mail.Authenticator(){
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(username,password);
+                    }
+                });
+
+        try { // try block for sending the email.
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(username));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
+            // we set recipients of the email as the user that we verify or reject.
+            message.setSubject(msgSbjct);
+            message.setText(msgToSend);
+            Transport.send(message);
+            Toast.makeText(getApplicationContext(), "patient has been notified.",Toast.LENGTH_LONG).show();
+
+
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
