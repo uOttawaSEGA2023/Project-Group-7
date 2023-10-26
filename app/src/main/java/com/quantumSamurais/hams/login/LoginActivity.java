@@ -34,11 +34,11 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         signInButton = findViewById(R.id.signInButton);
         emailEditText = findViewById(R.id.EmailAddressSlot);
         passwordEditText = findViewById(R.id.PasswordSlot);
-        signInButton.setOnClickListener(this::signUpBtnClicked);
+        signInButton.setOnClickListener(this::signInBtnClicked);
 
     }
 
-    public void signUpBtnClicked(View view) {
+    public void signInBtnClicked(View view) {
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
@@ -57,6 +57,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         switch (requestStatus) {
             case APPROVED:
                 Intent redirectIntent = new Intent(LoginActivity.this, LoginInteractiveMessage.class);
+                redirectIntent.putExtra("userType", userType);
                 startActivity(redirectIntent);
                 break;
             case DENIED:
