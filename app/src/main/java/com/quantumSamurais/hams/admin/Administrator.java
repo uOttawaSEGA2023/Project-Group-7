@@ -9,6 +9,7 @@ import com.quantumSamurais.hams.login.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.utils.ArrayUtils;
 
 public class Administrator extends User {
 
@@ -19,8 +20,8 @@ public class Administrator extends User {
         super(
                 "Admin",
                 "",
-                PASSWORD,
-                SALT,
+                ArrayUtils.packBytes(PASSWORD),
+                ArrayUtils.packBytes(SALT),
                 "Administrator",
                 "000-000-000",
                 ""

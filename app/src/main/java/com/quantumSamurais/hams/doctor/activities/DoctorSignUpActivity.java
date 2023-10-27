@@ -22,6 +22,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
+import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.callbacks.DoctorsResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutionException;
 
-public class DoctorSignUpActivity extends AppCompatActivity {
+public class DoctorSignUpActivity extends AppCompatActivity implements DoctorsResponseListener {
 
     private EditText  firstNameET, lastNameET, emailAddressET, passwordET, phoneNumberET, postalAddressET,employeeNumberET;
 
@@ -42,6 +44,8 @@ public class DoctorSignUpActivity extends AppCompatActivity {
 
     private CheckableItemAdapter<Specialties> adapter;
     private Button signUp;
+
+    private Doctor currentDoctor;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -163,16 +167,10 @@ public class DoctorSignUpActivity extends AppCompatActivity {
             return;
         }
 
-        Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
-        if(User.registeredDoctors.contains(newUser.getNewUserInformation())) {
-            shortToast("Registration successful");
-            // Switch to login
-            Intent login = new Intent(this, LoginActivity.class);
-            startActivity(login);
-            finish();
-        } else {
-            shortToast("An Error occurred please try again");
-        }
+        currentDoctor = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
+        DatabaseUtils db = new DatabaseUtils();
+        db.getDoctors(this);
+
     }
 
     private void shortToast(String text) {
@@ -183,4 +181,21 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         return e.getText().toString().trim();
     }
 
+    @Override
+    public void onSuccess(ArrayList<Doctor> doctors) {
+        if(doctors.contains(currentDoctor)) {
+            shortToast("Registration successful");
+            // Switch to login
+            Intent login = new Intent(this, LoginActivity.class);
+            startActivity(login);
+            finish();
+        } else {
+
+        }
+    }
+
+    @Override
+    public void onFailure(Error error) {
+        shortToast("Registration error, please try again in a few minutes.");
+    }
 }
