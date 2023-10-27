@@ -1,5 +1,7 @@
 package com.quantumSamurais.hams.admin.adapters;
 
+//import static com.quantumSamurais.hams.admin.activities.ViewRequestsActivity.getUserFromRequest;
+
 import static com.quantumSamurais.hams.admin.activities.ViewRequestsActivity.getUserFromRequest;
 
 import android.content.Context;
@@ -7,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -17,6 +20,7 @@ import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.Administrator;
 import com.quantumSamurais.hams.admin.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Request;
+import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
@@ -41,6 +45,7 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
     public static class RequestViewHolder extends RecyclerView.ViewHolder{
         TextView name, emailAddress, userType;
         ImageButton accept, reject, moreInfo;
+        Request request;
         RequestsActivityListener requestsActivityListener;
 
         public RequestViewHolder(@NonNull View itemView, RequestsActivityListener requestClickListener) {
@@ -52,10 +57,10 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
         }
 
         private void setData(User user, long id) throws Exception {
-            TextView name = itemView.findViewById(R.id.name);
-            TextView emailAddress = itemView.findViewById(R.id.emailAddress);
-            TextView userType = itemView.findViewById(R.id.userType);
-            TextView requestId = itemView.findViewById(R.id.requestId);
+            TextView name = itemView.findViewById(R.id.nameRequest);
+            TextView emailAddress = itemView.findViewById(R.id.emailAddressRequest);
+            TextView userType = itemView.findViewById(R.id.userTypeRequest);
+            TextView requestId = itemView.findViewById(R.id.idRequest);
 
             //
             name.setText(user.getFirstName() + " " + user.getLastName());
@@ -64,58 +69,66 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
 
             //Since it's an ENUM, default is unneeded.
             if (user instanceof Doctor) {
-                name.setText(R.string.doctor);
+                userType.setText(R.string.doctor);
             } else if (user instanceof Patient) {
-                name.setText(R.string.patient);
+                userType.setText(R.string.patient);
             } else if (user instanceof Administrator) {
                 Log.d("Request Screen", "Someone managed to create an account as ADMIN... how?");
             }
-            setOnClickListeners();
+            setOnClickListeners(request);
+
+
+
 
         }
-        private void setOnClickListeners(){
-            View.OnClickListener acceptListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (requestsActivityListener != null) {
-                        int position = getAdapterPosition();
 
-                        if (position != RecyclerView.NO_POSITION) {
-                            requestsActivityListener.onAcceptClick(position);
-                        }
+        private void setRequest(Request request){
+            this.request = request;
+        }
+        private void setOnClickListeners(Request request){
+            View.OnClickListener acceptListener = view -> {
+                if (requestsActivityListener != null) {
+                    int position = getAdapterPosition();
 
+                    if (position != RecyclerView.NO_POSITION) {
+                        requestsActivityListener.onAcceptClick(position);
                     }
+
                 }
             };
-            View.OnClickListener rejectListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (requestsActivityListener != null) {
-                        int position = getAdapterPosition();
+            View.OnClickListener rejectListener = view -> {
+                if (requestsActivityListener != null) {
+                    int position = getAdapterPosition();
 
-                        if (position != RecyclerView.NO_POSITION) {
-                            requestsActivityListener.onAcceptClick(position);
-                        }
-
+                    if (position != RecyclerView.NO_POSITION) {
+                        requestsActivityListener.onAcceptClick(position);
                     }
+
                 }
             };
-            View.OnClickListener showMoreListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (requestsActivityListener != null) {
-                        int position = getAdapterPosition();
+            View.OnClickListener showMoreListener = view -> {
+                if (requestsActivityListener != null) {
+                    int position = getAdapterPosition();
 
-                        if (position != RecyclerView.NO_POSITION) {
-                            requestsActivityListener.onAcceptClick(position);
-                        }
-
+                    if (position != RecyclerView.NO_POSITION) {
+                        requestsActivityListener.onAcceptClick(position);
                     }
+
                 }
             };
+            //Always there.
             accept.setOnClickListener(acceptListener);
-            reject.setOnClickListener(rejectListener);
             moreInfo.setOnClickListener(showMoreListener);
+
+
+
+            //It only makes sense to have X button for requests that are pending.
+            if (request.getStatus() == RequestStatus.REJECTED) {
+                reject.setVisibility(View.INVISIBLE); // Hide the button
+                reject.setEnabled(false); // Make the button uninteractable
+            } else {
+                reject.setOnClickListener(rejectListener);
+            }
         }
 
     }
@@ -123,22 +136,18 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
     @NonNull
     @Override
     public RequestItemAdapter.RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(currentContext).inflate(R.layout.request_item,parent,false);
+        View v = LayoutInflater.from(currentContext).inflate(R.layout.request_item2,parent,false);
         return new RequestViewHolder(v, requestClickListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RequestItemAdapter.RequestViewHolder holder, int position) {
         try {
+            holder.setRequest(requests.get(position));
             holder.setData(getUserFromRequest(requests.get(position)), requests.get(position).getID());
-
-
         } catch (Exception e) {
             Log.d("Requests Screen", e.getMessage() + " " + e.getCause());
-            throw new RuntimeException(e);
         }
-
-
     }
 
     @Override
