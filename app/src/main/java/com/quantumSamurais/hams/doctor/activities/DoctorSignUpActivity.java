@@ -23,7 +23,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.database.callbacks.DoctorsResponseListener;
+import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
@@ -36,7 +38,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutionException;
 
-public class DoctorSignUpActivity extends AppCompatActivity implements DoctorsResponseListener {
+public class DoctorSignUpActivity extends AppCompatActivity implements RequestsResponseListener {
 
     private EditText  firstNameET, lastNameET, emailAddressET, passwordET, phoneNumberET, postalAddressET,employeeNumberET;
 
@@ -167,9 +169,10 @@ public class DoctorSignUpActivity extends AppCompatActivity implements DoctorsRe
             return;
         }
 
+        signUp.setEnabled(false);
         currentDoctor = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
         DatabaseUtils db = new DatabaseUtils();
-        db.getDoctors(this);
+        db.getSignUpRequests(this);
 
     }
 
@@ -182,20 +185,27 @@ public class DoctorSignUpActivity extends AppCompatActivity implements DoctorsRe
     }
 
     @Override
-    public void onSuccess(ArrayList<Doctor> doctors) {
-        if(doctors.contains(currentDoctor)) {
-            shortToast("Registration successful");
+    public void onSuccess(ArrayList<Request> requests) {
+        for (Request r : requests) {
+            if(r.getUserType() != UserType.DOCTOR)
+                continue;
+            if(!r.getDoctor().equals(currentDoctor))
+                continue;
+            runOnUiThread(() -> {
+                shortToast("Registration successful");
+            });
             // Switch to login
             Intent login = new Intent(this, LoginActivity.class);
             startActivity(login);
             finish();
-        } else {
-
         }
     }
 
     @Override
     public void onFailure(Error error) {
-        shortToast("Registration error, please try again in a few minutes.");
+        runOnUiThread(() -> {
+            shortToast("Registration error, please try again in a few minutes.");
+        });
+        signUp.setEnabled(true);
     }
 }
