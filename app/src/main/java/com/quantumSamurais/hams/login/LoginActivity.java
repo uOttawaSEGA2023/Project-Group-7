@@ -97,7 +97,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
                         case "APPROVED":
                             return RequestStatus.APPROVED;
                         case "DENIED":
-                            return RequestStatus.DENIED;
+                            return RequestStatus.REJECTED;
                         case "PENDING":
                             return RequestStatus.PENDING;
                     }
@@ -106,7 +106,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
-        return RequestStatus.DENIED;
+        return RequestStatus.REJECTED;
     }
 
 
