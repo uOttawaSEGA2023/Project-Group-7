@@ -1,6 +1,7 @@
 package com.quantumSamurais.hams.admin.activities;
 
 import static com.quantumSamurais.hams.database.RequestStatus.APPROVED;
+import static com.quantumSamurais.hams.database.RequestStatus.PENDING;
 import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
 
 import android.content.Intent;
@@ -25,6 +26,7 @@ import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.login.LoginActivity;
+import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
 
 import javax.mail.Message;
@@ -46,7 +48,7 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.see_requests_view);
         setup();
     }
 
@@ -56,18 +58,23 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
 
         // Setup RecyclerView
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
-        requestsAdapter = new RequestItemAdapter(this, null, this);
+        requests = new ArrayList<Request>();
+        char[] pass = {'a'};
+        requests.add(new Request(123, new Patient("John", "Doe", pass, "dummyz@gmail.com", "1112221110", "asdas", "asd"), PENDING));
+        requests.add(new Request(1234, new Patient("Johny", "Dope", pass, "dummyf@gmail.com", "1112221110", "asdas", "asd"), REJECTED));
+        requests.add(new Request(12345, new Patient("Johna", "Does", pass, "dummyg@gmail.com", "1112221110", "asdas", "asd"), REJECTED));
+        requestsAdapter = new RequestItemAdapter(this, requests, this);
         requestsStack.setLayoutManager(layoutManager);
         requestsStack.setAdapter(requestsAdapter);
 
         //I call the refresh runnable method for the first time (instantly)
         //Will then be called periodically
-        refreshHandler.post(refreshRunnable);
+        //refreshHandler.post(refreshRunnable);
     }
 
     public void viewRegistrationRequests() {
         // a list of registration requests from Patients and Doctors
-        tools.getSignUpRequests(this);
+        //tools.getSignUpRequests(this);
     }
 
     public void RefreshButtonClicked(View v){
@@ -80,7 +87,7 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
     private Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
-            viewRegistrationRequests();
+            //viewRegistrationRequests();
             refreshHandler.postDelayed(this, 5000);
         }
     };
@@ -117,8 +124,6 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
         tools.approveSignUpRequest(idToReject);
         sendEmail(getUserFromRequest(requests.get(position)), REJECTED);
         refreshHandler.post(refreshRunnable);
-
-
     }
 
     public static User getUserFromRequest(Request request){
@@ -152,15 +157,15 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
 
         // Start the "Show More" activity
         startActivity(showMoreIntent);
-
     }
-    /* implementation of a sendEmail method meant to be used to send an email to users
+/* implementation of a sendEmail method meant to be used to send an email to users
     *   this confirms whether or not they have been granted access to the system.
     *   This implementation uses the an instance of the user and RequestStatus;
     *   however, these two variables can be swapped out given a change in the implementation.
     *
     *
     * @param */
+
     public void sendEmail(User user, RequestStatus status) {
         try {
             new Thread(() -> {
@@ -218,7 +223,6 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
 
     public class ShowMoreActivity extends AppCompatActivity{
         @Override
-
         protected void onCreate(Bundle savedInstanceState){
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_show_more);

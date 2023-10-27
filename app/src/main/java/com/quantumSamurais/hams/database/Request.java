@@ -17,14 +17,14 @@ public class Request {
 
     }
 
-    Request(long id, Patient patient, RequestStatus status) {
+    public Request(long id, Patient patient, RequestStatus status) {
         this.id = id;
         this.userType = UserType.PATIENT;
         this.status = status;
         this.patient = patient;
         this.doctor = null;
     }
-    Request(long id, Doctor doctor, RequestStatus status) {
+    public Request(long id, Doctor doctor, RequestStatus status) {
         this.id = id;
         this.userType = UserType.DOCTOR;
         this.status = status;

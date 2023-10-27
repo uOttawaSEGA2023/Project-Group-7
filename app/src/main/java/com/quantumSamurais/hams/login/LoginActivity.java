@@ -13,10 +13,13 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.database.RequestStatus;
+import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.callbacks.DoctorsResponseListener;
+import com.quantumSamurais.hams.database.callbacks.PatientsResponseListener;
+import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
 import com.quantumSamurais.hams.user.UserType;
 
 import java.util.concurrent.ExecutionException;
@@ -51,8 +54,8 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         Intent intent = getIntent();
         UserType userType = (UserType) intent.getSerializableExtra("userType");
         Login.login(email, parsePass, userType, this, this);
-/*
-        RequestStatus requestStatus = getRequestStatus(email, password);
+
+        RequestStatus requestStatus = getRequestStatus(email, password, userType);
 
         switch (requestStatus) {
             case APPROVED:
@@ -60,51 +63,33 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
                 redirectIntent.putExtra("userType", userType);
                 startActivity(redirectIntent);
                 break;
-            case DENIED:
+            case REJECTED:
                 Toast.makeText(this, "Your registration request was denied by the Administrator.", Toast.LENGTH_LONG).show();
                 break;
             case PENDING:
                 Toast.makeText(this, "Your registration has not been approved yet.", Toast.LENGTH_LONG).show();
                 break;
-        }*/
+        }
     }
 
-    private RequestStatus getRequestStatus(String email, String password) {
+    private RequestStatus getRequestStatus(String email, String password, UserType userType) {
+        DatabaseUtils db = new DatabaseUtils();
+        db.getDoctors((DoctorsResponseListener) this);
+        db.getPatients((PatientsResponseListener) this);
+        db.getSignUpRequests((RequestsResponseListener) this);
+        boolean foundInPatients = db.getPatients(email);
+        boolean foundInDoctors = db.getDoctors();
+        boolean foundInRequests = db.getSignUpRequests();
 
-        // Get an instance of Firebase Firestore.
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Check if the email is in the "patients" collection.
-        Query patientsQuery = db.collection("users").document("software").collection("patients").whereEqualTo("emailAddress", email);
-        Query doctorsQuery = db.collection("users").document("software").collection("doctors").whereEqualTo("emailAddress", email);
-        Query requestsQuery = db.collection("users").document("software").collection("requests").whereEqualTo("emailAddress", email);
-
-        try {
-            QuerySnapshot patientsResult = Tasks.await(patientsQuery.get());
-            QuerySnapshot doctorsResult = Tasks.await(doctorsQuery.get());
-            QuerySnapshot requestsResult = Tasks.await(requestsQuery.get());
-
-            if (!patientsResult.isEmpty() || !doctorsResult.isEmpty()) {
-                // If email is found in "patients" or "doctors" collection, return APPROVED.
-                return RequestStatus.APPROVED;
-            } else if (!requestsResult.isEmpty()) {
-                // If email is found in "requests" collection, get the status.
-                DocumentSnapshot requestDocument = requestsResult.getDocuments().get(0);
-                String status = requestDocument.getString("status");
-
-                if (status != null) {
-                    switch (status) {
-                        case "APPROVED":
-                            return RequestStatus.APPROVED;
-                        case "DENIED":
-                            return RequestStatus.REJECTED;
-                        case "PENDING":
-                            return RequestStatus.PENDING;
-                    }
-                }
+        if (foundInPatients || foundInDoctors) {
+            return RequestStatus.APPROVED;
+        } else if (foundInRequests){
+            if ("PENDING".equals(requestStatus)) {
+                return RequestStatus.PENDING;
+            } else if ("REJECTED".equals(requestStatus)) {
+                return RequestStatus.REJECTED;
             }
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
         }
         return RequestStatus.REJECTED;
     }

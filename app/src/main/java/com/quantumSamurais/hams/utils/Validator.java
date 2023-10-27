@@ -193,7 +193,7 @@ public final class Validator {
             Boolean domainIsValid;
 
             domainIsValid = validationTask.execute(domainPart).get();
-
+//TODO: Check if email is in request or patient or doctor databases.
             if (domainIsValid) {
                 if (!textFieldIsEmpty(localPart) && localPart.matches("^\\S+$")) {
                     ValidationTaskResult emailIsInDatabase = new IsInDatabaseTask(EMAIL_ADDRESS, userType).execute(new String[]{emailAddress}).get();
