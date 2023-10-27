@@ -51,7 +51,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         Intent intent = getIntent();
         UserType userType = (UserType) intent.getSerializableExtra("userType");
         Login.login(email, parsePass, userType, this, this);
-/*
+
         RequestStatus requestStatus = getRequestStatus(email, password);
 
         switch (requestStatus) {
@@ -60,13 +60,13 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
                 redirectIntent.putExtra("userType", userType);
                 startActivity(redirectIntent);
                 break;
-            case DENIED:
+            case REJECTED:
                 Toast.makeText(this, "Your registration request was denied by the Administrator.", Toast.LENGTH_LONG).show();
                 break;
             case PENDING:
                 Toast.makeText(this, "Your registration has not been approved yet.", Toast.LENGTH_LONG).show();
                 break;
-        }*/
+        }
     }
 
     private RequestStatus getRequestStatus(String email, String password) {
@@ -74,7 +74,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         // Get an instance of Firebase Firestore.
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Check if the email is in the "patients" collection.
+        // Check if the email is in the "patients", "doctors", or "requests" collection(s).
         Query patientsQuery = db.collection("users").document("software").collection("patients").whereEqualTo("emailAddress", email);
         Query doctorsQuery = db.collection("users").document("software").collection("doctors").whereEqualTo("emailAddress", email);
         Query requestsQuery = db.collection("users").document("software").collection("requests").whereEqualTo("emailAddress", email);
