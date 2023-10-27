@@ -5,6 +5,7 @@ import static com.quantumSamurais.hams.database.RequestStatus.PENDING;
 import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,12 +42,12 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
     }
 
     public RequestItemAdapter(Context context, FragmentTab activeTab,ArrayList<Request> requestsFromDatabase, RequestsActivityListener listener) {
+        Log.d("RequestItemAdapter", "Number of items in requests: " + requestsFromDatabase.size());
         this.activeTab = activeTab;
         // Filters the passed list, and makes it so it contains only the required info
-        ArrayList<Request> tempRequest = new ArrayList<>();
+        ArrayList<Request> tempRequest = requestsFromDatabase;
         switch(activeTab){
             case ALL_REQUESTS:
-                tempRequest = requestsFromDatabase;
                 break;
             case PENDING_REQUESTS:
                 ArrayList<Request> pendingRequests = new ArrayList<>();
@@ -72,11 +73,11 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
         currentContext = context;
         requestIterator = requests.iterator();
         requestClickListener = listener;
-
+        Log.d("RequestItemAdapter", "Number of items in requests: " + requests.size());
     }
 
     public static class RequestViewHolder extends RecyclerView.ViewHolder{
-        TextView name, emailAddress, userType;
+        TextView name, emailAddress, userType, requestId;
         ImageButton accept, reject, moreInfo;
         Request request;
         RequestsActivityListener requestsActivityListener;
@@ -90,10 +91,10 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
         }
 
         private void setData(User user, long id) throws Exception {
-            TextView name = itemView.findViewById(R.id.nameRequest);
-            TextView emailAddress = itemView.findViewById(R.id.emailAddressRequest);
-            TextView userType = itemView.findViewById(R.id.userTypeRequest);
-            TextView requestId = itemView.findViewById(R.id.idRequest);
+            name = itemView.findViewById(R.id.nameRequest);
+            emailAddress = itemView.findViewById(R.id.emailAddressRequest);
+            userType = itemView.findViewById(R.id.userTypeRequest);
+            requestId = itemView.findViewById(R.id.idRequest);
 
             //
             name.setText(user.getFirstName() + " " + user.getLastName());
@@ -134,7 +135,7 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
                     int position = getAdapterPosition();
 
                     if (position != RecyclerView.NO_POSITION) {
-                        requestsActivityListener.onAcceptClick(position);
+                        requestsActivityListener.onRejectClick(position);
                     }
 
                 }
@@ -142,9 +143,10 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
             View.OnClickListener showMoreListener = view -> {
                 if (requestsActivityListener != null) {
                     int position = getAdapterPosition();
+                    Intent intent = new Intent();
 
                     if (position != RecyclerView.NO_POSITION) {
-                        requestsActivityListener.onAcceptClick(position);
+                        requestsActivityListener.onShowMoreClick(position, intent);
                     }
 
                 }

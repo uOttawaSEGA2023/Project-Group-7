@@ -49,23 +49,25 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
         return fragment;
     }
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_requests, container, false);
-        requestsStack = view.findViewById(R.id.requestsRecyclerView);
+        requestsStack = view.findViewById(R.id.requestsRecyclerViewFragment);
 
         Bundle args = getArguments();
         if (args != null) {
             activeTab = (FragmentTab) args.getSerializable("activeTab");
-            ArrayList<Request> requests = new ArrayList<>();
-            requestsAdapter = new RequestItemAdapter(getActivity(), activeTab, requests, this);
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+            refreshHandler.post(refreshRunnable);
+            Log.d("requests Fragment", "Instance requests size after refreshRunnable : " + requests.size());
+            requestsAdapter = new RequestItemAdapter(getContext(), activeTab, requests, this);
+            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
             requestsStack.setLayoutManager(layoutManager);
             requestsStack.setAdapter(requestsAdapter);
+
+            Log.d("requests Fragment", "We called from onCreateView");
             return view;
         }
-        throw new IllegalStateException("This fragment was generated without using the newInstance methdod and hence has no FragmentTab.");
+        throw new IllegalStateException("This fragment was generated without using the newInstance method and hence has no FragmentTab.");
 
     }
 
@@ -74,9 +76,6 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
         super.onAttach(context);
         tools = new DatabaseUtils();
 
-
-
-        refreshHandler.post(refreshRunnable);
     }
 
     @Override
@@ -99,17 +98,22 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     private Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
-            //viewRegistrationRequests();
+            viewRegistrationRequests();
             refreshHandler.postDelayed(this, 5000);
         }
     };
     @Override
     public void onSuccess(ArrayList<Request> requests) {
-        //show the requests
 
-        requestsAdapter = new RequestItemAdapter(getActivity(), activeTab, requests, this);
-
-        // Start the periodic data refresh
+        this.requests = requests;
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("RequestFragment", "Number of items in requests: " + requests.size());
+                requestsAdapter.notifyDataSetChanged();
+            }
+        });
+        // Run the post again after 5 seconds
         refreshHandler.postDelayed(refreshRunnable, 5000);
     }
     private void stopDataRefresh() {
@@ -124,6 +128,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
 
     @Override
     public void onAcceptClick(int position) {
+        Log.d("requests Fragment", "accept click was pressed");
         long idToAccept = requests.get(position).getID();
         tools.approveSignUpRequest(idToAccept);
         sendEmail(getActivity(), getUserFromRequest(requests.get(position)), APPROVED);
@@ -132,6 +137,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
 
     @Override
     public void onRejectClick(int position) {
+        Log.d("requests Fragment", "reject click was pressed");
         long idToReject = requests.get(position).getID();
         tools.approveSignUpRequest(idToReject);
         sendEmail(getActivity(), getUserFromRequest(requests.get(position)), REJECTED);
