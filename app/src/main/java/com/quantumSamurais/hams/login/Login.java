@@ -2,6 +2,7 @@ package com.quantumSamurais.hams.login;
 
 //Firebase
 import android.content.Context;
+import android.util.Log;
 
 //App
 import com.google.android.gms.tasks.Tasks;
@@ -15,6 +16,7 @@ import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
+import com.quantumSamurais.hams.utils.ArrayUtils;
 //Java
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -39,40 +41,26 @@ public final class Login {
      * @return Login codes that represent success or failure to login
      */
     public static void login(String email, char[] password, UserType userType, Context currentContext, LoginEventListener loginEventListener) {
-        new Thread(() -> loginEventListener.loginResponse(getUserData(email,password,userType,currentContext))).start();
+        db.collection("users").document("software").collection("patients").whereEqualTo("email",email);
+        new Thread(() -> {
+            try {
+                loginEventListener.loginResponse(
+                        login(
+                                email,
+                                password,
+                                userType,
+                                currentContext,
+                                Tasks.await(db.collection("users").document("software")
+                                .collection("patients").whereEqualTo("email",email)
+                                .get()),
+                                Tasks.await(db.collection("users").document("software")
+                                        .collection("doctors").whereEqualTo("email",email)
+                                .get())));
+            } catch (ExecutionException | InterruptedException e) {
+                Log.d("Login Thread Error:", String.valueOf(e.getCause()));
+            }
+        }).start();
     }
-
-    private static LoginReturnCodes getUserData(String email, char[] password, UserType userType, Context currentContext) {
-        QuerySnapshot snap = null;
-        switch (userType) {
-            case DOCTOR:
-                try {
-                    snap =  Tasks.await(db.collection("users").document("software").collection("doctors").get());
-                } catch (ExecutionException | InterruptedException ignored) {
-                }
-                return login(email,password,UserType.DOCTOR,currentContext,null,snap);
-            case PATIENT:
-                try {
-                    snap = Tasks.await(db.collection("users").document("software").collection("patients").get());
-                } catch (ExecutionException | InterruptedException ignored) {
-                }
-                return login(email,password,UserType.PATIENT,currentContext,snap,null);
-            case ADMIN:
-                return login(email,password,UserType.ADMIN,currentContext,null,null);
-        }
-        return LoginReturnCodes.USER_DOES_NOT_EXIST;
-    }
-    private static byte[] passwordFromDatabase(Map<String,Object> userData) {
-        Blob password = (Blob) userData.get("hashedPassword");
-        assert password != null;
-        return password.toBytes();
-    }
-    private static byte[] saltFromDatabase(Map<String, Object> userData) {
-        Blob salt = (Blob) userData.get("salt");
-        assert salt != null;
-        return salt.toBytes();
-    }
-
 
     /**
      *
@@ -86,72 +74,40 @@ public final class Login {
      */
     private static LoginReturnCodes login(String email, char[] password, UserType userType, Context currentContext,
                                          QuerySnapshot patientList, QuerySnapshot doctorList) {
-        Map<String, Object> userData = null;
+        User userData = null;
         User loggedInUser = null;
         byte[] salt= null;
         switch (userType) {
             case DOCTOR:
-                userData = searchLoop(doctorList,email);
+                userData = doctorList.getDocuments().get(0).toObject(Doctor.class);
                 if(userData == null)
                     return LoginReturnCodes.USER_DOES_NOT_EXIST;
-                salt = saltFromDatabase(userData);
-                if(!Arrays.equals(hashPassword(password,salt), passwordFromDatabase(userData)))
+                if(!Arrays.equals(hashPassword(password,ArrayUtils.unpackBytes(userData.getSalt())), ArrayUtils.unpackBytes(userData.getPassword())))
                     return LoginReturnCodes.INCORRECT_PASSWORD;
-
-                loggedInUser = new Doctor(
-                        (String)userData.get("firstName"),
-                        (String) userData.get("lastName"),
-                        (byte[]) passwordFromDatabase(userData),
-                        (byte[]) saltFromDatabase(userData),
-                        (String)userData.get("email"),
-                        (String)userData.get("phone"),
-                        (String)userData.get("address"),
-                        (String)userData.get("employeeNumber"),(ArrayList<Specialties>) userData.get("specialites")
-                );
+                loggedInUser = userData;
                 break;
             case PATIENT:
-                userData = searchLoop(patientList,email);
+                userData = doctorList.getDocuments().get(0).toObject(Patient.class);
                 if(userData == null)
                     return LoginReturnCodes.USER_DOES_NOT_EXIST;
 
-                salt = saltFromDatabase(userData);
-                if(!Arrays.equals(hashPassword(password,salt), passwordFromDatabase(userData)))
+                if(!Arrays.equals(hashPassword(password,ArrayUtils.unpackBytes(userData.getSalt())), ArrayUtils.unpackBytes(userData.getPassword())))
                     return LoginReturnCodes.INCORRECT_PASSWORD;
-
-
-                loggedInUser = new Patient(
-                        (String)userData.get("firstName"),
-                        (String) userData.get("lastName"),
-                        (byte[]) passwordFromDatabase(userData),
-                        (byte[]) saltFromDatabase(userData),
-                        (String)userData.get("email"),
-                        (String)userData.get("phone"),
-                        (String)userData.get("address"),
-                        (String) userData.get("healthCardNumber")
-                );
+                loggedInUser = userData;
                 break;
             case ADMIN:
-                User admin = new Administrator();
-                salt=admin.getSalt();
-                if(!admin.getEmail().equals(email))
+                userData = new Administrator();
+                if(!userData.getEmail().equals(email))
                     return LoginReturnCodes.USER_DOES_NOT_EXIST;
-                if(!Arrays.equals(hashPassword(password,salt), admin.getPassword()))
+                if(!Arrays.equals(hashPassword(password,ArrayUtils.unpackBytes(userData.getSalt())), ArrayUtils.unpackBytes(userData.getPassword())))
                     return LoginReturnCodes.INCORRECT_PASSWORD;
-
-                loggedInUser = admin;
+                loggedInUser = userData;
                 break;
         }
         loggedInUser.changeView(currentContext);
         return LoginReturnCodes.SUCCESS;
     }
-    private static Map<String, Object> searchLoop(QuerySnapshot toSearch, String emailToSearch) {
-        for (QueryDocumentSnapshot document : toSearch) {
-            Map<String, Object> userData = document.getData();
-            if(!Objects.equals(userData.get("emailAddress"), emailToSearch)) continue;
-            return userData;
-        }
-        return null;
-    }
+
     /**
      *
      * @param password The password to hash
