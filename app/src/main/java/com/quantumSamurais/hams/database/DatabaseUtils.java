@@ -70,9 +70,11 @@ public class DatabaseUtils {
                         case PATIENT:
                             db.collection("users").document("software")
                                     .collection("patients").add(current.getPatient());
+                            break;
                         case DOCTOR:
                             db.collection("users").document("software")
                                     .collection("doctors").add(current.getDoctor());
+                            break;
                     }
                     db.collection("users").document("software").collection("requests").document(document.getId()).delete();
                 }
@@ -89,7 +91,6 @@ public class DatabaseUtils {
                 for (QueryDocumentSnapshot document : requests) {
                     Long documentID = (Long) document.get("id");
                     assert documentID != null;
-                    Log.d("requestID", String.valueOf(documentID));
                     if (documentID != id)
                         continue;
                     db.collection("users").document("software")

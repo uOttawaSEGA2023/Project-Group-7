@@ -17,16 +17,16 @@ import java.util.Map;
 public abstract class User {
     public static List<Map<String,Object>> registeredPatients = new LinkedList<>();
     public static List<Map<String,Object>> registeredDoctors = new LinkedList<>();
-    private String _firstName;
-    private String _lastName;
+    private String firstName;
+    private String lastName;
 
 
-    private ArrayList<Integer> _hashedPassword;
-    private String _email;
-    private String _phone;
-    private String _address;
+    private ArrayList<Integer> password;
+    private String email;
+    private String phone;
+    private String address;
 
-    private ArrayList<Integer> _salt;
+    private ArrayList<Integer> salt;
 
     public User() {
 
@@ -42,30 +42,30 @@ public abstract class User {
      * @param address The user's address
      */
     public User(String firstName, String lastName, char[] password, String email, String phone, String address) {
-        _firstName = firstName;
-        _lastName = lastName;
-        _hashedPassword = ArrayUtils.packBytes(Login.hashPassword(password, generateSalt()));
-        _email = email;
-        _phone = phone;
-        _address = address;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.password = ArrayUtils.packBytes(Login.hashPassword(password, generateSalt()));
+        this.email = email;
+        this.phone = phone;
+        this.address = address;
     }
     /***
      *
      * @param firstName The user's first name
      * @param lastName The user's last name
-     * @param hashedPassword The user's password hashed.
+     * @param password The user's password hashed.
      * @param email The user's email
      * @param phone The user's phone number
      * @param address The user's address
      */
-    public User(String firstName, String lastName, ArrayList<Integer> hashedPassword, ArrayList<Integer> salt, String email, String phone, String address) {
-        _firstName = firstName;
-        _lastName = lastName;
-        _hashedPassword = hashedPassword;
-        _email = email;
-        _phone = phone;
-        _address = address;
-        _salt = salt;
+    public User(String firstName, String lastName, ArrayList<Integer> password, ArrayList<Integer> salt, String email, String phone, String address) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.password = password;
+        this.email = email;
+        this.phone = phone;
+        this.address = address;
+        this.salt = salt;
     }
 
     /*
@@ -79,7 +79,7 @@ public abstract class User {
         byte[] salt = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(salt);
-        _salt = ArrayUtils.packBytes(salt);
+        this.salt = ArrayUtils.packBytes(salt);
         return salt;
     }
 
@@ -89,81 +89,81 @@ public abstract class User {
     @NonNull
     public String toString() {
         return "First name: " +
-                _firstName +
+                firstName +
                 ", Last Name: " +
-                _lastName +
+                lastName +
                 "\nEmail: " +
-                _email +
+                email +
                 "\nPassword: " +
-                Arrays.toString(ArrayUtils.unpackBytes(_hashedPassword)) +
+                Arrays.toString(ArrayUtils.unpackBytes(password)) +
                 "\nSalt: " +
-                Arrays.toString(ArrayUtils.unpackBytes(_salt)) +
+                Arrays.toString(ArrayUtils.unpackBytes(salt)) +
                 "\nPhone: " +
-                _phone +
+                phone +
                 "\nAddress: " +
-                _address;
+                address;
     }
 
 
     //<editor-fold desc="Getters & Setters">
     public String getFirstName() {
-        return _firstName;
+        return firstName;
     }
 
     public User setFirstName(String firstName) {
-        _firstName = firstName;
+        this.firstName = firstName;
         return this;
     }
 
     public String getLastName() {
-        return _lastName;
+        return lastName;
     }
 
     public User setLastName(String lastName) {
-        _lastName = lastName;
+        this.lastName = lastName;
         return this;
     }
 
     public ArrayList<Integer> getPassword() {
-        return _hashedPassword;
+        return password;
     }
 
     public User setPassword(char[] oldPassword, char[] newPassword, byte[] salt) {
-        if(Arrays.equals(Login.hashPassword(oldPassword, salt), ArrayUtils.unpackBytes(_hashedPassword))) {
-            _hashedPassword = ArrayUtils.packBytes(Login.hashPassword(newPassword,generateSalt()));
+        if(Arrays.equals(Login.hashPassword(oldPassword, salt), ArrayUtils.unpackBytes(password))) {
+            password = ArrayUtils.packBytes(Login.hashPassword(newPassword,generateSalt()));
         }
         return this;
     }
 
     public String getEmail() {
-        return _email;
+        return email;
     }
 
     public User setEmail(String email) {
-        _email = email;
+        this.email = email;
         return this;
     }
 
     public String getPhone() {
-        return _phone;
+        return phone;
     }
 
     public User setPhone(String phone) {
-        _phone = phone;
+        this.phone = phone;
         return this;
     }
 
     public String getAddress() {
-        return _address;
+        return address;
     }
 
     public User setAddress(String address) {
-        _address = address;
+        this.address = address;
         return this;
     }
 
     public ArrayList<Integer> getSalt() {
-        return _salt;
+        return salt;
     }
     // </editor-fold>
 }
