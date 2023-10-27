@@ -1,5 +1,8 @@
 package com.quantumSamurais.hams.admin.activities;
 
+import static com.quantumSamurais.hams.database.RequestStatus.APPROVED;
+import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +23,7 @@ import com.quantumSamurais.hams.database.DatabaseUtils;
 import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
+import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.user.User;
 
@@ -103,6 +107,7 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
     public void onAcceptClick(int position) {
         long idToAccept = requests.get(position).getID();
         tools.approveSignUpRequest(idToAccept);
+        sendEmail(getUserFromRequest(requests.get(position)), APPROVED);
         refreshHandler.post(refreshRunnable);
     }
 
@@ -110,8 +115,26 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
     public void onRejectClick(int position) {
         long idToReject = requests.get(position).getID();
         tools.approveSignUpRequest(idToReject);
+        sendEmail(getUserFromRequest(requests.get(position)), REJECTED);
         refreshHandler.post(refreshRunnable);
 
+
+    }
+
+    public static User getUserFromRequest(Request request){
+        if (request == null){
+            throw new NullPointerException("Please do not pass a null object to this method");
+        }
+        switch(request.getUserType()){
+            case DOCTOR:
+                return request.getDoctor();
+            case PATIENT:
+                return request.getPatient();
+            case ADMIN:
+                // We shouldn't get here
+        }
+        // We shouldn't get here either, since request shouldn't be null.
+        return null;
     }
 
     @Override
@@ -124,7 +147,8 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
         Intent showMoreIntent = new Intent(this, ShowMoreActivity.class);
 
         // Pass the selected request's data to the "Show More" page
-        showMoreIntent.putExtra("selectedRequest",selectedRequest);
+        //showMoreIntent.putExtra("selectedRequest", selectedRequest);
+
 
         // Start the "Show More" activity
         startActivity(showMoreIntent);
@@ -149,7 +173,7 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
                         msgToSend = "Your request to the health Management app has been approved.\n";
                         msgSbjct = "your account has been approved! :D";
                         break;
-                    case DENIED:
+                    case REJECTED:
                         msgToSend = "Your request to the health Management app has been denied. \n ";
                         msgSbjct = "your account has been denied. >:0 ";
                         break;
