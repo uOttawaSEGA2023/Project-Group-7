@@ -11,6 +11,7 @@ import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Doctor extends User {
 
@@ -23,6 +24,8 @@ public class Doctor extends User {
 	public Doctor(String firstName, String lastName, char[] hashedPassword, String email,
 				  String phone, String address, String employeeNumber, ArrayList<Specialties> specialties) {
 		super(firstName, lastName, hashedPassword, email, phone, address);
+		this.employeeNumber = employeeNumber;
+		this.specialties = specialties;
 		DatabaseUtils db = new DatabaseUtils();
 		db.addSignUpRequest(this);
 	}
@@ -38,6 +41,20 @@ public class Doctor extends User {
 		Intent doctorView = new Intent(currentContext, LoginInteractiveMessage.class);
 		doctorView.putExtra("userType", UserType.DOCTOR);
 		currentContext.startActivity(doctorView);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		Doctor doctor = (Doctor) o;
+		return Objects.equals(employeeNumber, doctor.employeeNumber) && Objects.equals(specialties, doctor.specialties);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), employeeNumber, specialties);
 	}
 
 	@NonNull

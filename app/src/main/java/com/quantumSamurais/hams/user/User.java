@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class User {
     public static List<Map<String,Object>> registeredPatients = new LinkedList<>();
@@ -84,6 +85,18 @@ public abstract class User {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User user = (User) o;
+        return Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(password, user.password) && Objects.equals(email, user.email) && Objects.equals(phone, user.phone) && Objects.equals(address, user.address) && Objects.equals(salt, user.salt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName, password, email, phone, address, salt);
+    }
 
     @Override
     @NonNull

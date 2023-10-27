@@ -10,6 +10,7 @@ import com.quantumSamurais.hams.user.UserType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Patient extends User {
 
@@ -22,8 +23,8 @@ public class Patient extends User {
     //Used during account creation
     public Patient(String firstName, String lastName, char[] rawPassword, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
         super(firstName, lastName, rawPassword, emailAddress, phoneNumber, postalAddress);
-        DatabaseUtils db = new DatabaseUtils();
         this.healthCardNumber = healthCardNumber;
+        DatabaseUtils db = new DatabaseUtils();
         db.addSignUpRequest(this);
     }
 
@@ -49,6 +50,17 @@ public class Patient extends User {
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Patient patient = (Patient) o;
+        return Objects.equals(healthCardNumber, patient.healthCardNumber);
+    }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), healthCardNumber);
+    }
 }
