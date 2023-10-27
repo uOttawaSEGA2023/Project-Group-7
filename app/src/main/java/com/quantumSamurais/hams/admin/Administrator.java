@@ -33,7 +33,6 @@ public class Administrator extends User {
     public void changeView(Context currentContext) {
         Intent adminView = new Intent(currentContext, ViewRequestsActivity.class);
         adminView.putExtra("userType", UserType.ADMIN);
-      // adminView.putExtra("user",this);
         currentContext.startActivity(adminView);
     }
 

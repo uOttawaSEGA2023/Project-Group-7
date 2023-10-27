@@ -2,8 +2,6 @@ package com.quantumSamurais.hams.patient;
 import android.content.Context;
 import android.content.Intent;
 
-import com.google.firebase.firestore.Blob;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.database.DatabaseUtils;
 import com.quantumSamurais.hams.login.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
@@ -12,38 +10,28 @@ import com.quantumSamurais.hams.user.UserType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 public class Patient extends User {
 
-    private final HashMap<String, Object> newUserInformation = new HashMap<>(8);
+    private String healthCardNumber;
 
-    private String _healthCardNumber;
+    public Patient() {
+
+    }
 
     //Used during account creation
     public Patient(String firstName, String lastName, char[] rawPassword, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
         super(firstName, lastName, rawPassword, emailAddress, phoneNumber, postalAddress);
+        this.healthCardNumber = healthCardNumber;
         DatabaseUtils db = new DatabaseUtils();
-        _healthCardNumber = healthCardNumber;
-
-        //Stores the info to user map
-        newUserInformation.put("firstName", getFirstName());
-        newUserInformation.put("lastName", getLastName());
-        newUserInformation.put("emailAddress", getEmail());
-        newUserInformation.put("hashedPassword", getPassword());
-        newUserInformation.put("salt", getSalt());
-        newUserInformation.put("phoneNumber",getPhone());
-        newUserInformation.put("postalAddress", getAddress());
-        newUserInformation.put("healthCardNumber", _healthCardNumber);
-
         db.addSignUpRequest(this);
     }
 
     //Used for logins
     public Patient(String firstName, String lastName, ArrayList<Integer> hashedPassword, ArrayList<Integer> salt, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
         super(firstName, lastName, hashedPassword, salt, emailAddress, phoneNumber, postalAddress);
-        _healthCardNumber = healthCardNumber;
+        this.healthCardNumber = healthCardNumber;
     }
 
     @Override
@@ -54,14 +42,25 @@ public class Patient extends User {
     }
 
     public String getHealthCardNumber() {
-        return _healthCardNumber;
+        return healthCardNumber;
     }
 
     public Patient setHealthCardNumber(String healthCardNumber) {
-        this._healthCardNumber = healthCardNumber;
+        this.healthCardNumber = healthCardNumber;
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Patient patient = (Patient) o;
+        return Objects.equals(healthCardNumber, patient.healthCardNumber);
+    }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), healthCardNumber);
+    }
 }

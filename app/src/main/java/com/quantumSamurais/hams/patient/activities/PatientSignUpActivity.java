@@ -19,6 +19,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.quantumSamurais.hams.R;
+import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.Request;
+import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
+import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.patient.Patient;
@@ -26,13 +30,16 @@ import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class PatientSignUpActivity extends AppCompatActivity {
+public class PatientSignUpActivity extends AppCompatActivity implements RequestsResponseListener {
     private EditText firstNameEditText, lastNameEditText, emailAddressEditText, passwordEditText, phoneNumberEditText, postalAddressEditText, healthCardNumberEditText;
     private Button signUpButton;
+
+    private Patient currentPatient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,27 +149,42 @@ public class PatientSignUpActivity extends AppCompatActivity {
                     }
 
 
+                    signUpButton.setEnabled(false);
                     //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.
-                    Patient newUser = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
-
-                    // Store the user data in the database
-                    if (true) {
-                        // Registration successful
-                        Toast.makeText(PatientSignUpActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
-                        // Switch to login
-                        Intent login = new Intent(this, LoginActivity.class);
-                        startActivity(login);
-                        finish();
-                    } else {
-                        // Error while saving to the database
-                        Toast.makeText(PatientSignUpActivity.this, "Error occurred. Please try again.", Toast.LENGTH_SHORT).show();
-                    }
+                    currentPatient = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
+                    DatabaseUtils db = new DatabaseUtils();
+                    db.getSignUpRequests(this);
                 }
         );
     }
 
     private void shortToast(String text) {
         Toast.makeText(PatientSignUpActivity.this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onSuccess(ArrayList<Request> requests) {
+        for (Request r : requests) {
+            if (r.getUserType() != UserType.PATIENT)
+                continue;
+            if (!r.getPatient().equals(currentPatient))
+                continue;
+            runOnUiThread(() -> {
+                shortToast("Registration successful");
+            });
+            // Switch to login
+            Intent login = new Intent(this, LoginActivity.class);
+            startActivity(login);
+            finish();
+        }
+    }
+
+    @Override
+    public void onFailure(Error error) {
+        runOnUiThread(() -> {
+            shortToast("Registration error, please try again in a few minutes.");
+        });
+        signUpButton.setEnabled(true);
     }
 
 
