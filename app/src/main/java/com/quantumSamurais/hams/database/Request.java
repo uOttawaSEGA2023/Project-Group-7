@@ -9,6 +9,9 @@ public class Request {
 
     RequestStatus status;
 
+    Request(){
+    }
+
     Request(long id, UserWrappedDB user, RequestStatus status) {
         this.id = id;
         this.user = user;
