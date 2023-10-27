@@ -28,6 +28,10 @@ public abstract class User {
 
     private ArrayList<Integer> _salt;
 
+    public User() {
+
+    }
+
     /***
      *
      * @param firstName The user's first name

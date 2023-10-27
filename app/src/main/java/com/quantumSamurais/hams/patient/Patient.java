@@ -21,6 +21,10 @@ public class Patient extends User {
 
     private String _healthCardNumber;
 
+    public Patient() {
+
+    }
+
     //Used during account creation
     public Patient(String firstName, String lastName, char[] rawPassword, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
         super(firstName, lastName, rawPassword, emailAddress, phoneNumber, postalAddress);

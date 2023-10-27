@@ -20,6 +20,10 @@ public class Doctor extends User {
 	private String _employeeNumber;
 	private ArrayList<Specialties> _specialties;
 
+	public Doctor() {
+		super();
+	}
+
 	public Doctor(String firstName, String lastName, char[] hashedPassword, String email,
 				  String phone, String address, String employeeNumber, ArrayList<Specialties> specialties) {
 		super(firstName, lastName, hashedPassword, email, phone, address);
