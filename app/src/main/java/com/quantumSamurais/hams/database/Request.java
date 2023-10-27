@@ -1,21 +1,35 @@
 package com.quantumSamurais.hams.database;
 
-import com.quantumSamurais.hams.user.User;
-import com.quantumSamurais.hams.user.UserWrappedDB;
+import com.quantumSamurais.hams.doctor.Doctor;
+import com.quantumSamurais.hams.patient.Patient;
+import com.quantumSamurais.hams.user.UserType;
 
 public class Request {
     long id;
-    UserWrappedDB user;
+    UserType userType;
+
+    Doctor doctor;
+    Patient patient;
 
     RequestStatus status;
 
-    Request(){
+    Request() {
+
     }
 
-    Request(long id, UserWrappedDB user, RequestStatus status) {
+    Request(long id, Patient patient, RequestStatus status) {
         this.id = id;
-        this.user = user;
+        this.userType = UserType.PATIENT;
         this.status = status;
+        this.patient = patient;
+        this.doctor = null;
+    }
+    Request(long id, Doctor doctor, RequestStatus status) {
+        this.id = id;
+        this.userType = UserType.DOCTOR;
+        this.status = status;
+        this.patient = null;
+        this.doctor = doctor;
     }
 
     public long getID() {
@@ -26,7 +40,14 @@ public class Request {
         return status;
     }
 
-    public UserWrappedDB getUser() {
-        return user;
+    public Patient getPatient() {
+        return patient;
+    }
+    public Doctor getDoctor() {
+        return doctor;
+    }
+
+    public UserType getUserType() {
+        return userType;
     }
 }
