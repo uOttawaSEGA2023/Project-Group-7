@@ -1,19 +1,20 @@
 package com.quantumSamurais.hams.login;
+
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import android.view.View;
 
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.database.RequestStatus;
@@ -52,7 +53,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         UserType userType = (UserType) intent.getSerializableExtra("userType");
         Login.login(email, parsePass, userType, this, this);
 
-        RequestStatus requestStatus = getRequestStatus(email, password);
+        /*RequestStatus requestStatus = getRequestStatus(email, password);
 
         switch (requestStatus) {
             case APPROVED:
@@ -66,7 +67,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             case PENDING:
                 Toast.makeText(this, "Your registration has not been approved yet.", Toast.LENGTH_LONG).show();
                 break;
-        }
+        }*/
     }
 
     private RequestStatus getRequestStatus(String email, String password) {
