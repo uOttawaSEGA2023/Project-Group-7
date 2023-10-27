@@ -117,6 +117,17 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
     @Override
     public void onShowMoreClick(int position, Intent showMore) {
 
+        // Get the selected request from the list
+        Request selectedRequest = requests.get(position);
+
+        // Create an Intent to navigate to the "Show More" page
+        Intent showMoreIntent = new Intent(this, ShowMoreActivity.class);
+
+        // Pass the selected request's data to the "Show More" page
+        showMoreIntent.putExtra("selectedRequest",selectedRequest);
+
+        // Start the "Show More" activity
+        startActivity(showMoreIntent);
 
     }
     /* implementation of a sendEmail method meant to be used to send an email to users
@@ -168,6 +179,20 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
 
         } catch (MessagingException e) {
             throw new RuntimeException(e);
+        }
+    }
+    public class ShowMoreActivity extends AppCompatActivity{
+        @Override
+
+        protected void onCreate(Bundle savedInstanceState){
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_show_more);
+
+            // Retrieve data passed
+            Intent intent = getIntent();
+            Request selectedRequest = intent.getParcelableExtra("selectedRequest");
+
+
         }
     }
 }
