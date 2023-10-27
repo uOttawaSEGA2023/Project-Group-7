@@ -87,7 +87,7 @@ public final class Login {
                 loggedInUser = userData;
                 break;
             case PATIENT:
-                userData = doctorList.getDocuments().get(0).toObject(Patient.class);
+                userData = patientList.getDocuments().get(0).toObject(Patient.class);
                 if(userData == null)
                     return LoginReturnCodes.USER_DOES_NOT_EXIST;
 
