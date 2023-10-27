@@ -3,6 +3,7 @@ package com.quantumSamurais.hams.admin;
 import android.content.Context;
 import android.content.Intent;
 
+import com.quantumSamurais.hams.admin.activities.ViewRequestsActivity;
 import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
 import com.quantumSamurais.hams.login.LoginInteractiveMessage;
@@ -29,7 +30,7 @@ public class Administrator extends User {
 
     @Override
     public void changeView(Context currentContext) {
-        Intent adminView = new Intent(currentContext,LoginInteractiveMessage.class);
+        Intent adminView = new Intent(currentContext, ViewRequestsActivity.class);
         adminView.putExtra("userType", UserType.ADMIN);
       // adminView.putExtra("user",this);
         currentContext.startActivity(adminView);
