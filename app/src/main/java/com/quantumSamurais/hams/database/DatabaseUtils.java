@@ -115,7 +115,10 @@ public class DatabaseUtils {
                     listener.onSuccess(requestArrayList);
                 }
             } catch (ExecutionException | InterruptedException e) {
-                throw new RuntimeException(e);
+                Log.d("Get Sign Up Request", "Something went wrong" + e.getCause());
+            }
+            catch (Exception e){
+                Log.d("Get Sign Up Request", "Something went wrong ~ " + e.getCause() + " ~ " + e.getStackTrace());
             }
         }).start();
     }
