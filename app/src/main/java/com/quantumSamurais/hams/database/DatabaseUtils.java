@@ -9,16 +9,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.quantumSamurais.hams.admin.Administrator;
 import com.quantumSamurais.hams.database.callbacks.DoctorsResponseListener;
 import com.quantumSamurais.hams.database.callbacks.PatientsResponseListener;
 import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
-import com.quantumSamurais.hams.user.User;
-import com.quantumSamurais.hams.user.UserType;
-
-import org.checkerframework.checker.units.qual.A;
 import com.quantumSamurais.hams.user.User;
 
 import java.util.ArrayList;
@@ -186,6 +181,66 @@ public class DatabaseUtils {
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
         }).start();
+    }
+
+    public RequestStatus getStatus(String email, UserType userType) {
+        boolean foundInPatients = checkUserInPatients("patients", email);
+        boolean foundInDoctors = checkUserInDoctors("doctors", email);
+        boolean foundInRequests = checkUserInRequests(email);
+
+        if (foundInPatients || foundInDoctors) {
+            return RequestStatus.APPROVED;
+        } else if (foundInRequests) {
+            RequestStatus requestStatus = getRequestStatusFromRequests(email);
+            return requestStatus;
+        }
+        return RequestStatus.REJECTED;
+    }
+
+    private boolean checkUserInPatients(String collectionName, String email) {
+        try {
+            QuerySnapshot collectionSnapshot = Tasks.await(db.collection("users").document("software").collection("patients").whereEqualTo("email", email).get());
+            return !collectionSnapshot.isEmpty();
+        } catch (ExecutionException | InterruptedException e) {
+            // Handle the exception.
+            return false;
+        }
+    }
+    private boolean checkUserInDoctors(String collectionName, String email) {
+        try {
+            QuerySnapshot collectionSnapshot = Tasks.await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
+            return !collectionSnapshot.isEmpty();
+        } catch (ExecutionException | InterruptedException e) {
+            // Handle the exception.
+            return false;
+        }
+    }
+
+    private boolean checkUserInRequests(String email) {
+        try {
+            QuerySnapshot requestsSnapshot = Tasks.await(db.collection("users").document("software").collection("requests").whereEqualTo("email", email).get());
+            return !requestsSnapshot.isEmpty();
+        } catch (ExecutionException | InterruptedException e) {
+            // Handle the exception.
+            return false;
+        }
+    }
+
+    private RequestStatus getRequestStatusFromRequests(String email) {
+        try {
+            QuerySnapshot requestsSnapshot = Tasks.await(db.collection("users").document("software").collection("requests").whereEqualTo("email", email).get());
+            if (!requestsSnapshot.isEmpty()) {
+                String requestStatus = requestsSnapshot.getDocuments().get(0).getString("status");
+                if ("PENDING".equals(requestStatus)) {
+                    return RequestStatus.PENDING;
+                } else if ("REJECTED".equals(requestStatus)) {
+                    return RequestStatus.REJECTED;
+                }
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            // Handle the exception.
+        }
+        return RequestStatus.REJECTED;
     }
 
     /* implementation of a sendEmail method meant to be used to send an email to users

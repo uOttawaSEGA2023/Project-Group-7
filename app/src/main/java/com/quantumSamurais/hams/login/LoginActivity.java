@@ -1,15 +1,13 @@
 package com.quantumSamurais.hams.login;
-
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
+import android.view.View;
 
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -18,6 +16,10 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.database.RequestStatus;
+import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.callbacks.DoctorsResponseListener;
+import com.quantumSamurais.hams.database.callbacks.PatientsResponseListener;
+import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
 import com.quantumSamurais.hams.user.UserType;
 
 import java.util.concurrent.ExecutionException;
@@ -53,7 +55,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         UserType userType = (UserType) intent.getSerializableExtra("userType");
         Login.login(email, parsePass, userType, this, this);
 
-        /*RequestStatus requestStatus = getRequestStatus(email, password);
+        RequestStatus requestStatus = getRequestStatus(email, password, userType);
 
         switch (requestStatus) {
             case APPROVED:
@@ -67,47 +69,12 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             case PENDING:
                 Toast.makeText(this, "Your registration has not been approved yet.", Toast.LENGTH_LONG).show();
                 break;
-        }*/
+        }
     }
 
-    private RequestStatus getRequestStatus(String email, String password) {
-
-        // Get an instance of Firebase Firestore.
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // Check if the email is in the "patients", "doctors", or "requests" collection(s).
-        Query patientsQuery = db.collection("users").document("software").collection("patients").whereEqualTo("emailAddress", email);
-        Query doctorsQuery = db.collection("users").document("software").collection("doctors").whereEqualTo("emailAddress", email);
-        Query requestsQuery = db.collection("users").document("software").collection("requests").whereEqualTo("emailAddress", email);
-
-        try {
-            QuerySnapshot patientsResult = Tasks.await(patientsQuery.get());
-            QuerySnapshot doctorsResult = Tasks.await(doctorsQuery.get());
-            QuerySnapshot requestsResult = Tasks.await(requestsQuery.get());
-
-            if (!patientsResult.isEmpty() || !doctorsResult.isEmpty()) {
-                // If email is found in "patients" or "doctors" collection, return APPROVED.
-                return RequestStatus.APPROVED;
-            } else if (!requestsResult.isEmpty()) {
-                // If email is found in "requests" collection, get the status.
-                DocumentSnapshot requestDocument = requestsResult.getDocuments().get(0);
-                String status = requestDocument.getString("status");
-
-                if (status != null) {
-                    switch (status) {
-                        case "APPROVED":
-                            return RequestStatus.APPROVED;
-                        case "DENIED":
-                            return RequestStatus.REJECTED;
-                        case "PENDING":
-                            return RequestStatus.PENDING;
-                    }
-                }
-            }
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        return RequestStatus.REJECTED;
+    private RequestStatus getRequestStatus(String email, String password, UserType userType) {
+        DatabaseUtils db = new DatabaseUtils();
+        return db.getStatus(email, userType);
     }
 
 
