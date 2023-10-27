@@ -146,7 +146,7 @@ public class PatientSignUpActivity extends AppCompatActivity {
                     Patient newUser = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
 
                     // Store the user data in the database
-                    if (savedUser(newUser)) {
+                    if (true) {
                         // Registration successful
                         Toast.makeText(PatientSignUpActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
                         // Switch to login
@@ -159,12 +159,6 @@ public class PatientSignUpActivity extends AppCompatActivity {
                     }
                 }
         );
-    }
-
-
-    private boolean savedUser(Patient newUser) {
-        List<Map<String, Object>> registeredUsers = Patient.getRegisteredPatients();
-        return registeredUsers.contains(newUser.getNewUserInformation());
     }
 
     private void shortToast(String text) {

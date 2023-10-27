@@ -12,25 +12,20 @@ import com.quantumSamurais.hams.database.callbacks.PatientsResponseListener;
 import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
-import com.quantumSamurais.hams.user.UserWrappedDB;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public class DatabaseUtils {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private static int currentSignUpRequestID;
-    // Deliverable 2
-    public DatabaseUtils() {
-        //Tasks.await(db.collection("users").document("software").collection("requests").get().addOnSuccessListener(this));
-    }
-    public void addSignUpRequest(UserWrappedDB user) {
+    public void addSignUpRequest(Patient user) {
         new Thread(() -> {
                 try {
                    DocumentSnapshot software = Tasks.await(db.collection("users").document("software").get());
                    Long id = (Long) software.get("requestID");
                    if(id == null) {
                        Tasks.await(db.collection("users").document("software").update("requestID",0));
+                       id = 0L;
                    }
                    db.collection("users").document("software").collection("requests").add(new Request(id,user,RequestStatus.PENDING));
                    db.collection("users").document("software").update("requestID",id+1);
@@ -39,15 +34,29 @@ public class DatabaseUtils {
                 }
         }).start();
     }
+    public void addSignUpRequest(Doctor user) {
+        new Thread(() -> {
+            try {
+                DocumentSnapshot software = Tasks.await(db.collection("users").document("software").get());
+                Long id = (Long) software.get("requestID");
+                if(id == null) {
+                    Tasks.await(db.collection("users").document("software").update("requestID",0));
+                    id = 0L;
+                }
+                db.collection("users").document("software").collection("requests").add(new Request(id,user,RequestStatus.PENDING));
+                db.collection("users").document("software").update("requestID",id+1);
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
     public void approveSignUpRequest(long id) {
         new Thread(() -> {
             try {
-                QuerySnapshot requests = Tasks.await(db.collection("users").document("software").collection("requests").get());
+                QuerySnapshot requests = Tasks.await(db.collection("users").document("software").collection("requests").whereEqualTo("id",id).get());
+                if(requests.getDocuments().size() > 1)
+                    return;
                 for (QueryDocumentSnapshot document : requests) {
-                    Long id2 = (Long) document.get("id");
-                    Log.d("requestID", String.valueOf(id2));
-                    if (id2 != id)
-                        continue;
                     db.collection("users").document("software")
                             .collection("requests").document(document.getId()).update("status", RequestStatus.APPROVED);
                 }
@@ -61,12 +70,13 @@ public class DatabaseUtils {
             try {
                 QuerySnapshot requests = Tasks.await(db.collection("users").document("software").collection("requests").get());
                 for (QueryDocumentSnapshot document : requests) {
-                    long id2 = (long) document.get("id");
-                    Log.d("requestID", String.valueOf(id2));
-                    if (id2 != id)
+                    Long documentID = (Long) document.get("id");
+                    assert documentID != null;
+                    Log.d("requestID", String.valueOf(documentID));
+                    if (documentID != id)
                         continue;
                     db.collection("users").document("software")
-                            .collection("requests").document(document.getId()).update("status", RequestStatus.DENIED);
+                            .collection("requests").document(document.getId()).update("status", RequestStatus.REJECTED);
                 }
             } catch (ExecutionException | InterruptedException e) {
                 throw new RuntimeException(e);
@@ -78,19 +88,19 @@ public class DatabaseUtils {
     public void addAppointmentRequest() {
 
     }
-    public void approveAppointment(int id) {
+    public void approveAppointment(long id) {
 
     }
-    public void rejectAppointment(int id) {
+    public void rejectAppointment(long id) {
 
     }
-    public void cancelAppointment(int id) {
+    public void cancelAppointment(long id) {
 
     }
     public void addShift() {
 
     }
-    public void deleteShift(int id) {
+    public void deleteShift(long id) {
 
     }
     public void getPatientAppointments() {

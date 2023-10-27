@@ -5,8 +5,10 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.quantumSamurais.hams.login.Login;
+import com.quantumSamurais.hams.utils.ArrayUtils;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,12 +21,12 @@ public abstract class User {
     private String _lastName;
 
 
-    private byte[] _hashedPassword;
+    private ArrayList<Integer> _hashedPassword;
     private String _email;
     private String _phone;
     private String _address;
 
-    private byte[] _salt;
+    private ArrayList<Integer> _salt;
 
     /***
      *
@@ -38,7 +40,7 @@ public abstract class User {
     public User(String firstName, String lastName, char[] password, String email, String phone, String address) {
         _firstName = firstName;
         _lastName = lastName;
-        _hashedPassword = Login.hashPassword(password, generateSalt());
+        _hashedPassword = ArrayUtils.packBytes(Login.hashPassword(password, generateSalt()));
         _email = email;
         _phone = phone;
         _address = address;
@@ -52,7 +54,7 @@ public abstract class User {
      * @param phone The user's phone number
      * @param address The user's address
      */
-    public User(String firstName, String lastName, byte[] hashedPassword, byte[] salt, String email, String phone, String address) {
+    public User(String firstName, String lastName, ArrayList<Integer> hashedPassword, ArrayList<Integer> salt, String email, String phone, String address) {
         _firstName = firstName;
         _lastName = lastName;
         _hashedPassword = hashedPassword;
@@ -73,7 +75,7 @@ public abstract class User {
         byte[] salt = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(salt);
-        _salt = salt;
+        _salt = ArrayUtils.packBytes(salt);
         return salt;
     }
 
@@ -89,9 +91,9 @@ public abstract class User {
                 "\nEmail: " +
                 _email +
                 "\nPassword: " +
-                Arrays.toString(_hashedPassword) +
+                Arrays.toString(ArrayUtils.unpackBytes(_hashedPassword)) +
                 "\nSalt: " +
-                Arrays.toString(_salt) +
+                Arrays.toString(ArrayUtils.unpackBytes(_salt)) +
                 "\nPhone: " +
                 _phone +
                 "\nAddress: " +
@@ -118,13 +120,13 @@ public abstract class User {
         return this;
     }
 
-    public byte[] getPassword() {
+    public ArrayList<Integer> getPassword() {
         return _hashedPassword;
     }
 
     public User setPassword(char[] oldPassword, char[] newPassword, byte[] salt) {
-        if(Arrays.equals(Login.hashPassword(oldPassword, salt), _hashedPassword)) {
-            _hashedPassword = Login.hashPassword(newPassword,generateSalt());
+        if(Arrays.equals(Login.hashPassword(oldPassword, salt), ArrayUtils.unpackBytes(_hashedPassword))) {
+            _hashedPassword = ArrayUtils.packBytes(Login.hashPassword(newPassword,generateSalt()));
         }
         return this;
     }
@@ -156,7 +158,7 @@ public abstract class User {
         return this;
     }
 
-    public byte[] getSalt() {
+    public ArrayList<Integer> getSalt() {
         return _salt;
     }
     // </editor-fold>
