@@ -1,3 +1,4 @@
+/*
 package com.quantumSamurais.hams.user;
 
 import com.google.firebase.firestore.Blob;
@@ -146,3 +147,4 @@ public class UserWrappedDB {
     }
 
 }
+*/
