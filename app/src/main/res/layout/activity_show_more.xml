@@ -38,5 +38,6 @@
         android:text="Request Type: Registration"
         android:layout_below="@+id/textViewRequestName"
         android:layout_marginTop="8dp" />
-    
 
+
+    </RelativeLayout>
