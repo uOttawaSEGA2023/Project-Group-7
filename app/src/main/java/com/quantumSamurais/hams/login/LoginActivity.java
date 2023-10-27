@@ -74,24 +74,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
 
     private RequestStatus getRequestStatus(String email, String password, UserType userType) {
         DatabaseUtils db = new DatabaseUtils();
-        db.getDoctors((DoctorsResponseListener) this);
-        db.getPatients((PatientsResponseListener) this);
-        db.getSignUpRequests((RequestsResponseListener) this);
-        boolean foundInPatients = db.getPatients(email);
-        boolean foundInDoctors = db.getDoctors();
-        boolean foundInRequests = db.getSignUpRequests();
-
-
-        if (foundInPatients || foundInDoctors) {
-            return RequestStatus.APPROVED;
-        } else if (foundInRequests){
-            if ("PENDING".equals(requestStatus)) {
-                return RequestStatus.PENDING;
-            } else if ("REJECTED".equals(requestStatus)) {
-                return RequestStatus.REJECTED;
-            }
-        }
-        return RequestStatus.REJECTED;
+        return db.getStatus(email, userType);
     }
 
 

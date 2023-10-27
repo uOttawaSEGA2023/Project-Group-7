@@ -170,8 +170,8 @@ public class ViewRequestsActivity extends AppCompatActivity implements RequestsA
         try {
             new Thread(() -> {
                 // should be put into an on click for both the approve and reject buttons.
-                final String username = "admin@gmail.com"; // template admin email for the time being.
-                final String password = "12345678"; // '' password.
+                final String username = "seg7quantumsamurais@gmail.com"; // template admin email for the time being.
+                final String password = "P@ssW0rd!"; // ''password.
                 String msgToSend = new String(), msgSbjct = new String(); // message to send and message subject.
                 switch (status) {
                     case APPROVED:
