@@ -1,15 +1,14 @@
 package com.quantumSamurais.hams.admin.adapters;
 
-//import static com.quantumSamurais.hams.admin.activities.ViewRequestsActivity.getUserFromRequest;
-
-import static com.quantumSamurais.hams.admin.activities.ViewRequestsActivity.getUserFromRequest;
+import static com.quantumSamurais.hams.admin.activities.fragments.requestsFragment.getUserFromRequest;
+import static com.quantumSamurais.hams.database.RequestStatus.PENDING;
+import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
 
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -20,7 +19,6 @@ import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.Administrator;
 import com.quantumSamurais.hams.admin.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Request;
-import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
@@ -34,12 +32,47 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
     private final ArrayList<Request> requests;
     private Iterator<Request> requestIterator;
     private final Context currentContext;
+    FragmentTab activeTab;
 
-    public RequestItemAdapter(Context context, ArrayList<Request> requestsFromDatabase, RequestsActivityListener listener) {
-        requests = requestsFromDatabase;
+    public enum FragmentTab{
+        ALL_REQUESTS,
+        PENDING_REQUESTS,
+        REJECTED_REQUESTS
+    }
+
+    public RequestItemAdapter(Context context, FragmentTab activeTab,ArrayList<Request> requestsFromDatabase, RequestsActivityListener listener) {
+        this.activeTab = activeTab;
+        // Filters the passed list, and makes it so it contains only the required info
+        ArrayList<Request> tempRequest = new ArrayList<>();
+        switch(activeTab){
+            case ALL_REQUESTS:
+                tempRequest = requestsFromDatabase;
+                break;
+            case PENDING_REQUESTS:
+                ArrayList<Request> pendingRequests = new ArrayList<>();
+                for (Request request : requestsFromDatabase){
+                    if (request.getStatus() == PENDING){
+                        pendingRequests.add(request);
+                    }
+                }
+                tempRequest = pendingRequests;
+                break;
+
+            case REJECTED_REQUESTS:
+                ArrayList<Request> rejectedRequests = new ArrayList<>();
+                for (Request request : requestsFromDatabase){
+                    if (request.getStatus() == REJECTED){
+                        rejectedRequests.add(request);
+                    }
+                }
+                tempRequest = rejectedRequests;
+                break;
+        }
+        requests = tempRequest;
         currentContext = context;
         requestIterator = requests.iterator();
         requestClickListener = listener;
+
     }
 
     public static class RequestViewHolder extends RecyclerView.ViewHolder{
@@ -123,7 +156,7 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
 
 
             //It only makes sense to have X button for requests that are pending.
-            if (request.getStatus() == RequestStatus.REJECTED) {
+            if (request.getStatus() == REJECTED) {
                 reject.setVisibility(View.INVISIBLE); // Hide the button
                 reject.setEnabled(false); // Make the button uninteractable
             } else {
@@ -154,4 +187,5 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
     public int getItemCount() {
         return requests.size();
     }
+
 }
