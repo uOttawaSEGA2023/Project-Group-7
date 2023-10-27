@@ -1,9 +1,6 @@
 package com.quantumSamurais.hams.admin.adapters;
 
 import static com.quantumSamurais.hams.admin.activities.ViewRequestsActivity.getUserFromRequest;
-import static com.quantumSamurais.hams.user.UserType.ADMIN;
-import static com.quantumSamurais.hams.user.UserType.DOCTOR;
-import static com.quantumSamurais.hams.user.UserType.PATIENT;
 
 import android.content.Context;
 import android.util.Log;
@@ -23,7 +20,6 @@ import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
-import com.quantumSamurais.hams.user.UserWrappedDB;
 
 import java.util.ArrayList;
 import java.util.Iterator;
