@@ -51,7 +51,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         Intent intent = getIntent();
         UserType userType = (UserType) intent.getSerializableExtra("userType");
         Login.login(email, parsePass, userType, this, this);
-
+/*
         RequestStatus requestStatus = getRequestStatus(email, password);
 
         switch (requestStatus) {
@@ -66,7 +66,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             case PENDING:
                 Toast.makeText(this, "Your registration has not been approved yet.", Toast.LENGTH_LONG).show();
                 break;
-        }
+        }*/
     }
 
     private RequestStatus getRequestStatus(String email, String password) {
@@ -123,7 +123,6 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         if (loggedIn) {
             runOnUiThread(() -> {
                 Toast.makeText(LoginActivity.this, "Successfully Logged in!", Toast.LENGTH_SHORT).show();
-                // Start the login activity
             });
         }
     }
