@@ -11,10 +11,19 @@ public class ArrayUtils {
         for (int i = 0; i < bytes.length-extra; i += 4) {
             toPack = bytes[i];
             toPack <<= 8;
+            if(bytes[i+1] < 0) {
+                toPack += 0x100;
+            }
             toPack += bytes[i+1];
             toPack <<= 8;
+            if(bytes[i+2] < 0) {
+                toPack += 0x100;
+            }
             toPack += bytes[i+2];
             toPack <<= 8;
+            if(bytes[i+3] < 0) {
+                toPack += 0x100;
+            }
             toPack += bytes[i+3];
             packed.add(toPack);
             toPack = 0;
@@ -36,7 +45,7 @@ public class ArrayUtils {
         byte[] unpacked;
         int extra = 0;
         if(lastInt == 0) {
-            unpacked = new byte[(list.size()-2)*4];
+            unpacked = new byte[(list.size()-1)*4];
         } else {
             int temp = lastInt;
             while(temp > 0) {
@@ -46,7 +55,11 @@ public class ArrayUtils {
             unpacked = new byte[(list.size()-2)*4+extra];
         }
         int k = 0;
-        for (int j = 0; j < list.size()-2; j++) {
+        int limit = list.size()-1;
+        if(extra > 0) {
+            limit -= 1;
+        }
+        for (int j = 0; j < limit; j++) {
             unpack = (byte) (list.get(j) >> 24 & 0xFF);
             unpacked[k] = unpack;
             unpack = (byte) (list.get(j) >> 16 & 0xFF);
