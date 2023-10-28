@@ -19,7 +19,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.login.LoginActivity;
@@ -148,7 +148,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
                     signUpButton.setEnabled(false);
                     //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.
                     currentPatient = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
-                    DatabaseUtils db = new DatabaseUtils();
+                    Database db = Database.getInstance();
                     db.getSignUpRequests(this);
                 }
         );
@@ -165,9 +165,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
                 continue;
             if (!r.getPatient().equals(currentPatient))
                 continue;
-            runOnUiThread(() -> {
-                shortToast("Registration successful");
-            });
+            runOnUiThread(() -> shortToast("Registration successful"));
             // Switch to login
             Intent login = new Intent(this, LoginActivity.class);
             startActivity(login);
@@ -177,9 +175,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
 
     @Override
     public void onFailure(Exception error) {
-        runOnUiThread(() -> {
-            shortToast("Registration error, please try again in a few minutes.");
-        });
+        runOnUiThread(() -> shortToast("Registration error, please try again in a few minutes."));
         signUpButton.setEnabled(true);
     }
 

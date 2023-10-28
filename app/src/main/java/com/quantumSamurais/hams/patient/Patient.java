@@ -2,14 +2,13 @@ package com.quantumSamurais.hams.patient;
 import android.content.Context;
 import android.content.Intent;
 
-import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.login.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 
 public class Patient extends User {
@@ -24,7 +23,7 @@ public class Patient extends User {
     public Patient(String firstName, String lastName, char[] rawPassword, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
         super(firstName, lastName, rawPassword, emailAddress, phoneNumber, postalAddress);
         this.healthCardNumber = healthCardNumber;
-        DatabaseUtils db = new DatabaseUtils();
+        Database db = Database.getInstance();
         db.addSignUpRequest(this);
     }
 

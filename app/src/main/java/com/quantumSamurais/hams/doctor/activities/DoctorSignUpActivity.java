@@ -21,7 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
@@ -168,7 +168,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
 
         signUp.setEnabled(false);
         currentDoctor = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
-        DatabaseUtils db = new DatabaseUtils();
+        Database db = Database.getInstance();
         db.getSignUpRequests(this);
 
     }
@@ -188,9 +188,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
                 continue;
             if(!r.getDoctor().equals(currentDoctor))
                 continue;
-            runOnUiThread(() -> {
-                shortToast("Registration successful");
-            });
+            runOnUiThread(() -> shortToast("Registration successful"));
             // Switch to login
             Intent login = new Intent(this, LoginActivity.class);
             startActivity(login);
@@ -200,9 +198,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
 
     @Override
     public void onFailure(Exception error) {
-        runOnUiThread(() -> {
-            shortToast("Registration error, please try again in a few minutes.");
-        });
+        runOnUiThread(() -> shortToast("Registration error, please try again in a few minutes."));
         signUp.setEnabled(true);
     }
 }

@@ -22,7 +22,7 @@ import com.quantumSamurais.hams.admin.activities.ShowMoreActivity;
 import com.quantumSamurais.hams.admin.adapters.RequestItemAdapter;
 import com.quantumSamurais.hams.admin.adapters.RequestItemAdapter.FragmentTab;
 import com.quantumSamurais.hams.admin.listeners.RequestsActivityListener;
-import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
@@ -36,7 +36,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     FragmentTab activeTab;
     RequestItemAdapter requestsAdapter;
     RecyclerView requestsStack;
-    DatabaseUtils tools;
+    Database tools;
     ArrayList<Request> requests;
 
     public requestsFragment() {
@@ -55,7 +55,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_requests, container, false);
         requestsStack = view.findViewById(R.id.requestsRecyclerViewFragment);
-        tools = new DatabaseUtils();
+        tools = Database.getInstance();
         requests = new ArrayList<>();
 
         Bundle args = getArguments();
@@ -93,9 +93,9 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
 
 
     // This handler is needed to allow automatic refresh of the screen
-    private Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
 
-    private Runnable refreshRunnable = new Runnable() {
+    private final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
             viewRegistrationRequests();

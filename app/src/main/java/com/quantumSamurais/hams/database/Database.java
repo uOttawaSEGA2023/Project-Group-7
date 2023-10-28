@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -28,40 +30,77 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-public class DatabaseUtils {
+public class Database {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static Database instance;
+
+    private Long requestID;
+
+    private final Lock signUpLock;
+
+    private Database() {
+        signUpLock = new ReentrantLock();
+    }
+
+    public static Database getInstance() {
+        if(instance == null) {
+            instance = new Database();
+        }
+        return instance;
+    }
+
+    /**
+     *
+     * @param user The patient to sign up.
+     */
     public void addSignUpRequest(Patient user) {
         new Thread(() -> {
+            // Acquire lock, this lock is used to make sure the request id is different between all requests.
+               signUpLock.lock();
                 try {
                    DocumentSnapshot software = Tasks.await(db.collection("users").document("software").get());
-                   Long id = (Long) software.get("requestID");
-                   if(id == null) {
+                   if(requestID == null)
+                       requestID = (Long) software.get("requestID");
+                   if(requestID == null) {
                        Tasks.await(db.collection("users").document("software").update("requestID",0));
-                       id = 0L;
+                       requestID = 0L;
                    }
-                   db.collection("users").document("software").collection("requests").add(new Request(id,user,RequestStatus.PENDING));
-                   db.collection("users").document("software").update("requestID",id+1);
+                   db.collection("users").document("software")
+                           .collection("requests").add(new Request(requestID,user,RequestStatus.PENDING));
+                   requestID++;
+                   db.collection("users").document("software").update("requestID",requestID);
                 } catch (ExecutionException | InterruptedException e) {
                     Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
                 }
+                // Release Lock
+               signUpLock.unlock();
         }).start();
     }
     public void addSignUpRequest(Doctor user) {
         new Thread(() -> {
+            // Acquire lock, this lock is used to make sure the request id is different between all requests.
+            signUpLock.lock();
             try {
-                DocumentSnapshot software = Tasks.await(db.collection("users").document("software").get());
-                Long id = (Long) software.get("requestID");
-                if(id == null) {
-                    Tasks.await(db.collection("users").document("software").update("requestID",0));
-                    id = 0L;
+                if(requestID == null) {
+                    DocumentSnapshot software = Tasks.await(db.collection("users").document("software").get());
+                    requestID = (Long) software.get("requestID");
                 }
-                db.collection("users").document("software").collection("requests").add(new Request(id,user,RequestStatus.PENDING));
-                db.collection("users").document("software").update("requestID",id+1);
+                if(requestID == null) {
+                    Tasks.await(db.collection("users").document("software").update("requestID",0));
+                    requestID = 0L;
+                }
+                db.collection("users").document("software")
+                        .collection("requests").add(new Request(requestID,user,RequestStatus.PENDING));
+                requestID++;
+                db.collection("users").document("software").update("requestID",requestID);
             } catch (ExecutionException | InterruptedException e) {
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
+            // Release Lock
+            signUpLock.unlock();
         }).start();
     }
+
     public void approveSignUpRequest(long id) {
         new Thread(() -> {
             try {
@@ -209,12 +248,15 @@ public class DatabaseUtils {
     }
 
     public void getRequestStatus(String email, UserType userType, ResponseListener<RequestStatus> listener) {
-        new Thread(()->{
-            listener.onSuccess(getStatus(email,userType));
-        }).start();
+        new Thread(()-> listener.onSuccess(getStatus(email,userType))).start();
     }
 
 
+    /**
+     * @param email Email of the user
+     * @param userType Type of user
+     * @return The status of the users signUp request, returns null if the user cannot be found. Always Returns Approved for admin.
+    * */
     private RequestStatus getStatus(String email, UserType userType) {
         boolean foundInPatients = checkUserInCollection("patients", email);
         boolean foundInDoctors = checkUserInCollection("doctors", email);
@@ -227,7 +269,7 @@ public class DatabaseUtils {
         } else if (foundInRequests) {
             return getRequestStatusFromRequests(email);
         }
-        return RequestStatus.REJECTED;
+        return null;
     }
 
     private boolean checkUserInCollection(String collectionName, String email) {

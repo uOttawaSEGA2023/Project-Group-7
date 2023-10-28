@@ -5,7 +5,7 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
-import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.login.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
@@ -26,7 +26,7 @@ public class Doctor extends User {
 		super(firstName, lastName, hashedPassword, email, phone, address);
 		this.employeeNumber = employeeNumber;
 		this.specialties = specialties;
-		DatabaseUtils db = new DatabaseUtils();
+		Database db = Database.getInstance();
 		db.addSignUpRequest(this);
 	}
 
