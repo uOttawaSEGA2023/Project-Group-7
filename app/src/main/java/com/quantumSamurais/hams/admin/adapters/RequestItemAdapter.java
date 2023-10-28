@@ -31,7 +31,6 @@ import java.util.Iterator;
 public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.RequestViewHolder>{
     private final RequestsActivityListener requestClickListener;
     private ArrayList<Request> requests;
-    private Iterator<Request> requestIterator;
     private final Context currentContext;
     FragmentTab activeTab;
 
@@ -46,7 +45,6 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
         this.activeTab = activeTab;
         setRequests(requestsFromDatabase);
         currentContext = context;
-        requestIterator = requests.iterator();
         requestClickListener = listener;
         Log.d("RequestItemAdapter", "Number of items in requests: " + requests.size());
     }

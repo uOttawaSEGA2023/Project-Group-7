@@ -17,13 +17,11 @@ import java.util.Iterator;
 
 public class SpecialtyItemAdapter extends RecyclerView.Adapter<SpecialtyItemAdapter.SpecialtyViewHolder> {
     private final ArrayList<Specialties> specialties;
-    private Iterator<Specialties> specialtiesIterator;
     private final Context currentContext;
 
     public SpecialtyItemAdapter(Context context, ArrayList<Specialties> specialties) {
         this.specialties = specialties;
         this.currentContext = context;
-        this.specialtiesIterator = specialties.iterator();
     }
     @NonNull
     @Override
