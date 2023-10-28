@@ -76,6 +76,10 @@ public class Database {
                signUpLock.unlock();
         }).start();
     }
+    /**
+     *
+     * @param user The doctor to sign up.
+     */
     public void addSignUpRequest(Doctor user) {
         new Thread(() -> {
             // Acquire lock, this lock is used to make sure the request id is different between all requests.
@@ -101,7 +105,12 @@ public class Database {
         }).start();
     }
 
+    /**
+     *
+     * @param id Id of the request to approve
+     */
     public void approveSignUpRequest(long id) {
+        //TODO: Send email
         new Thread(() -> {
             try {
                 QuerySnapshot requests = Tasks.await(db.collection("users").document("software").collection("requests").whereEqualTo("id",id).get());
@@ -128,8 +137,12 @@ public class Database {
             }
         }).start();
     }
-
+    /**
+     *
+     * @param id Id of the request to reject
+     */
     public void rejectSignUpRequest(long id) {
+        //TODO: Send email
         new Thread(() -> {
             try {
                 QuerySnapshot requests = Tasks.await(db.collection("users").document("software").collection("requests").get());
@@ -178,6 +191,10 @@ public class Database {
     // </editor-fold>
 
     // Deliverable 2
+    /**
+     *
+     * @param listener Returns array list of all sign up requests by calling listener.onSuccess;
+     */
     public void getSignUpRequests(ResponseListener<ArrayList<Request>> listener) {
         new Thread(() -> {
             ArrayList<Request> requestArrayList = new ArrayList<>();
@@ -193,6 +210,11 @@ public class Database {
             }
         }).start();
     }
+
+    /**
+     *
+     * @param listener Returns array list of all patients by calling listener.onSuccess;
+     */
     public void getPatients(ResponseListener<ArrayList<Patient>> listener) {
         new Thread(() -> {
             ArrayList<Patient> patientArrayList = new ArrayList<>();
@@ -208,6 +230,10 @@ public class Database {
             }
         }).start();
     }
+    /**
+     *
+     * @param listener Returns array list of all doctor by calling listener.onSuccess;
+     */
     public void getDoctors(ResponseListener<ArrayList<Doctor>> listener) {
         new Thread(() -> {
             try {
@@ -224,6 +250,11 @@ public class Database {
         }).start();
     }
 
+    /**
+     *
+     * @param email The patients email
+     * @param listener Returns the patient object by calling listener.onSuccess(Patient);
+     */
     public void getPatient(String email, ResponseListener<Patient> listener) {
         new Thread(() -> {
             try {
@@ -235,6 +266,11 @@ public class Database {
             }
         }).start();
     }
+    /**
+     *
+     * @param email The doctors email
+     * @param listener Returns the doctor object by calling listener.onSuccess(Patient);
+     */
     public void getDoctor(String email, ResponseListener<Doctor> listener) {
         new Thread(() -> {
             try {
@@ -247,6 +283,11 @@ public class Database {
         }).start();
     }
 
+    /**
+     * @param email Email of the user
+     * @param userType Type of user
+     * @param listener  Returns the request status by calling listener.onSuccess;
+     */
     public void getRequestStatus(String email, UserType userType, ResponseListener<RequestStatus> listener) {
         new Thread(()-> listener.onSuccess(getStatus(email,userType))).start();
     }
