@@ -62,7 +62,7 @@ public class ShowMoreActivity extends AppCompatActivity {
                     email.setText("Email Address: " + intent.getStringExtra("email"));
                     phoneNumber.setText("Phone Number: " + intent.getStringExtra("phoneNumber"));
                     address.setText("Postal Address: " + intent.getStringExtra("address"));
-                    employeeNumber.setText("Health Card Number: " + intent.getStringExtra("healthCardNumber"));
+                    healthCardNumber.setText("Health Card Number: " + intent.getStringExtra("healthCardNumber"));
 
                 case ADMIN:
                     //I literally won't pass this
