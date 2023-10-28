@@ -6,7 +6,7 @@ import android.util.Log;
 
 //App
 import com.quantumSamurais.hams.admin.Administrator;
-import com.quantumSamurais.hams.database.DatabaseUtils;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
@@ -33,7 +33,7 @@ public final class Login implements ResponseListener<RequestStatus> {
 
     Context currentContext;
 
-    DatabaseUtils db;
+    Database db;
 
 
     public Login(String email, char[] password, UserType userType, Context currentContext, LoginEventListener loginEventListener) {
@@ -42,7 +42,7 @@ public final class Login implements ResponseListener<RequestStatus> {
         this.userType = userType;
         this.currentContext = currentContext;
         this.listener = loginEventListener;
-        this.db = new DatabaseUtils();
+        this.db = Database.getInstance();
     }
 
 
@@ -59,35 +59,23 @@ public final class Login implements ResponseListener<RequestStatus> {
      * @param currentContext The current context so that we can switch the activity
      * @return Login codes that represent success or failure to login
      */
-    private LoginStatusCodes attemptLogin(String email, char[] password, UserType userType, Context currentContext, ArrayList<Patient> patientList, ArrayList<Doctor> doctorList) {
-        User userData = null;
+    private LoginStatusCodes attemptLogin(String email, char[] password, UserType userType, Context currentContext, User user) {
         User loggedInUser = null;
-        byte[] salt = null;
         switch (userType) {
             case DOCTOR:
-                userData = doctorList.get(0);
-                if(userData == null)
-                    return LoginStatusCodes.USER_DOES_NOT_EXIST;
-                if(!Arrays.equals(hashPassword(password,ArrayUtils.unpackBytes(userData.getSalt())), ArrayUtils.unpackBytes(userData.getPassword())))
-                    return LoginStatusCodes.INCORRECT_PASSWORD;
-                loggedInUser = userData;
-                break;
             case PATIENT:
-                userData = patientList.get(0);
-                if(userData == null)
+                if(user == null)
                     return LoginStatusCodes.USER_DOES_NOT_EXIST;
-
-                if(!Arrays.equals(hashPassword(password,ArrayUtils.unpackBytes(userData.getSalt())), ArrayUtils.unpackBytes(userData.getPassword())))
+                if(!Arrays.equals(hashPassword(password,ArrayUtils.unpackBytes(user.getSalt())), ArrayUtils.unpackBytes(user.getPassword())))
                     return LoginStatusCodes.INCORRECT_PASSWORD;
-                loggedInUser = userData;
+                loggedInUser = user;
                 break;
             case ADMIN:
-                userData = new Administrator();
-                if(!userData.getEmail().equals(email))
+                if(!user.getEmail().equals(email))
                     return LoginStatusCodes.USER_DOES_NOT_EXIST;
-                if(!Arrays.equals(hashPassword(password,ArrayUtils.unpackBytes(userData.getSalt())), ArrayUtils.unpackBytes(userData.getPassword())))
+                if(!Arrays.equals(hashPassword(password,ArrayUtils.unpackBytes(user.getSalt())), ArrayUtils.unpackBytes(user.getPassword())))
                     return LoginStatusCodes.INCORRECT_PASSWORD;
-                loggedInUser = userData;
+                loggedInUser = user;
                 break;
         }
         loggedInUser.changeView(currentContext);
@@ -96,14 +84,18 @@ public final class Login implements ResponseListener<RequestStatus> {
 
     @Override
     public void onSuccess(RequestStatus requestStatus) {
+        if(requestStatus == null) {
+            listener.loginResponse(LoginStatusCodes.USER_DOES_NOT_EXIST,RequestStatus.PENDING);
+            return;
+        }
         switch (requestStatus) {
             case APPROVED:
                 switch (userType) {
                     case PATIENT:
-                        db.getPatients(new ResponseListener<ArrayList<Patient>>() {
+                        db.getPatient(email,new ResponseListener<Patient>() {
                             @Override
-                            public void onSuccess(ArrayList<Patient> data) {
-                                listener.loginResponse(attemptLogin(email,password,userType,currentContext,data, null),requestStatus);
+                            public void onSuccess(Patient data) {
+                                listener.loginResponse(attemptLogin(email,password,userType,currentContext,data),requestStatus);
                             }
                             @Override
                             public void onFailure(Exception error) {
@@ -112,10 +104,10 @@ public final class Login implements ResponseListener<RequestStatus> {
                         });
                         break;
                     case DOCTOR:
-                        db.getDoctors(new ResponseListener<ArrayList<Doctor>>() {
+                        db.getDoctor(email,new ResponseListener<Doctor>() {
                             @Override
-                            public void onSuccess(ArrayList<Doctor> data) {
-                                listener.loginResponse(attemptLogin(email,password,userType,currentContext,null, data),requestStatus);
+                            public void onSuccess(Doctor data) {
+                                listener.loginResponse(attemptLogin(email,password,userType,currentContext,data),requestStatus);
                             }
 
                             @Override
@@ -125,7 +117,7 @@ public final class Login implements ResponseListener<RequestStatus> {
                         });
                         break;
                     case ADMIN:
-                        listener.loginResponse(attemptLogin(email,password,userType,currentContext,null, null),requestStatus);
+                        listener.loginResponse(attemptLogin(email,password,userType,currentContext,new Administrator()),requestStatus);
                         break;
                 }
                 break;

@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.login;
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
+import static com.quantumSamurais.hams.utils.Validator.textFieldsAreEmpty;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,7 +13,6 @@ import android.view.View;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.database.RequestStatus;
-import com.quantumSamurais.hams.database.DatabaseUtils;
 import com.quantumSamurais.hams.user.UserType;
 
 public class LoginActivity extends AppCompatActivity implements LoginEventListener {
@@ -25,11 +25,17 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_in_form);
+        setup();
+        addListeners();
+    }
+
+    private void setup() {
         signInButton = findViewById(R.id.signInButton);
         emailEditText = findViewById(R.id.EmailAddressSlot);
         passwordEditText = findViewById(R.id.PasswordSlot);
+    }
+    private void addListeners() {
         signInButton.setOnClickListener(this::signInBtnClicked);
-
     }
 
     public void signInBtnClicked(View view) {
@@ -37,15 +43,15 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         String password = passwordEditText.getText().toString().trim();
 
         //we verify that the email and password is not empty.
-        if (textFieldIsEmpty(email) || textFieldIsEmpty(password)) {
-            Toast.makeText(this, "Please make sure to fill out all fields.", Toast.LENGTH_LONG).show();
+        if (textFieldsAreEmpty(email,password)) {
+            toast("Please make sure to fill out all fields.",Toast.LENGTH_LONG);
             return;
         }
         char[] parsePass = password.toCharArray();
         Intent intent = getIntent();
         UserType userType = (UserType) intent.getSerializableExtra("userType");
-        Login logger = new Login(email,parsePass,userType,this,this);
-        logger.attemptLogin();
+        Login loginProcessor = new Login(email,parsePass,userType,this,this);
+        loginProcessor.attemptLogin();
     }
 
 
@@ -56,27 +62,35 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
                 switch (tryLogin) {
                     case INCORRECT_PASSWORD:
                         runOnUiThread(() -> {
-                            Toast.makeText(LoginActivity.this, "Either the email or password fields is incorrect. Please try again.", Toast.LENGTH_LONG).show();
+                            toast("Either the email or password fields is incorrect. Please try again.",Toast.LENGTH_LONG);
                         });
                         break;
                     case SUCCESS:
                         runOnUiThread(() -> {
-                            Toast.makeText(LoginActivity.this, "Successfully Logged in!", Toast.LENGTH_SHORT).show();
+                            toast("Successfully Logged in!", Toast.LENGTH_SHORT);
                         });
                         break;
+                    case USER_DOES_NOT_EXIST:
+                        runOnUiThread(() -> {
+                            toast("This account does not exist, please sign up before trying to log in", Toast.LENGTH_SHORT);
+                        });
                 }
                 break;
             case REJECTED:
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Your registration request was denied by the Administrator.", Toast.LENGTH_LONG).show();
+                    toast("Your registration request was denied by the Administrator.",Toast.LENGTH_LONG);
                 });
                 break;
             case PENDING:
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Your registration has not been approved yet.", Toast.LENGTH_LONG).show();
+                    toast("Your registration has not been approved yet.", Toast.LENGTH_LONG);
                 });
                 break;
         }
+    }
+
+    public void toast(String message, int duration) {
+        Toast.makeText(this,message,duration).show();
     }
 }
 
