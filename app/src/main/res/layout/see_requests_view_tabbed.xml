@@ -18,45 +18,46 @@
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="All Requests" />
+            android:text="@string/all_requests" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pending"
+            android:text="@string/pending"
             tools:layout_editor_absoluteX="137dp"
             tools:layout_editor_absoluteY="16dp" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Rejected" />
+            android:text="@string/rejected" />
     </com.google.android.material.tabs.TabLayout>
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome, Admin"
+        android:text="@string/welcome_admin"
         android:textSize="28sp"
         app:layout_constraintBottom_toTopOf="@+id/requestsTabs"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.035"
+        app:layout_constraintHorizontal_bias="0.08"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.348" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/refreshButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="refresh requests"
+        android:text="refresh"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/requestsTabs"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.937"
+        app:layout_constraintHorizontal_bias="0.858"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3"
-        app:layout_constraintVertical_bias="0.322" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/tabsViewPager"
