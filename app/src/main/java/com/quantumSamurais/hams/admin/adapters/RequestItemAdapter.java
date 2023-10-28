@@ -30,7 +30,7 @@ import java.util.Iterator;
 
 public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.RequestViewHolder>{
     private final RequestsActivityListener requestClickListener;
-    private final ArrayList<Request> requests;
+    private ArrayList<Request> requests;
     private Iterator<Request> requestIterator;
     private final Context currentContext;
     FragmentTab activeTab;
@@ -44,6 +44,14 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
     public RequestItemAdapter(Context context, FragmentTab activeTab,ArrayList<Request> requestsFromDatabase, RequestsActivityListener listener) {
         Log.d("RequestItemAdapter", "Number of items in requests: " + requestsFromDatabase.size());
         this.activeTab = activeTab;
+        setRequests(requestsFromDatabase);
+        currentContext = context;
+        requestIterator = requests.iterator();
+        requestClickListener = listener;
+        Log.d("RequestItemAdapter", "Number of items in requests: " + requests.size());
+    }
+
+    public void setRequests(ArrayList<Request> requestsFromDatabase){
         // Filters the passed list, and makes it so it contains only the required info
         ArrayList<Request> tempRequest = requestsFromDatabase;
         switch(activeTab){
@@ -70,10 +78,7 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
                 break;
         }
         requests = tempRequest;
-        currentContext = context;
-        requestIterator = requests.iterator();
-        requestClickListener = listener;
-        Log.d("RequestItemAdapter", "Number of items in requests: " + requests.size());
+        notifyDataSetChanged();
     }
 
     public static class RequestViewHolder extends RecyclerView.ViewHolder{
@@ -116,7 +121,7 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
 
         }
 
-        private void setRequest(Request request){
+        public void setRequest(Request request){
             this.request = request;
         }
         private void setOnClickListeners(Request request){
@@ -146,7 +151,7 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
                     Intent intent = new Intent();
 
                     if (position != RecyclerView.NO_POSITION) {
-                        requestsActivityListener.onShowMoreClick(position, intent);
+                        requestsActivityListener.onShowMoreClick(position);
                     }
 
                 }
