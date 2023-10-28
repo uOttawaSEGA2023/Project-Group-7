@@ -1,7 +1,6 @@
 package com.quantumSamurais.hams.doctor.activities;
 
 import static com.quantumSamurais.hams.utils.Validator.checkIfEmployeeNumberExists;
-import static com.quantumSamurais.hams.utils.Validator.checkIfHealthCardNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
 import static com.quantumSamurais.hams.utils.Validator.nameIsValid;
@@ -24,13 +23,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.database.DatabaseUtils;
 import com.quantumSamurais.hams.database.Request;
-import com.quantumSamurais.hams.database.callbacks.DoctorsResponseListener;
-import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
+import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
 import com.quantumSamurais.hams.login.LoginActivity;
-import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
@@ -38,7 +35,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutionException;
 
-public class DoctorSignUpActivity extends AppCompatActivity implements RequestsResponseListener {
+public class DoctorSignUpActivity extends AppCompatActivity implements ResponseListener<ArrayList<Request>> {
 
     private EditText  firstNameET, lastNameET, emailAddressET, passwordET, phoneNumberET, postalAddressET,employeeNumberET;
 
@@ -202,7 +199,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements RequestsR
     }
 
     @Override
-    public void onFailure(Error error) {
+    public void onFailure(Exception error) {
         runOnUiThread(() -> {
             shortToast("Registration error, please try again in a few minutes.");
         });

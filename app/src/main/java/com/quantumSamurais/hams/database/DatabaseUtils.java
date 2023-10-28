@@ -1,33 +1,20 @@
 package com.quantumSamurais.hams.database;
 
-import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.quantumSamurais.hams.database.callbacks.DoctorsResponseListener;
-import com.quantumSamurais.hams.database.callbacks.PatientsResponseListener;
-import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
+import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
-import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.user.UserType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 public class DatabaseUtils {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -140,7 +127,7 @@ public class DatabaseUtils {
     // </editor-fold>
 
     // Deliverable 2
-    public void getSignUpRequests(RequestsResponseListener listener) {
+    public void getSignUpRequests(ResponseListener<ArrayList<Request>> listener) {
         new Thread(() -> {
             ArrayList<Request> requestArrayList = new ArrayList<>();
             try {
@@ -150,11 +137,12 @@ public class DatabaseUtils {
                 }
                 listener.onSuccess(requestArrayList);
             } catch (ExecutionException | InterruptedException e) {
+                listener.onFailure(e);
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
         }).start();
     }
-    public void getPatients(PatientsResponseListener listener) {
+    public void getPatients(ResponseListener<ArrayList<Patient>> listener) {
         new Thread(() -> {
             ArrayList<Patient> patientArrayList = new ArrayList<>();
             try {
@@ -164,11 +152,12 @@ public class DatabaseUtils {
                 }
                 listener.onSuccess(patientArrayList);
             } catch (ExecutionException | InterruptedException e) {
+                listener.onFailure(e);
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
         }).start();
     }
-    public void getDoctors(DoctorsResponseListener listener) {
+    public void getDoctors(ResponseListener<ArrayList<Doctor>> listener) {
         new Thread(() -> {
             try {
                 ArrayList<Doctor> doctorstArrayList = new ArrayList<>();
@@ -178,37 +167,60 @@ public class DatabaseUtils {
                 }
                 listener.onSuccess(doctorstArrayList);
             } catch (ExecutionException | InterruptedException e) {
+                listener.onFailure(e);
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
         }).start();
     }
 
-    public RequestStatus getStatus(String email, UserType userType) {
-        boolean foundInPatients = checkUserInPatients("patients", email);
-        boolean foundInDoctors = checkUserInDoctors("doctors", email);
-        boolean foundInRequests = checkUserInRequests(email);
+    public void getPatient(String email, ResponseListener<Patient> listener) {
+        new Thread(() -> {
+            try {
+                QuerySnapshot doctors = Tasks.await(db.collection("users").document("software").collection("patients").whereEqualTo("email",email).get());
+                listener.onSuccess(doctors.getDocuments().get(0).toObject(Patient.class));
+            } catch (ExecutionException | InterruptedException e) {
+                listener.onFailure(e);
+                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+            }
+        }).start();
+    }
+    public void getDoctor(String email, ResponseListener<Doctor> listener) {
+        new Thread(() -> {
+            try {
+                QuerySnapshot doctors = Tasks.await(db.collection("users").document("software").collection("doctors").whereEqualTo("email",email).get());
+                listener.onSuccess(doctors.getDocuments().get(0).toObject(Doctor.class));
+            } catch (ExecutionException | InterruptedException e) {
+                listener.onFailure(e);
+                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+            }
+        }).start();
+    }
 
-        if (foundInPatients || foundInDoctors) {
+    public void getRequestStatus(String email, UserType userType, ResponseListener<RequestStatus> listener) {
+        new Thread(()->{
+            listener.onSuccess(getStatus(email,userType));
+        }).start();
+    };
+
+
+    private RequestStatus getStatus(String email, UserType userType) {
+        boolean foundInPatients = checkUserInCollection("patients", email);
+        boolean foundInDoctors = checkUserInCollection("doctors", email);
+        boolean foundInRequests = checkUserInRequests(email);
+        if(userType == UserType.ADMIN)
+            return RequestStatus.APPROVED;
+
+        if ((foundInPatients && userType == UserType.PATIENT) || (foundInDoctors && userType == UserType.DOCTOR)) {
             return RequestStatus.APPROVED;
         } else if (foundInRequests) {
-            RequestStatus requestStatus = getRequestStatusFromRequests(email);
-            return requestStatus;
+            return getRequestStatusFromRequests(email);
         }
         return RequestStatus.REJECTED;
     }
 
-    private boolean checkUserInPatients(String collectionName, String email) {
+    private boolean checkUserInCollection(String collectionName, String email) {
         try {
-            QuerySnapshot collectionSnapshot = Tasks.await(db.collection("users").document("software").collection("patients").whereEqualTo("email", email).get());
-            return !collectionSnapshot.isEmpty();
-        } catch (ExecutionException | InterruptedException e) {
-            // Handle the exception.
-            return false;
-        }
-    }
-    private boolean checkUserInDoctors(String collectionName, String email) {
-        try {
-            QuerySnapshot collectionSnapshot = Tasks.await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
+            QuerySnapshot collectionSnapshot = Tasks.await(db.collection("users").document("software").collection(collectionName).whereEqualTo("email", email).get());
             return !collectionSnapshot.isEmpty();
         } catch (ExecutionException | InterruptedException e) {
             // Handle the exception.
@@ -217,6 +229,7 @@ public class DatabaseUtils {
     }
 
     private boolean checkUserInRequests(String email) {
+        //TODO: Double Check this actually pulls the right request
         try {
             QuerySnapshot requestsSnapshot = Tasks.await(db.collection("users").document("software").collection("requests").whereEqualTo("email", email).get());
             return !requestsSnapshot.isEmpty();
@@ -251,58 +264,58 @@ public class DatabaseUtils {
      *
      * @param */
 
-    public static void sendEmail(Context context, User user, RequestStatus status) {
-        try {
-            new Thread(() -> {
-                // should be put into an on click for both the approve and reject buttons.
-                final String username = "admin@gmail.com"; // template admin email for the time being.
-                final String password = "12345678"; // '' password.
-                String msgToSend = new String(), msgSbjct = new String(); // message to send and message subject.
-                switch (status) {
-                    case APPROVED:
-                        msgToSend = "Your request to the health Management app has been approved.\n";
-                        msgSbjct = "your account has been approved! :D";
-                        break;
-                    case REJECTED:
-                        msgToSend = "Your request to the health Management app has been denied. \n ";
-                        msgSbjct = "your account has been denied. >:0 ";
-                        break;
-                }
-                Properties props = new Properties();
-                props.put("mail.smtp.auth", "true");
-                props.put("mail.smtp.starttls.enable", "true");
-                props.put("mail.smtp.host", "smtp.gmail.com"); // set as smtp.gmail.com because of email domain.
-                // change if we the email has another domain.
-                props.put("mail.smtp.port", "587"); // 587 most common port for sending emails.
-
-
-                Session session = Session.getInstance(props,
-                        new javax.mail.Authenticator() {
-                            @Override
-                            protected PasswordAuthentication getPasswordAuthentication() {
-                                return new PasswordAuthentication(username, password);
-                            }
-                        });
-
-                try { // try block for sending the email.
-                    Message message = new MimeMessage(session);
-                    message.setFrom(new InternetAddress(username));
-                    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
-                    // we set recipients of the email as the user that we verify or reject.
-                    message.setSubject(msgSbjct);
-                    message.setText(msgToSend);
-                    Transport.send(message);
-                    Toast.makeText(context, "patient has been notified.", Toast.LENGTH_LONG).show();
-
-
-                } catch (MessagingException e) {
-                    throw new RuntimeException(e);
-                }
-            }).start();
-        }
-        catch (Exception e){
-            Log.d("View ", "So that happened: " + e.getStackTrace());
-        }
-
-    }
+//    public static void sendEmail(Context context, User user, RequestStatus status) {
+//        try {
+//            new Thread(() -> {
+//                // should be put into an on click for both the approve and reject buttons.
+//                final String username = "admin@gmail.com"; // template admin email for the time being.
+//                final String password = "12345678"; // '' password.
+//                String msgToSend = new String(), msgSbjct = new String(); // message to send and message subject.
+//                switch (status) {
+//                    case APPROVED:
+//                        msgToSend = "Your request to the health Management app has been approved.\n";
+//                        msgSbjct = "your account has been approved! :D";
+//                        break;
+//                    case REJECTED:
+//                        msgToSend = "Your request to the health Management app has been denied. \n ";
+//                        msgSbjct = "your account has been denied. >:0 ";
+//                        break;
+//                }
+//                Properties props = new Properties();
+//                props.put("mail.smtp.auth", "true");
+//                props.put("mail.smtp.starttls.enable", "true");
+//                props.put("mail.smtp.host", "smtp.gmail.com"); // set as smtp.gmail.com because of email domain.
+//                // change if we the email has another domain.
+//                props.put("mail.smtp.port", "587"); // 587 most common port for sending emails.
+//
+//
+//                Session session = Session.getInstance(props,
+//                        new javax.mail.Authenticator() {
+//                            @Override
+//                            protected PasswordAuthentication getPasswordAuthentication() {
+//                                return new PasswordAuthentication(username, password);
+//                            }
+//                        });
+//
+//                try { // try block for sending the email.
+//                    Message message = new MimeMessage(session);
+//                    message.setFrom(new InternetAddress(username));
+//                    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
+//                    // we set recipients of the email as the user that we verify or reject.
+//                    message.setSubject(msgSbjct);
+//                    message.setText(msgToSend);
+//                    Transport.send(message);
+//                    Toast.makeText(context, "patient has been notified.", Toast.LENGTH_LONG).show();
+//
+//
+//                } catch (MessagingException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }).start();
+//        }
+//        catch (Exception e){
+//            Log.d("View ", "So that happened: " + e.getStackTrace());
+//        }
+//
+//    }
 }
