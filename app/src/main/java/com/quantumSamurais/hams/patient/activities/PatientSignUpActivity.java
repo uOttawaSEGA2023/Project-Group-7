@@ -21,9 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.database.DatabaseUtils;
 import com.quantumSamurais.hams.database.Request;
-import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
-import com.quantumSamurais.hams.doctor.Doctor;
-import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
+import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.UserType;
@@ -31,11 +29,9 @@ import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class PatientSignUpActivity extends AppCompatActivity implements RequestsResponseListener {
+public class PatientSignUpActivity extends AppCompatActivity implements ResponseListener<ArrayList<Request>> {
     private EditText firstNameEditText, lastNameEditText, emailAddressEditText, passwordEditText, phoneNumberEditText, postalAddressEditText, healthCardNumberEditText;
     private Button signUpButton;
 
@@ -180,7 +176,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Requests
     }
 
     @Override
-    public void onFailure(Error error) {
+    public void onFailure(Exception error) {
         runOnUiThread(() -> {
             shortToast("Registration error, please try again in a few minutes.");
         });

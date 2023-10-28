@@ -32,6 +32,9 @@ public class ArrayUtils {
         if(extra > 0) {
             for (int i = bytes.length-extra; i < bytes.length; i++) {
                 toPack = toPack << 8;
+                if(bytes[i] < 0) {
+                    toPack += 0x100;
+                }
                 toPack += bytes[i];
             }
             packed.add(toPack);
