@@ -24,7 +24,7 @@ import com.quantumSamurais.hams.admin.adapters.RequestItemAdapter.FragmentTab;
 import com.quantumSamurais.hams.admin.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.DatabaseUtils;
 import com.quantumSamurais.hams.database.Request;
-import com.quantumSamurais.hams.database.callbacks.RequestsResponseListener;
+import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
@@ -32,7 +32,7 @@ import com.quantumSamurais.hams.user.User;
 import java.util.ArrayList;
 
 
-public class requestsFragment extends Fragment implements RequestsActivityListener, RequestsResponseListener {
+public class requestsFragment extends Fragment implements RequestsActivityListener, ResponseListener<ArrayList<Request>> {
     FragmentTab activeTab;
     RequestItemAdapter requestsAdapter;
     RecyclerView requestsStack;
@@ -83,6 +83,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     @Override
     public void onDetach() {
         super.onDetach();
+        stopDataRefresh();
     }
 
     public void viewRegistrationRequests() {
@@ -120,8 +121,8 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     }
 
     @Override
-    public void onFailure(Error error) {
-        Log.d("admin view", "Something went off when trying to access the DB.");
+    public void onFailure(Exception error) {
+        Log.d("admin view", "Something went off when trying to access the DB." + error.getStackTrace());
 
     }
 
@@ -163,6 +164,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
 
     @Override
     public void onShowMoreClick(int position) {
+        stopDataRefresh();
         //Get the selected request from the list
         Request selectedRequest = requests.get(position);
         Intent showMoreIntent = new Intent(getActivity(), ShowMoreActivity.class);
