@@ -85,7 +85,7 @@ public final class Login implements ResponseListener<RequestStatus> {
     @Override
     public void onSuccess(RequestStatus requestStatus) {
         if(requestStatus == null) {
-            listener.loginResponse(LoginStatusCodes.USER_DOES_NOT_EXIST,RequestStatus.PENDING);
+            listener.loginResponse(LoginStatusCodes.USER_DOES_NOT_EXIST,RequestStatus.APPROVED);
             return;
         }
         switch (requestStatus) {
