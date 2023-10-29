@@ -2,6 +2,7 @@ package com.quantumSamurais.hams.database;
 
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
+import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
 public class Request {
@@ -49,5 +50,21 @@ public class Request {
 
     public UserType getUserType() {
         return userType;
+    }
+
+    public static User getUserFromRequest(Request request){
+        if (request == null){
+            throw new NullPointerException("Please do not pass a null object to this method");
+        }
+        switch(request.getUserType()){
+            case DOCTOR:
+                return request.getDoctor();
+            case PATIENT:
+                return request.getPatient();
+            case ADMIN:
+                // We shouldn't get here
+        }
+        // We shouldn't get here either, since request shouldn't be null.
+        return null;
     }
 }

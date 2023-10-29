@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.admin.activities.fragments;
 
+import static com.quantumSamurais.hams.database.Request.getUserFromRequest;
 import static com.quantumSamurais.hams.user.UserType.DOCTOR;
 import static com.quantumSamurais.hams.user.UserType.PATIENT;
 
@@ -27,7 +28,6 @@ import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
-import com.quantumSamurais.hams.user.User;
 
 import java.util.ArrayList;
 
@@ -146,21 +146,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
         refreshHandler.post(refreshRunnable);
     }
 
-    public static User getUserFromRequest(Request request){
-        if (request == null){
-            throw new NullPointerException("Please do not pass a null object to this method");
-        }
-        switch(request.getUserType()){
-            case DOCTOR:
-                return request.getDoctor();
-            case PATIENT:
-                return request.getPatient();
-            case ADMIN:
-                // We shouldn't get here
-        }
-        // We shouldn't get here either, since request shouldn't be null.
-        return null;
-    }
+
 
     @Override
     public void onShowMoreClick(int position) {

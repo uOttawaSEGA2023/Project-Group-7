@@ -1,6 +1,6 @@
 package com.quantumSamurais.hams.admin.adapters;
 
-import static com.quantumSamurais.hams.admin.activities.fragments.requestsFragment.getUserFromRequest;
+import static com.quantumSamurais.hams.database.Request.getUserFromRequest;
 import static com.quantumSamurais.hams.database.RequestStatus.PENDING;
 import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
 
@@ -25,7 +25,6 @@ import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 
 public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.RequestViewHolder>{
