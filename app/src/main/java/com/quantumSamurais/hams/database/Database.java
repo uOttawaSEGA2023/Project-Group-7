@@ -72,8 +72,7 @@ public class Database {
                signUpLock.lock();
                 try {
                    DocumentSnapshot software = Tasks.await(db.collection("users").document("software").get());
-                   if(requestID == null)
-                       requestID = (Long) software.get("requestID");
+                   requestID = (Long) software.get("requestID");
                    if(requestID == null) {
                        Tasks.await(db.collection("users").document("software").update("requestID",0));
                        requestID = 0L;
