@@ -169,7 +169,12 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
         signUp.setEnabled(false);
         currentDoctor = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
         Database db = Database.getInstance();
+        try {
+            wait(300);
+        } catch (InterruptedException ignored) {
+        }
         db.getSignUpRequests(this);
+        //TODO: FIX implementation of this callback it does not work because it gets called to fast
 
     }
 
