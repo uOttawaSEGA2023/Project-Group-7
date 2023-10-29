@@ -9,6 +9,8 @@ import static com.quantumSamurais.hams.utils.ValidationTaskResult.ERROR;
 import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_NUMBER;
 import static com.quantumSamurais.hams.utils.ValidationType.HEALTH_CARD_NUMBER;
 
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -32,8 +34,11 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -210,6 +215,7 @@ public class Database {
     public void getSignUpRequests(ResponseListener<ArrayList<Request>> listener) {
         new Thread(() -> {
             ArrayList<Request> requestArrayList = new ArrayList<>();
+            signUpLock.lock();
             try {
                 QuerySnapshot requests = Tasks.await(db.collection("users").document("software").collection("requests").get());
                 for (QueryDocumentSnapshot document : requests) {
@@ -220,6 +226,7 @@ public class Database {
                 listener.onFailure(e);
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
+            signUpLock.unlock();
         }).start();
     }
 
@@ -338,13 +345,12 @@ public class Database {
             throw new IllegalArgumentException("Doctors cannot have health card numbers");
         }
         //Then we can start
-        final ValidationTaskResult[] pseudoListener = {null};
         Query requestHit = null;
         Query userHit = null;
         switch (checkToDo){
             case EMAIL_ADDRESS:
                 requestHit = db.collection("users").document("software").collection("requests").whereEqualTo("email", fieldToVerify);
-                userHit = userType == DOCTOR ? db.collection("users").document("software").collection("doctors").whereEqualTo("emailAddress", fieldToVerify):
+                userHit = userType == DOCTOR ? db.collection("users").document("software").collection("doctors").whereEqualTo("email", fieldToVerify):
                         db.collection("users").document("software").collection("patients").whereEqualTo("email", fieldToVerify);
                 break;
             case PHONE_NUMBER:
@@ -400,8 +406,23 @@ public class Database {
 
     private boolean checkUserInCollection(String collectionName, String email) {
         try {
-            QuerySnapshot collectionSnapshot = Tasks.await(db.collection("users").document("software").collection(collectionName).whereEqualTo("email", email).get());
-            return !collectionSnapshot.isEmpty();
+            // Create a thread, with an executor service.
+            ExecutorService service = Executors.newSingleThreadExecutor();
+            // Define a lambda task to run along the completable future.
+            Supplier<QuerySnapshot> isUserInCollection = () -> {
+                try {
+                    return Tasks.await(db.collection("users").document("software").collection(collectionName).whereEqualTo("email", email).get());
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            };;
+            //Supply both the task and the thread to use, to the completable future using supplyAsync
+            CompletableFuture<QuerySnapshot> querySnap = supplyAsync(isUserInCollection, service);
+
+            //Use get.
+            return !querySnap.get().isEmpty();
         } catch (ExecutionException | InterruptedException e) {
             // Handle the exception.
             return false;

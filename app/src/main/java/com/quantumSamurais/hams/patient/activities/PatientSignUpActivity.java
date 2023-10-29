@@ -149,12 +149,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
                     //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.
                     currentPatient = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
                     Database db = Database.getInstance();
-                    try {
-                        wait(300);
-                    } catch (InterruptedException ignored) {
-                    }
                     db.getSignUpRequests(this);
-                    //TODO: FIX implementation of this callback it does not work because it gets called to fast
                 }
         );
     }
