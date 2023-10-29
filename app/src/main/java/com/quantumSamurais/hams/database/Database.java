@@ -1,5 +1,14 @@
 package com.quantumSamurais.hams.database;
 
+import static android.content.ContentValues.TAG;
+import static com.quantumSamurais.hams.user.UserType.DOCTOR;
+import static com.quantumSamurais.hams.user.UserType.PATIENT;
+import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_IS_FREE_TO_USE;
+import static com.quantumSamurais.hams.utils.ValidationTaskResult.ERROR;
+import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_NUMBER;
+import static com.quantumSamurais.hams.utils.ValidationType.HEALTH_CARD_NUMBER;
+
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -7,6 +16,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
@@ -14,10 +24,13 @@ import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
+import com.quantumSamurais.hams.utils.ValidationTaskResult;
+import com.quantumSamurais.hams.utils.ValidationType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -305,12 +318,85 @@ public class Database {
         if(userType == UserType.ADMIN)
             return RequestStatus.APPROVED;
 
-        if ((foundInPatients && userType == UserType.PATIENT) || (foundInDoctors && userType == UserType.DOCTOR)) {
+        if ((foundInPatients && userType == PATIENT) || (foundInDoctors && userType == DOCTOR)) {
             return RequestStatus.APPROVED;
         } else if (foundInRequests) {
             return getRequestStatusFromRequests(email);
         }
         return null;
+    }
+
+    public ValidationTaskResult isFieldFreeToUse(String fieldToVerify, UserType userType, ValidationType checkToDo){
+        //Sanity Check
+        if (fieldToVerify == null || userType == null || checkToDo == null) {
+            throw new NullPointerException("Please do not pass null arguments to this function");
+        }
+        //Coherence Checks
+        else if (userType == PATIENT && checkToDo == EMPLOYEE_NUMBER){
+            throw new IllegalArgumentException("Patients cannot have employee numbers");
+        }
+        else if (userType == DOCTOR && checkToDo == HEALTH_CARD_NUMBER)  {
+            throw new IllegalArgumentException("Doctors cannot have health card numbers");
+        }
+        //Then we can start
+        final ValidationTaskResult[] pseudoListener = {null};
+        Query requestHit = null;
+        Query userHit = null;
+        switch (checkToDo){
+            case EMAIL_ADDRESS:
+                requestHit = db.collection("users").document("software").collection("requests").whereEqualTo("email", fieldToVerify);
+                userHit = userType == DOCTOR ? db.collection("users").document("software").collection("doctors").whereEqualTo("emailAddress", fieldToVerify):
+                        db.collection("users").document("software").collection("patients").whereEqualTo("email", fieldToVerify);
+                break;
+            case PHONE_NUMBER:
+                requestHit = db.collection("users").document("software").collection("requests").whereEqualTo("phone", fieldToVerify);
+                userHit = userType == DOCTOR ? db.collection("users").document("software").collection("doctors").whereEqualTo("phone", fieldToVerify):
+                        db.collection("users").document("software").collection("patients").whereEqualTo("phone", fieldToVerify);
+                break;
+            case HEALTH_CARD_NUMBER:
+                requestHit = db.collection("users").document("software").collection("requests").whereEqualTo("healthCardNumber", fieldToVerify);
+                userHit = db.collection("users").document("software").collection("patients").whereEqualTo("healthCardNumber", fieldToVerify);
+                break;
+            case EMPLOYEE_NUMBER:
+                requestHit = db.collection("users").document("software").collection("requests").whereEqualTo("employeeNumber", fieldToVerify);
+                userHit = db.collection("users").document("software").collection("doctors").whereEqualTo("employeeNumber", fieldToVerify);
+                break;
+        }
+        Query finalRequestHit = requestHit;
+        Query finalUserHit = userHit;
+        CompletableFuture<ValidationTaskResult> future = new CompletableFuture<>();
+
+        new Thread(() -> {
+            try {
+                // First check the requests
+                QuerySnapshot requestResult = Tasks.await(finalRequestHit.get());
+
+                if (requestResult.isEmpty()) {
+                    // If no requests use that field, then we can pretty much do the same thing
+                    // but for the userHit
+                    QuerySnapshot userResult = Tasks.await(finalUserHit.get());
+
+                    if (userResult.isEmpty()) {
+                        // Then no one uses that field.
+                        future.complete(ATTRIBUTE_IS_FREE_TO_USE);
+                    } else {
+                        future.complete(ATTRIBUTE_ALREADY_REGISTERED);
+                    }
+                } else {
+                    future.complete(ATTRIBUTE_ALREADY_REGISTERED);
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Error getting documents: ", e);
+                future.complete(ERROR);
+            }
+        }).start();
+
+        try {
+            return future.get();
+        } catch (Exception e) {
+            Log.d(TAG, "Error waiting for future: ", e);
+            return ERROR;
+        }
     }
 
     private boolean checkUserInCollection(String collectionName, String email) {
