@@ -1,6 +1,9 @@
 package com.quantumSamurais.hams.admin.activities.fragments;
 
+import static com.quantumSamurais.hams.database.Database.sendEmail;
 import static com.quantumSamurais.hams.database.Request.getUserFromRequest;
+import static com.quantumSamurais.hams.database.RequestStatus.APPROVED;
+import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
 import static com.quantumSamurais.hams.user.UserType.DOCTOR;
 import static com.quantumSamurais.hams.user.UserType.PATIENT;
 
@@ -132,7 +135,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
         Log.d("requests Fragment", "accept click was pressed");
         long idToAccept = requests.get(position).getID();
         tools.approveSignUpRequest(idToAccept);
-        //sendEmail(getActivity(), getUserFromRequest(requests.get(position)), APPROVED);
+        sendEmail(getUserFromRequest(requests.get(position)), APPROVED);
         refreshHandler.post(refreshRunnable);
     }
 
@@ -142,7 +145,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
         Log.d("requests Fragment", "reject click was pressed");
         long idToReject = requests.get(position).getID();
         tools.rejectSignUpRequest(idToReject);
-        //sendEmail(getActivity(), getUserFromRequest(requests.get(position)), REJECTED);
+        sendEmail(getUserFromRequest(requests.get(position)), REJECTED);
         refreshHandler.post(refreshRunnable);
     }
 
