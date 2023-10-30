@@ -3,7 +3,6 @@ package com.quantumSamurais.hams.utils;
 import static com.quantumSamurais.hams.user.UserType.DOCTOR;
 import static com.quantumSamurais.hams.user.UserType.PATIENT;
 import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
-import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_IS_FREE_TO_USE;
 import static com.quantumSamurais.hams.utils.ValidationTaskResult.VALID;
 import static com.quantumSamurais.hams.utils.ValidationType.EMAIL_ADDRESS;
 import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_NUMBER;
@@ -97,10 +96,10 @@ public final class Validator {
             if (domainIsValid) {
                 if (!textFieldIsEmpty(localPart) && localPart.matches("^\\S+$")) {
 
-                    if (dbTools.isFieldFreeToUse(emailAddress, userType, EMAIL_ADDRESS) == ATTRIBUTE_IS_FREE_TO_USE) {
-                        return VALID;
-                    } else {
+                    if ((dbTools.checkUserIsInUsers(userType, EMAIL_ADDRESS, emailAddress) || dbTools.checkUserIsInRequests(userType, EMAIL_ADDRESS, emailAddress))) {
                         return ATTRIBUTE_ALREADY_REGISTERED;
+                    } else {
+                        return VALID;
                     }
                 }
                 return ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS;
@@ -112,17 +111,17 @@ public final class Validator {
         return ValidationTaskResult.INVALID_FORMAT;
     }
 
-    public static ValidationTaskResult checkIfHealthCardNumberExists(String healthCardNumber) throws ExecutionException, InterruptedException {
-        return dbTools.isFieldFreeToUse(healthCardNumber, PATIENT, HEALTH_CARD_NUMBER);
+    public static boolean checkIfHealthCardNumberExists(String healthCardNumber) throws ExecutionException, InterruptedException {
+        return dbTools.checkUserIsInUsers(PATIENT, HEALTH_CARD_NUMBER, healthCardNumber) || dbTools.checkUserIsInRequests(PATIENT, HEALTH_CARD_NUMBER, healthCardNumber) ;
 
     }
 
-    public static ValidationTaskResult checkIfEmployeeNumberExists(String employeeNumber) throws ExecutionException, InterruptedException {
-        return dbTools.isFieldFreeToUse(employeeNumber, DOCTOR, EMPLOYEE_NUMBER);
+    public static boolean checkIfEmployeeNumberExists(String employeeNumber) throws ExecutionException, InterruptedException {
+        return dbTools.checkUserIsInUsers(DOCTOR, EMPLOYEE_NUMBER, employeeNumber) || dbTools.checkUserIsInRequests(DOCTOR, EMPLOYEE_NUMBER, employeeNumber) ;
     }
 
-    public static ValidationTaskResult checkIfPhoneNumberExists(String phoneNumber, UserType userType) throws ExecutionException, InterruptedException {
-        return dbTools.isFieldFreeToUse(phoneNumber, userType, PHONE_NUMBER);
+    public static boolean checkIfPhoneNumberExists(String phoneNumber, UserType userType) throws ExecutionException, InterruptedException {
+        return dbTools.checkUserIsInUsers(userType, PHONE_NUMBER, phoneNumber) || dbTools.checkUserIsInRequests(userType, PHONE_NUMBER, phoneNumber);
     }
 
     /**

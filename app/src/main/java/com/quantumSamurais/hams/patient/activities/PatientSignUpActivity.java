@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.patient.activities;
 
+import static com.quantumSamurais.hams.user.UserType.PATIENT;
 import static com.quantumSamurais.hams.utils.Validator.checkIfHealthCardNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
@@ -15,7 +16,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.quantumSamurais.hams.R;
@@ -24,9 +24,7 @@ import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.patient.Patient;
-import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationTaskResult;
-
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -74,7 +72,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
                     }
                     //emailAddressIsValid throws errors due to be a wifi/threaded method, so we require a try/catch
                     try {
-                        ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, UserType.PATIENT);
+                        ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, PATIENT);
 
                         if (emailValidityCheck == ValidationTaskResult.INVALID_FORMAT) {
                             shortToast("This email address is not formatted like an email address.");
@@ -111,7 +109,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
                     }
                     boolean phoneNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
                     try {
-                        phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, UserType.PATIENT) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+                        phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, PATIENT);
                         if (phoneNumberIsAlreadyInDatabase) {
                             shortToast("This phone number is already in use, please try signing in.");
                             return;
@@ -128,7 +126,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
                     }
                     boolean healthCardNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
                     try {
-                        healthCardNumberIsAlreadyInDatabase = checkIfHealthCardNumberExists(healthCardNumber) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+                        healthCardNumberIsAlreadyInDatabase = checkIfHealthCardNumberExists(healthCardNumber);
                         if (healthCardNumberIsAlreadyInDatabase) {
                             shortToast("This health card number is already in use, please try signing in.");
                             return;
@@ -161,7 +159,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
     @Override
     public void onSuccess(ArrayList<Request> requests) {
         for (Request r : requests) {
-            if (r.getUserType() != UserType.PATIENT)
+            if (r.getUserType() != PATIENT)
                 continue;
             if (!r.getPatient().equals(currentPatient))
                 continue;

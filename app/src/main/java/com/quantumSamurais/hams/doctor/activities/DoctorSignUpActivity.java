@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.doctor.activities;
 
+import static com.quantumSamurais.hams.user.UserType.DOCTOR;
 import static com.quantumSamurais.hams.utils.Validator.checkIfEmployeeNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
@@ -28,7 +29,6 @@ import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
 import com.quantumSamurais.hams.login.LoginActivity;
-import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
 import java.util.ArrayList;
@@ -92,7 +92,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
 
 
         try {
-            ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, UserType.DOCTOR);
+            ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, DOCTOR);
 
             if (emailValidityCheck == ValidationTaskResult.INVALID_FORMAT) {
                 shortToast("This email address is not formatted like an email address.");
@@ -129,7 +129,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
         }
         boolean phoneNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
         try {
-            phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, UserType.PATIENT) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+            phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, DOCTOR);
             if (phoneNumberIsAlreadyInDatabase) {
                 shortToast("This phone number is already in use, please try signing in.");
                 return;
@@ -146,7 +146,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
         }
         boolean employeeNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
         try {
-            employeeNumberIsAlreadyInDatabase = checkIfEmployeeNumberExists(employeeNumber) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+            employeeNumberIsAlreadyInDatabase = checkIfEmployeeNumberExists(employeeNumber);
             if (employeeNumberIsAlreadyInDatabase) {
                 shortToast("This employee number is already in use, please try signing in.");
                 return;
@@ -183,7 +183,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
     @Override
     public void onSuccess(ArrayList<Request> requests) {
         for (Request r : requests) {
-            if(r.getUserType() != UserType.DOCTOR)
+            if(r.getUserType() != DOCTOR)
                 continue;
             if(!r.getDoctor().equals(currentDoctor))
                 continue;
