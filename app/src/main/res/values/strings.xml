@@ -2,4 +2,12 @@
     <string name="app_name">Health Management System</string>
     <string name="selectTypeSignUp">Are you registering as ....</string>
     <string name="selectTypeSignIn">Are you signing in as ....</string>
+    <string name="refresh">refresh button</string>
+    <string name="pending_requests">Pending Requests</string>
+    <string name="patient">Patient</string>
+    <string name="doctor">Doctor</string>
+    <string name="all_requests">All Requests</string>
+    <string name="pending">Pending</string>
+    <string name="rejected">Rejected</string>
+    <string name="welcome_admin">Welcome, Admin</string>
 </resources>

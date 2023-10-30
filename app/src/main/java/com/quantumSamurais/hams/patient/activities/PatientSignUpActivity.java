@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.patient.activities;
 
+import static com.quantumSamurais.hams.user.UserType.PATIENT;
 import static com.quantumSamurais.hams.utils.Validator.checkIfHealthCardNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
@@ -15,24 +16,24 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
+import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.database.Request;
+import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.login.LoginActivity;
 import com.quantumSamurais.hams.patient.Patient;
-import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
-
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-public class PatientSignUpActivity extends AppCompatActivity {
+public class PatientSignUpActivity extends AppCompatActivity implements ResponseListener<ArrayList<Request>> {
     private EditText firstNameEditText, lastNameEditText, emailAddressEditText, passwordEditText, phoneNumberEditText, postalAddressEditText, healthCardNumberEditText;
     private Button signUpButton;
+
+    private Patient currentPatient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +72,7 @@ public class PatientSignUpActivity extends AppCompatActivity {
                     }
                     //emailAddressIsValid throws errors due to be a wifi/threaded method, so we require a try/catch
                     try {
-                        ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, UserType.PATIENT);
+                        ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, PATIENT);
 
                         if (emailValidityCheck == ValidationTaskResult.INVALID_FORMAT) {
                             shortToast("This email address is not formatted like an email address.");
@@ -108,7 +109,7 @@ public class PatientSignUpActivity extends AppCompatActivity {
                     }
                     boolean phoneNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
                     try {
-                        phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, UserType.PATIENT) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+                        phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, PATIENT);
                         if (phoneNumberIsAlreadyInDatabase) {
                             shortToast("This phone number is already in use, please try signing in.");
                             return;
@@ -125,7 +126,7 @@ public class PatientSignUpActivity extends AppCompatActivity {
                     }
                     boolean healthCardNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
                     try {
-                        healthCardNumberIsAlreadyInDatabase = checkIfHealthCardNumberExists(healthCardNumber) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+                        healthCardNumberIsAlreadyInDatabase = checkIfHealthCardNumberExists(healthCardNumber);
                         if (healthCardNumberIsAlreadyInDatabase) {
                             shortToast("This health card number is already in use, please try signing in.");
                             return;
@@ -142,33 +143,38 @@ public class PatientSignUpActivity extends AppCompatActivity {
                     }
 
 
+                    signUpButton.setEnabled(false);
                     //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.
-                    Patient newUser = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
-
-                    // Store the user data in the database
-                    if (savedUser(newUser)) {
-                        // Registration successful
-                        Toast.makeText(PatientSignUpActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
-                        // Switch to login
-                        Intent login = new Intent(this, LoginActivity.class);
-                        startActivity(login);
-                        finish();
-                    } else {
-                        // Error while saving to the database
-                        Toast.makeText(PatientSignUpActivity.this, "Error occurred. Please try again.", Toast.LENGTH_SHORT).show();
-                    }
+                    currentPatient = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
+                    Database db = Database.getInstance();
+                    db.getSignUpRequests(this);
                 }
         );
     }
 
-
-    private boolean savedUser(Patient newUser) {
-        List<Map<String, Object>> registeredUsers = Patient.getRegisteredPatients();
-        return registeredUsers.contains(newUser.getNewUserInformation());
-    }
-
     private void shortToast(String text) {
         Toast.makeText(PatientSignUpActivity.this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onSuccess(ArrayList<Request> requests) {
+        for (Request r : requests) {
+            if (r.getUserType() != PATIENT)
+                continue;
+            if (!r.getPatient().equals(currentPatient))
+                continue;
+            runOnUiThread(() -> shortToast("Registration successful"));
+            // Switch to login
+            Intent login = new Intent(this, LoginActivity.class);
+            startActivity(login);
+            finish();
+        }
+    }
+
+    @Override
+    public void onFailure(Exception error) {
+        runOnUiThread(() -> shortToast("Registration error, please try again in a few minutes."));
+        signUpButton.setEnabled(true);
     }
 
 

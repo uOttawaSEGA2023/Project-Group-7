@@ -3,9 +3,10 @@ package com.quantumSamurais.hams.admin;
 import android.content.Context;
 import android.content.Intent;
 
-import com.quantumSamurais.hams.login.LoginInteractiveMessage;
+import com.quantumSamurais.hams.admin.activities.ViewRequestsActivity;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
+import com.quantumSamurais.hams.utils.ArrayUtils;
 
 public class Administrator extends User {
 
@@ -16,8 +17,8 @@ public class Administrator extends User {
         super(
                 "Admin",
                 "",
-                PASSWORD,
-                SALT,
+                ArrayUtils.packBytes(PASSWORD),
+                ArrayUtils.packBytes(SALT),
                 "Administrator",
                 "000-000-000",
                 ""
@@ -26,25 +27,12 @@ public class Administrator extends User {
 
     @Override
     public void changeView(Context currentContext) {
-        Intent adminView = new Intent(currentContext,LoginInteractiveMessage.class);
+        Intent adminView = new Intent(currentContext, ViewRequestsActivity.class);
         adminView.putExtra("userType", UserType.ADMIN);
-      // adminView.putExtra("user",this);
         currentContext.startActivity(adminView);
     }
 
-    public void viewRegistrationRequests() {
-        // a list of registration requests from Patients and Doctors
-    }
 
-    public void approveRegistrationRequest(User user) {
-        // Approve the registration request for the given user
-    }
 
-    public void rejectRegistrationRequest(User user) {
-        // Reject the registration request for the given user
-    }
 
-    public void viewRejectedRequests() {
-        // Display a list of previously rejected registration requests
-    }
 }

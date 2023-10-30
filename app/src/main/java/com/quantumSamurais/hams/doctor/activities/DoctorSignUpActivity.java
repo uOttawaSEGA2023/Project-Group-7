@@ -1,7 +1,7 @@
 package com.quantumSamurais.hams.doctor.activities;
 
+import static com.quantumSamurais.hams.user.UserType.DOCTOR;
 import static com.quantumSamurais.hams.utils.Validator.checkIfEmployeeNumberExists;
-import static com.quantumSamurais.hams.utils.Validator.checkIfHealthCardNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.checkIfPhoneNumberExists;
 import static com.quantumSamurais.hams.utils.Validator.emailAddressIsValid;
 import static com.quantumSamurais.hams.utils.Validator.nameIsValid;
@@ -22,19 +22,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
+import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.database.Request;
+import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
 import com.quantumSamurais.hams.login.LoginActivity;
-import com.quantumSamurais.hams.user.User;
-import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationTaskResult;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.concurrent.ExecutionException;
 
-public class DoctorSignUpActivity extends AppCompatActivity {
+public class DoctorSignUpActivity extends AppCompatActivity implements ResponseListener<ArrayList<Request>> {
 
     private EditText  firstNameET, lastNameET, emailAddressET, passwordET, phoneNumberET, postalAddressET,employeeNumberET;
 
@@ -42,6 +43,8 @@ public class DoctorSignUpActivity extends AppCompatActivity {
 
     private CheckableItemAdapter<Specialties> adapter;
     private Button signUp;
+
+    private Doctor currentDoctor;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,7 +92,7 @@ public class DoctorSignUpActivity extends AppCompatActivity {
 
 
         try {
-            ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, UserType.DOCTOR);
+            ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, DOCTOR);
 
             if (emailValidityCheck == ValidationTaskResult.INVALID_FORMAT) {
                 shortToast("This email address is not formatted like an email address.");
@@ -126,7 +129,7 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         }
         boolean phoneNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
         try {
-            phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, UserType.PATIENT) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+            phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, DOCTOR);
             if (phoneNumberIsAlreadyInDatabase) {
                 shortToast("This phone number is already in use, please try signing in.");
                 return;
@@ -143,7 +146,7 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         }
         boolean employeeNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
         try {
-            employeeNumberIsAlreadyInDatabase = checkIfEmployeeNumberExists(employeeNumber) == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
+            employeeNumberIsAlreadyInDatabase = checkIfEmployeeNumberExists(employeeNumber);
             if (employeeNumberIsAlreadyInDatabase) {
                 shortToast("This employee number is already in use, please try signing in.");
                 return;
@@ -163,16 +166,10 @@ public class DoctorSignUpActivity extends AppCompatActivity {
             return;
         }
 
-        Doctor newUser = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
-        if(User.registeredDoctors.contains(newUser.getNewUserInformation())) {
-            shortToast("Registration successful");
-            // Switch to login
-            Intent login = new Intent(this, LoginActivity.class);
-            startActivity(login);
-            finish();
-        } else {
-            shortToast("An Error occurred please try again");
-        }
+        signUp.setEnabled(false);
+        currentDoctor = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
+        Database db = Database.getInstance();
+        db.getSignUpRequests(this);
     }
 
     private void shortToast(String text) {
@@ -183,4 +180,24 @@ public class DoctorSignUpActivity extends AppCompatActivity {
         return e.getText().toString().trim();
     }
 
+    @Override
+    public void onSuccess(ArrayList<Request> requests) {
+        for (Request r : requests) {
+            if(r.getUserType() != DOCTOR)
+                continue;
+            if(!r.getDoctor().equals(currentDoctor))
+                continue;
+            runOnUiThread(() -> shortToast("Registration successful"));
+            // Switch to login
+            Intent login = new Intent(this, LoginActivity.class);
+            startActivity(login);
+            finish();
+        }
+    }
+
+    @Override
+    public void onFailure(Exception error) {
+        runOnUiThread(() -> shortToast("Registration error, please try again in a few minutes."));
+        signUp.setEnabled(true);
+    }
 }

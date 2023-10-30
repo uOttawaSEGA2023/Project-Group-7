@@ -1,39 +1,27 @@
 package com.quantumSamurais.hams.utils;
 
 import static com.quantumSamurais.hams.user.UserType.DOCTOR;
+import static com.quantumSamurais.hams.user.UserType.PATIENT;
 import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
-import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_IS_FREE_TO_USE;
 import static com.quantumSamurais.hams.utils.ValidationTaskResult.VALID;
 import static com.quantumSamurais.hams.utils.ValidationType.EMAIL_ADDRESS;
 import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_NUMBER;
 import static com.quantumSamurais.hams.utils.ValidationType.HEALTH_CARD_NUMBER;
 import static com.quantumSamurais.hams.utils.ValidationType.PHONE_NUMBER;
-import static java.net.InetAddress.getByName;
 
-
-import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.user.UserType;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 
 public final class Validator {
-    private static FirebaseFirestore db = FirebaseFirestore.getInstance();
+    static Database dbTools = Database.getInstance();
 
     private static class DomainValidationTask extends AsyncTask<String, Void, Boolean> {
 
@@ -54,95 +42,7 @@ public final class Validator {
         }
     }
 
-    private static class IsInDatabaseTask extends AsyncTask<String, Void, ValidationTaskResult> {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        QuerySnapshot snap;
-        String valueToCheck;
 
-        ValidationType validationType;
-        UserType userType;
-
-        IsInDatabaseTask(ValidationType validationType, UserType userType){
-            this.validationType = validationType;
-            this.userType = userType;
-        }
-
-
-        @Override
-        protected ValidationTaskResult doInBackground(String... valuesToCheckInDatabase)    {
-            if (valuesToCheckInDatabase.length == 0) {
-                return ValidationTaskResult.INVALID_FORMAT; //No email
-            }
-            // Verifies which database to check against
-            switch (userType){
-                case PATIENT:
-                    try {
-                        snap = Tasks.await(db.collection("users").document("software").collection("patients").get());
-                    }
-                    catch (ExecutionException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    break;
-
-                case DOCTOR:
-                    try {
-                        snap = Tasks.await(db.collection("users").document("software").collection("doctors").get());
-                    } catch (ExecutionException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    break;
-                case ADMIN:
-                    break;
-            }
-            //
-            switch(validationType){
-                case EMAIL_ADDRESS:
-                    for (int i = 0; i < valuesToCheckInDatabase.length; i++) {
-                        for (QueryDocumentSnapshot profile : snap) {
-                            Map<String, Object> userData = profile.getData();
-                            if (Objects.equals(userData.get("emailAddress"), valuesToCheckInDatabase[i])) {
-                                return ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
-                            }
-                        }
-                    }
-                    break;
-                case HEALTH_CARD_NUMBER:
-                    for (int i = 0; i < valuesToCheckInDatabase.length; i++) {
-                        for (QueryDocumentSnapshot profile : snap) {
-                            Map<String, Object> userData = profile.getData();
-                            if (Objects.equals(userData.get("healthCardNumber"), valuesToCheckInDatabase[i])) {
-                                return ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
-                            }
-                        }
-                    }
-                    break;
-                case EMPLOYEE_NUMBER:
-                    for (int i = 0; i < valuesToCheckInDatabase.length; i++) {
-                        for (QueryDocumentSnapshot profile : snap) {
-                            Map<String, Object> userData = profile.getData();
-                            if (Objects.equals(userData.get("employeeNumber"), valuesToCheckInDatabase[i])) {
-                                return ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
-                            }
-                        }
-                    }
-                    break;
-                case PHONE_NUMBER:
-                    for (int i = 0; i < valuesToCheckInDatabase.length; i++) {
-                        for (QueryDocumentSnapshot profile : snap) {
-                            Map<String, Object> userData = profile.getData();
-                            if (Objects.equals(userData.get("phoneNumber"), valuesToCheckInDatabase[i])) {
-                                return ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
-                            }
-                        }
-                    }
-                    break;
-            }
-            return ATTRIBUTE_IS_FREE_TO_USE;
-        }}
 
 
     /**
@@ -193,14 +93,14 @@ public final class Validator {
             Boolean domainIsValid;
 
             domainIsValid = validationTask.execute(domainPart).get();
-
             if (domainIsValid) {
                 if (!textFieldIsEmpty(localPart) && localPart.matches("^\\S+$")) {
-                    ValidationTaskResult emailIsInDatabase = new IsInDatabaseTask(EMAIL_ADDRESS, userType).execute(new String[]{emailAddress}).get();
-                    if (emailIsInDatabase== ATTRIBUTE_IS_FREE_TO_USE){
+
+                    if ((dbTools.checkUserIsInUsers(userType, EMAIL_ADDRESS, emailAddress) || dbTools.checkUserIsInRequests(userType, EMAIL_ADDRESS, emailAddress))) {
+                        return ATTRIBUTE_ALREADY_REGISTERED;
+                    } else {
                         return VALID;
                     }
-                    else{return ATTRIBUTE_ALREADY_REGISTERED;}
                 }
                 return ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS;
             }
@@ -211,15 +111,17 @@ public final class Validator {
         return ValidationTaskResult.INVALID_FORMAT;
     }
 
-    public static ValidationTaskResult checkIfHealthCardNumberExists(String healthCardNumber) throws ExecutionException, InterruptedException{
-        return new IsInDatabaseTask(HEALTH_CARD_NUMBER,UserType.PATIENT).execute(new String[]{healthCardNumber}).get();
+    public static boolean checkIfHealthCardNumberExists(String healthCardNumber) throws ExecutionException, InterruptedException {
+        return dbTools.checkUserIsInUsers(PATIENT, HEALTH_CARD_NUMBER, healthCardNumber) || dbTools.checkUserIsInRequests(PATIENT, HEALTH_CARD_NUMBER, healthCardNumber) ;
 
     }
-    public static ValidationTaskResult checkIfEmployeeNumberExists(String employeeNumber) throws ExecutionException, InterruptedException{
-        return new IsInDatabaseTask(EMPLOYEE_NUMBER,UserType.DOCTOR).execute(new String[]{employeeNumber}).get();
+
+    public static boolean checkIfEmployeeNumberExists(String employeeNumber) throws ExecutionException, InterruptedException {
+        return dbTools.checkUserIsInUsers(DOCTOR, EMPLOYEE_NUMBER, employeeNumber) || dbTools.checkUserIsInRequests(DOCTOR, EMPLOYEE_NUMBER, employeeNumber) ;
     }
-    public static ValidationTaskResult checkIfPhoneNumberExists(String phoneNumber, UserType userType) throws ExecutionException, InterruptedException{
-        return new IsInDatabaseTask(PHONE_NUMBER,userType).execute(new String[]{phoneNumber}).get();
+
+    public static boolean checkIfPhoneNumberExists(String phoneNumber, UserType userType) throws ExecutionException, InterruptedException {
+        return dbTools.checkUserIsInUsers(userType, PHONE_NUMBER, phoneNumber) || dbTools.checkUserIsInRequests(userType, PHONE_NUMBER, phoneNumber);
     }
 
     /**
@@ -248,8 +150,6 @@ public final class Validator {
     public static boolean phoneNumberIsValid(@NonNull String phoneNumber) {
         return (phoneNumber.matches("[0-9]+") && phoneNumber.length() == 10);
     }
-
-
 
 
 }
