@@ -1,24 +1,17 @@
 package com.quantumSamurais.hams.database;
 
-import static android.content.ContentValues.TAG;
+import static com.google.android.gms.tasks.Tasks.await;
 import static com.quantumSamurais.hams.user.UserType.DOCTOR;
 import static com.quantumSamurais.hams.user.UserType.PATIENT;
-import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED;
-import static com.quantumSamurais.hams.utils.ValidationTaskResult.ATTRIBUTE_IS_FREE_TO_USE;
-import static com.quantumSamurais.hams.utils.ValidationTaskResult.ERROR;
+import static com.quantumSamurais.hams.utils.ValidationType.EMAIL_ADDRESS;
 import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_NUMBER;
 import static com.quantumSamurais.hams.utils.ValidationType.HEALTH_CARD_NUMBER;
-
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
-import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
@@ -26,16 +19,14 @@ import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
-import com.quantumSamurais.hams.utils.ValidationTaskResult;
 import com.quantumSamurais.hams.utils.ValidationType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -76,14 +67,13 @@ public class Database {
             // Acquire lock, this lock is used to make sure the request id is different between all requests.
                signUpLock.lock();
                 try {
-                   DocumentSnapshot software = Tasks.await(db.collection("users").document("software").get());
+                   DocumentSnapshot software = await(db.collection("users").document("software").get());
                    requestID = (Long) software.get("requestID");
                    if(requestID == null) {
-                       Tasks.await(db.collection("users").document("software").update("requestID",0));
+                       await(db.collection("users").document("software").update("requestID",0));
                        requestID = 0L;
                    }
-                   db.collection("users").document("software")
-                           .collection("requests").add(new Request(requestID,user,RequestStatus.PENDING));
+                   db.collection("users").document("software").collection("requests").add(new Request(requestID,user,RequestStatus.PENDING));
                    requestID++;
                    db.collection("users").document("software").update("requestID",requestID);
                 } catch (ExecutionException | InterruptedException e) {
@@ -103,11 +93,11 @@ public class Database {
             signUpLock.lock();
             try {
                 if(requestID == null) {
-                    DocumentSnapshot software = Tasks.await(db.collection("users").document("software").get());
+                    DocumentSnapshot software = await(db.collection("users").document("software").get());
                     requestID = (Long) software.get("requestID");
                 }
                 if(requestID == null) {
-                    Tasks.await(db.collection("users").document("software").update("requestID",0));
+                    await(db.collection("users").document("software").update("requestID",0));
                     requestID = 0L;
                 }
                 db.collection("users").document("software")
@@ -130,7 +120,7 @@ public class Database {
         //TODO: Send email
         new Thread(() -> {
             try {
-                QuerySnapshot requests = Tasks.await(db.collection("users").document("software").collection("requests").whereEqualTo("id",id).get());
+                QuerySnapshot requests = await(db.collection("users").document("software").collection("requests").whereEqualTo("id",id).get());
                 if(requests.getDocuments().size() > 1)
                     return;
                 for (QueryDocumentSnapshot document : requests) {
@@ -162,7 +152,7 @@ public class Database {
         //TODO: Send email
         new Thread(() -> {
             try {
-                QuerySnapshot requests = Tasks.await(db.collection("users").document("software").collection("requests").get());
+                QuerySnapshot requests = await(db.collection("users").document("software").collection("requests").get());
                 for (QueryDocumentSnapshot document : requests) {
                     Long documentID = (Long) document.get("id");
                     assert documentID != null;
@@ -217,7 +207,7 @@ public class Database {
             ArrayList<Request> requestArrayList = new ArrayList<>();
             signUpLock.lock();
             try {
-                QuerySnapshot requests = Tasks.await(db.collection("users").document("software").collection("requests").get());
+                QuerySnapshot requests = await(db.collection("users").document("software").collection("requests").get());
                 for (QueryDocumentSnapshot document : requests) {
                     requestArrayList.add(document.toObject(Request.class));
                 }
@@ -238,7 +228,7 @@ public class Database {
         new Thread(() -> {
             ArrayList<Patient> patientArrayList = new ArrayList<>();
             try {
-                QuerySnapshot patients = Tasks.await(db.collection("users").document("software").collection("patients").get());
+                QuerySnapshot patients = await(db.collection("users").document("software").collection("patients").get());
                 for (QueryDocumentSnapshot document : patients) {
                     patientArrayList.add(document.toObject(Patient.class));
                 }
@@ -257,7 +247,7 @@ public class Database {
         new Thread(() -> {
             try {
                 ArrayList<Doctor> doctorstArrayList = new ArrayList<>();
-                QuerySnapshot doctors = Tasks.await(db.collection("users").document("software").collection("doctors").get());
+                QuerySnapshot doctors = await(db.collection("users").document("software").collection("doctors").get());
                 for (QueryDocumentSnapshot document : doctors) {
                     doctorstArrayList.add(document.toObject(Doctor.class));
                 }
@@ -277,7 +267,7 @@ public class Database {
     public void getPatient(String email, ResponseListener<Patient> listener) {
         new Thread(() -> {
             try {
-                QuerySnapshot doctors = Tasks.await(db.collection("users").document("software").collection("patients").whereEqualTo("email",email).get());
+                QuerySnapshot doctors = await(db.collection("users").document("software").collection("patients").whereEqualTo("email",email).get());
                 listener.onSuccess(doctors.getDocuments().get(0).toObject(Patient.class));
             } catch (ExecutionException | InterruptedException e) {
                 listener.onFailure(e);
@@ -293,7 +283,7 @@ public class Database {
     public void getDoctor(String email, ResponseListener<Doctor> listener) {
         new Thread(() -> {
             try {
-                QuerySnapshot doctors = Tasks.await(db.collection("users").document("software").collection("doctors").whereEqualTo("email",email).get());
+                QuerySnapshot doctors = await(db.collection("users").document("software").collection("doctors").whereEqualTo("email",email).get());
                 listener.onSuccess(doctors.getDocuments().get(0).toObject(Doctor.class));
             } catch (ExecutionException | InterruptedException e) {
                 listener.onFailure(e);
@@ -318,9 +308,9 @@ public class Database {
      * @return The status of the users signUp request, returns null if the user cannot be found. Always Returns Approved for admin.
     * */
     private RequestStatus getStatus(String email, UserType userType) {
-        boolean foundInPatients = checkUserInCollection("patients", email);
-        boolean foundInDoctors = checkUserInCollection("doctors", email);
-        boolean foundInRequests = checkUserInRequests(email);
+        boolean foundInPatients = checkUserIsInUsers(PATIENT, EMAIL_ADDRESS, email);
+        boolean foundInDoctors = checkUserIsInUsers(DOCTOR, EMAIL_ADDRESS, email);
+        boolean foundInRequests = checkUserIsInRequests(userType, EMAIL_ADDRESS, email);
         if(userType == UserType.ADMIN)
             return RequestStatus.APPROVED;
 
@@ -332,8 +322,8 @@ public class Database {
         return null;
     }
 
-    public ValidationTaskResult isFieldFreeToUse(String fieldToVerify, UserType userType, ValidationType checkToDo){
-        //Sanity Check
+   // public ValidationTaskResult isFieldFreeToUse(String fieldToVerify, UserType userType, ValidationType checkToDo) throws InterruptedException {
+        /*//Sanity Check
         if (fieldToVerify == null || userType == null || checkToDo == null) {
             throw new NullPointerException("Please do not pass null arguments to this function");
         }
@@ -345,104 +335,337 @@ public class Database {
             throw new IllegalArgumentException("Doctors cannot have health card numbers");
         }
         //Then we can start
-        Query requestHit = null;
+        Query requestHit = db.collection("users").document("software").collection("requests");
         Query userHit = null;
         switch (checkToDo){
             case EMAIL_ADDRESS:
-                requestHit = db.collection("users").document("software").collection("requests").whereEqualTo("email", fieldToVerify);
                 userHit = userType == DOCTOR ? db.collection("users").document("software").collection("doctors").whereEqualTo("email", fieldToVerify):
                         db.collection("users").document("software").collection("patients").whereEqualTo("email", fieldToVerify);
                 break;
             case PHONE_NUMBER:
-                requestHit = db.collection("users").document("software").collection("requests").whereEqualTo("phone", fieldToVerify);
                 userHit = userType == DOCTOR ? db.collection("users").document("software").collection("doctors").whereEqualTo("phone", fieldToVerify):
                         db.collection("users").document("software").collection("patients").whereEqualTo("phone", fieldToVerify);
                 break;
             case HEALTH_CARD_NUMBER:
-                requestHit = db.collection("users").document("software").collection("requests").whereEqualTo("healthCardNumber", fieldToVerify);
                 userHit = db.collection("users").document("software").collection("patients").whereEqualTo("healthCardNumber", fieldToVerify);
                 break;
             case EMPLOYEE_NUMBER:
-                requestHit = db.collection("users").document("software").collection("requests").whereEqualTo("employeeNumber", fieldToVerify);
                 userHit = db.collection("users").document("software").collection("doctors").whereEqualTo("employeeNumber", fieldToVerify);
                 break;
         }
+        //Start of Async Check Logic
         Query finalRequestHit = requestHit;
         Query finalUserHit = userHit;
-        CompletableFuture<ValidationTaskResult> future = new CompletableFuture<>();
-
-        new Thread(() -> {
+        Supplier<ValidationTaskResult> task = () -> {
             try {
-                // First check the requests
-                QuerySnapshot requestResult = Tasks.await(finalRequestHit.get());
-
-                if (requestResult.isEmpty()) {
-                    // If no requests use that field, then we can pretty much do the same thing
-                    // but for the userHit
-                    QuerySnapshot userResult = Tasks.await(finalUserHit.get());
-
-                    if (userResult.isEmpty()) {
-                        // Then no one uses that field.
-                        future.complete(ATTRIBUTE_IS_FREE_TO_USE);
-                    } else {
-                        future.complete(ATTRIBUTE_ALREADY_REGISTERED);
+                //First check requests
+                QuerySnapshot possibleRequestHits = await(finalRequestHit.get());
+                List<DocumentSnapshot> possibleMatches = possibleRequestHits.getDocuments();
+                for (DocumentSnapshot request : possibleMatches){
+                    if (getUserFromRequest(((Request) request.getData())).getEmail().equals(fieldToVerify)){
+                        return ATTRIBUTE_ALREADY_REGISTERED;
                     }
-                } else {
-                    future.complete(ATTRIBUTE_ALREADY_REGISTERED);
+                    Log.d("Despair Zone", possibleMatches.toString());
                 }
-            } catch (Exception e) {
-                Log.d(TAG, "Error getting documents: ", e);
-                future.complete(ERROR);
-            }
-        }).start();
 
-        try {
-            return future.get();
-        } catch (Exception e) {
-            Log.d(TAG, "Error waiting for future: ", e);
-            return ERROR;
+                //Then actual users.
+                QuerySnapshot matchingUser = await(finalUserHit.get());
+                if (matchingUser.isEmpty()) {
+                    Log.d("Despair Zone", matchingUser.getDocuments().toString());
+                    return ATTRIBUTE_IS_FREE_TO_USE;
+                }
+                return ATTRIBUTE_ALREADY_REGISTERED;
+            }
+            catch (ExecutionException e){
+                return ERROR;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        CompletableFuture<ValidationTaskResult> resultOfCheck = supplyAsync(task);
+
+        Log.d("Despair zone", "What should I return " + resultOfCheck.join());
+        return resultOfCheck.join();
+
+
+*/
+   // }
+
+    public boolean checkUserIsInUsers(UserType userType, ValidationType checkToDo, String fieldToValidate) {
+        //Sanity Check
+        if (fieldToValidate == null || userType == null || checkToDo == null) {
+            throw new NullPointerException("Please do not pass null arguments to this function");
         }
+        //Coherence Checks
+        else if (userType == PATIENT && checkToDo == EMPLOYEE_NUMBER){
+            throw new IllegalArgumentException("Patients cannot have employee numbers");
+        }
+        else if (userType == DOCTOR && checkToDo == HEALTH_CARD_NUMBER)  {
+            throw new IllegalArgumentException("Doctors cannot have health card numbers");
+        }
+        boolean itIs = true;
+        switch (checkToDo){
+            case EMAIL_ADDRESS:
+                itIs = checkEmailIsInUsers(userType, fieldToValidate);
+                break;
+            case PHONE_NUMBER:
+                itIs = checkPhoneIsInUsers(userType, fieldToValidate);
+                break;
+            case HEALTH_CARD_NUMBER:
+                itIs = checkHealthCardNumberIsInUsers(fieldToValidate);
+                break;
+            case EMPLOYEE_NUMBER:
+                itIs = checkEmployeeNumberIsInUsers(fieldToValidate);
+                break;
+        }
+        return itIs;
     }
 
-    private boolean checkUserInCollection(String collectionName, String email) {
+    private boolean checkEmailIsInUsers(UserType userType, String email){
         try {
-            // Create a thread, with an executor service.
-            ExecutorService service = Executors.newSingleThreadExecutor();
             // Define a lambda task to run along the completable future.
-            Supplier<QuerySnapshot> isUserInCollection = () -> {
+            Supplier<QuerySnapshot> isEmailInUsers = () -> {
                 try {
-                    return Tasks.await(db.collection("users").document("software").collection(collectionName).whereEqualTo("email", email).get());
+                    //return of the lambda.
+                    switch(userType){
+                        case PATIENT:
+                            return await(db.collection("users").document("software").collection("patients").whereEqualTo("email", email).get());
+                        case DOCTOR:
+                            return await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
+                        case ADMIN:
+                            throw new IllegalArgumentException("Admin is not stored in database.");
+                    }
                 } catch (ExecutionException e) {
                     throw new RuntimeException(e);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-            };;
+                //Shouldn't be reached.
+                return null;
+            };
             //Supply both the task and the thread to use, to the completable future using supplyAsync
-            CompletableFuture<QuerySnapshot> querySnap = supplyAsync(isUserInCollection, service);
+            CompletableFuture<QuerySnapshot> querySnap = supplyAsync(isEmailInUsers);
 
             //Use get.
             return !querySnap.get().isEmpty();
         } catch (ExecutionException | InterruptedException e) {
-            // Handle the exception.
-            return false;
+            Log.d("Zone of Despair", "Something happened during fetching for the data");
+            throw new RuntimeException("Something went wrong while trying to get the data");
         }
     }
 
-    private boolean checkUserInRequests(String email) {
-        //TODO: Double Check this actually pulls the right request
+    private boolean checkPhoneIsInUsers(UserType userType, String phone){
         try {
-            QuerySnapshot requestsSnapshot = Tasks.await(db.collection("users").document("software").collection("requests").whereEqualTo("email", email).get());
-            return !requestsSnapshot.isEmpty();
+            Supplier<QuerySnapshot> isPhoneInUsers = () -> {
+                try {
+                    switch(userType){
+                        case PATIENT:
+                            return await(db.collection("users").document("software").collection("patients").whereEqualTo("phone", phone).get());
+                        case DOCTOR:
+                            return await(db.collection("users").document("software").collection("doctors").whereEqualTo("phone", phone).get());
+                        case ADMIN:
+                            throw new IllegalArgumentException("Admin is not stored in database.");
+                    }
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                //Shouldn't be reached.
+                return null;
+            };
+            //Supply both the task and the thread to use, to the completable future using supplyAsync
+            CompletableFuture<QuerySnapshot> querySnap = supplyAsync(isPhoneInUsers);
+
+            //Use get.
+            return !querySnap.get().isEmpty();
         } catch (ExecutionException | InterruptedException e) {
-            // Handle the exception.
-            return false;
+            Log.d("Zone of Despair", "Something happened during fetching for the data");
+            throw new RuntimeException("Something went wrong while trying to get the data");
         }
+    }
+
+    private boolean checkHealthCardNumberIsInUsers(String healthCardNumber){
+        try {
+            // Define a lambda task to run along the completable future.
+            Supplier<QuerySnapshot> isHealthCardNumberInPatients = () -> {
+                try {
+                    //return of the lambda.
+                    return await(db.collection("users").document("software").collection("patients").whereEqualTo("healthCardNumber", healthCardNumber).get());
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                //Shouldn't be reached.
+            };
+            //Supply both the task and the thread to use, to the completable future using supplyAsync
+            CompletableFuture<QuerySnapshot> querySnap = supplyAsync(isHealthCardNumberInPatients);
+
+            //Use get.
+            return !querySnap.get().isEmpty();
+        } catch (ExecutionException | InterruptedException e) {
+            Log.d("Zone of Despair", "Something happened during fetching for the data");
+            throw new RuntimeException("Something went wrong while trying to get the data");
+        }
+    }
+
+    private boolean checkEmployeeNumberIsInUsers(String employeeNumber){
+        try {
+            // Define a lambda task to run along the completable future.
+            Supplier<QuerySnapshot> isEmployeeNumberInDoctors = () -> {
+                try {
+                    //return of the lambda.
+                    return await(db.collection("users").document("software").collection("doctors").whereEqualTo("employeeNumber", employeeNumber).get());
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                //Shouldn't be reached.
+            };
+            //Supply both the task and the thread to use, to the completable future using supplyAsync
+            CompletableFuture<QuerySnapshot> querySnap = supplyAsync(isEmployeeNumberInDoctors);
+
+            //Use get.
+            return !querySnap.get().isEmpty();
+        } catch (ExecutionException | InterruptedException e) {
+            Log.d("Zone of Despair", "Something happened during fetching for the data");
+            throw new RuntimeException("Something went wrong while trying to get the data");
+        }
+    }
+
+
+
+
+
+    public boolean checkUserIsInRequests(UserType userType, ValidationType checkToDo, String fieldToValidate) {
+        //Sanity Check
+        if (fieldToValidate == null || userType == null || checkToDo == null) {
+            throw new NullPointerException("Please do not pass null arguments to this function");
+        }
+        //Coherence Checks
+        else if (userType == PATIENT && checkToDo == EMPLOYEE_NUMBER){
+            throw new IllegalArgumentException("Patients cannot have employee numbers");
+        }
+        else if (userType == DOCTOR && checkToDo == HEALTH_CARD_NUMBER)  {
+            throw new IllegalArgumentException("Doctors cannot have health card numbers");
+        }
+        boolean itIs = true;
+        switch (checkToDo){
+            case EMAIL_ADDRESS:
+                itIs = checkEmailIsInRequests(userType, fieldToValidate);
+                break;
+            case PHONE_NUMBER:
+                itIs =  checkPhoneIsInRequests(userType, fieldToValidate);
+                break;
+            case HEALTH_CARD_NUMBER:
+                itIs = checkHealthCardNumberIsInRequests(fieldToValidate);
+                break;
+            case EMPLOYEE_NUMBER:
+                itIs = checkEmployeeNumberIsInRequests(fieldToValidate);
+                break;
+        }
+        return itIs;
+    }
+
+    private Boolean checkEmailIsInRequests(UserType userType, String email){
+        Supplier<Boolean> isEmailInRequests = () -> {
+            try{
+            List<DocumentSnapshot> allRequests = await(db.collection("users").document("software").collection("requests").get()).getDocuments();
+            for (DocumentSnapshot request : allRequests){
+                Request currentRequest = request.toObject(Request.class);
+                UserType currentRequestType = currentRequest.getUserType();
+                if (userType == currentRequestType){
+                    if (currentRequest.getEmail().equals(email)){
+                        return true; //email is in requests.
+                    }
+                }
+
+            }
+            }catch (Exception e) {
+                Log.d("Zone of despair", "Please never reach this");
+                throw new RuntimeException("Something didn't go well while checking to database");
+            }
+            return false;
+        };
+        CompletableFuture<Boolean> isEmailInRequest = supplyAsync(isEmailInRequests);
+
+        return isEmailInRequest.join();
+    }
+
+    private boolean checkHealthCardNumberIsInRequests(String healthCardNumber){
+        Supplier<Boolean> isHealthCardNumberInRequests = () -> {
+            try{
+                List<DocumentSnapshot> allRequests = await(db.collection("users").document("software").collection("requests").get()).getDocuments();
+                for (DocumentSnapshot request : allRequests){
+                    Request currentRequest = request.toObject(Request.class);
+                    UserType currentRequestType = currentRequest.getUserType();
+                    if (currentRequestType == PATIENT){
+                        if (currentRequest.getHealthCardNumber().equals(healthCardNumber)){
+                            return true;
+                        }
+                    }
+                }
+            }catch (Exception e) {
+                Log.d("Zone of despair", "Please never reach this");
+                throw new RuntimeException("Something went wrong while checking to DB");
+            }
+            return false;
+        };
+        CompletableFuture<Boolean> healthCardNumberInRequests = supplyAsync(isHealthCardNumberInRequests);
+        return healthCardNumberInRequests.join();
+    }
+
+    private boolean checkEmployeeNumberIsInRequests(String employeeNumber){
+        Supplier<Boolean> isEmployeeNumberInRequests = () -> {
+            try{
+                List<DocumentSnapshot> allRequests = await(db.collection("users").document("software").collection("requests").get()).getDocuments();
+                for (DocumentSnapshot request : allRequests){
+                    Request currentRequest = request.toObject(Request.class);
+                    UserType currentRequestType = currentRequest.getUserType();
+                    if (currentRequestType == DOCTOR){
+                        if (currentRequest.getEmployeeNumber().equals(employeeNumber)){
+                            return true;
+                        }
+                    }
+                }
+            }catch (Exception e) {
+                Log.d("Zone of despair", "Please never reach this");
+                throw new RuntimeException("Something went wrong while checking to DB");
+            }
+            return false;
+        };
+        CompletableFuture<Boolean> employeeNumberInRequests = supplyAsync(isEmployeeNumberInRequests);
+        return employeeNumberInRequests.join();
+    }
+
+    private boolean checkPhoneIsInRequests(UserType userType, String phoneNumber){
+        Supplier<Boolean> isPhoneNumberInRequests = () -> {
+            try{
+                List<DocumentSnapshot> allRequests = await(db.collection("users").document("software").collection("requests").get()).getDocuments();
+                for (DocumentSnapshot request : allRequests){
+                    Request currentRequest = request.toObject(Request.class);
+                    UserType currentRequestType = currentRequest.getUserType();
+                    if (userType == currentRequestType){
+                        if (currentRequest.getPhoneNumber().equals(phoneNumber)){
+                            return true;
+                        }
+                    }
+                }
+            }catch (Exception e) {
+                Log.d("Zone of despair", "Please never reach this");
+                throw new RuntimeException("Something went wrong while checking to DB");
+            }
+            return false;
+        };
+        CompletableFuture<Boolean> isPhoneNumberInRequest = supplyAsync(isPhoneNumberInRequests);
+        return isPhoneNumberInRequest.join();
     }
 
     private RequestStatus getRequestStatusFromRequests(String email) {
         try {
-            QuerySnapshot requestsSnapshot = Tasks.await(db.collection("users").document("software").collection("requests").whereEqualTo("email", email).get());
+            QuerySnapshot requestsSnapshot = await(db.collection("users").document("software").collection("requests").whereEqualTo("email", email).get());
             if (!requestsSnapshot.isEmpty()) {
                 String requestStatus = requestsSnapshot.getDocuments().get(0).getString("status");
                 if ("PENDING".equals(requestStatus)) {
@@ -465,21 +688,29 @@ public class Database {
      *
      * @param */
 
-    public static void sendEmail(Context context, User user, RequestStatus status) {
+    public static void sendEmail(User user, RequestStatus status) {
         try {
             new Thread(() -> {
                 // should be put into an on click for both the approve and reject buttons.
-                final String username = "admin@gmail.com"; // template admin email for the time being.
-                final String password = "12345678"; // '' password.
+                final String username = "controlgroup72023@gmail.com";
+                final String password = "tgke vwtf jepo shjs"; //this is an app-specific password.
                 String msgToSend = "", msgSbjct = ""; // message to send and message subject.
                 switch (status) {
                     case APPROVED:
-                        msgToSend = "Your request to the health Management app has been approved.\n";
-                        msgSbjct = "your account has been approved! :D";
+                        msgToSend = "Hello " + user.getLastName() + " " +user.getFirstName() + "," + "\n" + "\n" +
+                                    "This is just to inform you that your request to the Best Health Care Appointment app on the planet has been approved.\n" +
+                                    "We are glad to now count you among our members!" + "\n" + "\n" +
+                                    "Best, " + "Admin";
+                        msgSbjct = "Welcome to the Best Health Care Appointment app on the Planet! :D";
                         break;
                     case REJECTED:
-                        msgToSend = "Your request to the health Management app has been denied. \n ";
-                        msgSbjct = "your account has been denied. >:0 ";
+                        msgToSend = "Hello " + user.getLastName() + " " +user.getFirstName() + "," + "\n" + "\n" +
+                                    "We are sad to inform you, that your request to the best Health Care Appointment app on the planet has been rejected.\n" +
+                                    "If you'd like to inquire further about the reasons of our refusal, please contact the admin at: " + "\n" +
+                                    "(819)-123-1234" +
+                                    "Standard call charges or fees may apply when using this phone number." + "\n" +
+                                    "Best, " + "Admin";
+                        msgSbjct = "We are sorry to inform you, that your account registration has been denied. >:0 ";
                         break;
                 }
                 Properties props = new Properties();
@@ -506,7 +737,7 @@ public class Database {
                     message.setSubject(msgSbjct);
                     message.setText(msgToSend);
                     Transport.send(message);
-                    Toast.makeText(context, "patient has been notified.", Toast.LENGTH_LONG).show();
+
 
 
                 } catch (MessagingException e) {
