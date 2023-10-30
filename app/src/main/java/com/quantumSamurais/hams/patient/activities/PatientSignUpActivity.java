@@ -9,6 +9,7 @@ import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
 import static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -166,6 +167,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
             runOnUiThread(() -> shortToast("Registration successful"));
             // Switch to login
             Intent login = new Intent(this, LoginActivity.class);
+            login.putExtra("userType",r.getUserType());
             startActivity(login);
             finish();
         }

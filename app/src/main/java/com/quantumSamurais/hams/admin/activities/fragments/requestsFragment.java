@@ -84,6 +84,12 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        viewRegistrationRequests();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         stopDataRefresh();
