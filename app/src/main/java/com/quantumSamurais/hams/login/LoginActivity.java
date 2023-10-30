@@ -78,7 +78,8 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
                 break;
             case REJECTED:
                 runOnUiThread(() -> {
-                    toast("Your registration request was denied by the Administrator.",Toast.LENGTH_LONG);
+                    toast("Your registration request was denied by the Administrator.",Toast.LENGTH_SHORT);
+                    toast("For further inquiry contact the Admin at (819)-123-1234",Toast.LENGTH_SHORT);
                 });
                 break;
             case PENDING:
