@@ -164,7 +164,13 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
                 reject.setVisibility(View.INVISIBLE); // Hide the button
                 reject.setEnabled(false); // Make the button uninteractable
             } else {
+                //Since the view might be recycled from an object which was REJECTED
+                //To make sure the reject button is accessible we have to set it the onclick
+                reject.setVisibility(View.VISIBLE);
+                reject.setEnabled(true);
                 reject.setOnClickListener(rejectListener);
+
+
             }
         }
 
