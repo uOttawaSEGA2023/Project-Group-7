@@ -190,6 +190,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
             runOnUiThread(() -> shortToast("Registration successful"));
             // Switch to login
             Intent login = new Intent(this, LoginActivity.class);
+            login.putExtra("userType",r.getUserType());
             startActivity(login);
             finish();
         }

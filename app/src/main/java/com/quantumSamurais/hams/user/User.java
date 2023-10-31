@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public abstract class User {
-    public static List<Map<String,Object>> registeredPatients = new LinkedList<>();
-    public static List<Map<String,Object>> registeredDoctors = new LinkedList<>();
     private String firstName;
     private String lastName;
 
