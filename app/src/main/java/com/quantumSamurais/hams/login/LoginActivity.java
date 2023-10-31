@@ -11,7 +11,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.user.UserType;
@@ -78,7 +77,8 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
                 break;
             case REJECTED:
                 runOnUiThread(() -> {
-                    toast("Your signup request was denied. For more information, call Admin @ (819)-123-1234.",Toast.LENGTH_LONG);
+                    toast("Your signup request was denied.",Toast.LENGTH_SHORT);
+                    toast("For more information, call Admin @ (819)-123-1234.", Toast.LENGTH_SHORT);
                 });
                 break;
             case PENDING:

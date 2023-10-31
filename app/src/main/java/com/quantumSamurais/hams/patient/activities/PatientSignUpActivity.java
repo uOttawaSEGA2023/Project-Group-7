@@ -9,7 +9,6 @@ import static com.quantumSamurais.hams.utils.Validator.passwordIsValid;
 import static com.quantumSamurais.hams.utils.Validator.phoneNumberIsValid;
 import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -101,7 +100,8 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
 
                     }
                     if (!passwordIsValid(password)) {
-                        shortToast("Psswd must have 8 chars, 1 Cap & 1 small, one number, and one special char.");
+                        shortToast("This password is not secure enough. It must have 8 characters...");
+                        shortToast("and at least: 1 capital, 1 small letter; one number; and one special character.");
                         return;
                     }
                     if (!phoneNumberIsValid(phoneNumber)) {

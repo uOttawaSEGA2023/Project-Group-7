@@ -120,7 +120,8 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
 
         }
         if (!passwordIsValid(password)) {
-            shortToast("Password must contain at least 8 chars, one capital letter and one small letter, one number, and one special character.");
+            shortToast("This password is not secure enough. It must have 8 characters...");
+            shortToast("and at least: 1 capital, 1 small letter; one number; and one special character.");
             return;
         }
         if(!phoneNumberIsValid(phoneNumber)) {
