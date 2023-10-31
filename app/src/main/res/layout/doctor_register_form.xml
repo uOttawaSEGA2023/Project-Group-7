@@ -113,7 +113,7 @@
         android:autofillHints=""
         android:ems="10"
         android:hint="@string/employeeNumberHint"
-        android:inputType="number"
+        android:inputType="text"
         app:layout_constraintBottom_toTopOf="@+id/specialtiesSelect"
         app:layout_constraintEnd_toEndOf="@+id/postalAddressDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/postalAddressDoctorReg"

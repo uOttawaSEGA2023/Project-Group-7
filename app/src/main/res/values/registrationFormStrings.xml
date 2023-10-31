@@ -9,8 +9,8 @@
     <string name="passwordHint">Password</string>
     <string name="lastNameHint">Last Name</string>
     <string name="emailHint">Email Address</string>
-    <string name="employeeNumberHint">ABCD 1234 5678</string>
+    <string name="employeeNumberHint">Employee Number</string>
     <string name="singUpBtnText">Sign me Up!</string>
-    <string name="healthCardHint">ABCD 1234 5678</string>
+    <string name="healthCardHint">Health Card Number</string>
 
 </resources>
