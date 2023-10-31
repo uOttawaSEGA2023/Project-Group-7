@@ -8,10 +8,13 @@ abstract class User {
 	-_phone: String
 	-_address: String
 	__
-	+User (String firstName, String lastName, char[] password, String email, String phone, String adress)
-	+User (String firstName, String lastName, byte[] hashedPassword, byte[] salt, String email, String phone, String adress)
+	+User (firstName: String, lastName: String, password: char[], email: String, phone: String, adress: String)
+	+User (firstName: String, lastName: String, password: ArrayList<Integer>, salt: ArrayList<Integer>, email: String, phone: String, adress: String)
 	#{abstract} changeView(): void
 	+toString(): String
+	+equals(o: Object): boolean
+	+hashCode(): int
+	-generateSalt(): byte[]
 	..Getters..
 	+getFirstName(): String
 	+getLastName(): String
@@ -32,9 +35,11 @@ abstract class User {
 class Patient extends User {
 	db: FirebaseFirestore
 	-_healthCardNumber: String
-	+Patient (String firstName, String lastName, char[] password, String email, String phone, String adress, String healthCardNumber)
-	+Patient (String firstName, String lastName, byte[] password, byte[] salt, String email, String phone, String adress, String healthCardNumber)
+	+Patient (firstName: String, lastName: String, password: char[], email: String, phone: String, adress: String, healthCardNumber: String)
+	+Patient (firstName: String, lastName: String, password: ArrayList<Integer>, salt: ArrayList<Integer>, email: String, phone: String, adress: String, healthCardNumber: String)
 	+toString(): String
+	+equals(o: Object): boolean
+	+hashCode(): int
 	..Getters..
 	+getNewUserInformation(): HashMap<String, Object>
 	+getRegisteredPatient: List<Map<String, Object>>
@@ -47,8 +52,10 @@ class Doctor extends User {
 	-_specialties: ArrayList<Specialties>
 	-newUserInformation: HashMap<String, Object> = new HashMap<>(9){read-only};
 	+Doctor (firstName: String, lastName: String, password: char[], email: String, phone: String, adress: String, employeeNumber: String, specialties: ArrayList<Specialties>)
-	+ Doctor (firstName: String, lastName: String, password: byte[], salt: byte[], email: String, phone: String, adress: String, employeeNumber: String, specialties: ArrayList<Specialties>))
+	+ Doctor (firstName: String, lastName: String, password: ArrayList<Integer>, salt: ArrayList<Integer>, email: String, phone: String, adress: String, employeeNumber: String, specialties: ArrayList<Specialties>))
 	+toString(): String
+	+equals(o: Object): boolean
+	+hashCode(): int
 	..Getters..
 	+getEmpolyeeNumber(): String
 	+getSpecialties(): ArrayList<Specialties>
@@ -63,25 +70,90 @@ class Administrator extends User {
 	+Administrator()
 	+changeView(Context currentContext): void
 }
+interface "ResponseListener<RequestStatus>" as ResponseListener_RequestStatus
+ResponseListener_RequestStatus <|-- Login
 class Login {
-	-{static}getUserData(email: String, password: char[], userType: UserType, currentContext: Context)
-	-{static}passwordFromDatabase(userData: Map<String,Object>): byte[]
-	-{static}saltFromDatabase(userData: Map<String,Object>): byte[]
-	-{static}login(email: String, password: char[], userType: UserType, currentContext: Context, patientList: QuerySnapshot, doctorList: QuerySnapshot)
-	-{static}searchLoop(toSearch: QuerySnapshot, emailToSearch: String)
-	+{static}login(email: String, password: char[], userType: UserType, currentContext: Context, loginEventListener: LoginEventListener)
+	+Login(email: String, password: char[], userType: UserType, currentContext: Context, LoginEventListener loginEventListener)
+	+attemptLogin(): void
+	-attemptLogin(email: String, password: char[], userType: UserType, currentContext: Context, user: User)
+	+onSuccess(requestStatus: RequestStatus)
+	+onFailure(error: Exception): void
 	+{static}hashPassword(password: char[], salt: byte[]): byte[]
 }
 interface LoginEventListener {
-	+loginResponse(LoginReturnCodes returnCode): void
+	+loginResponse(LoginStatusCodes returnCode): void
+}
+interface ResponseListener<T> {
+	onSuccess(data: T): void
+	onFailure(e: Exception): void
+}
+class ArrayUtils() {
+	+{static} packBytes(bytes: byte[]): ArrayList<Integer>
+	+{static} unpackBytes(list: ArrayList<Integer>)
+}
+class Database {
+	-db: FirebaseFirestore
+	-{static} instance: Database
+	-requestID: Long
+	-signUpLock: Lock
+	-Database()
+	+{static}getInstance(): Database
+	+addSignUpRequest(user: Patient)
+	+addSignUpRequest(user: Doctor)
+	+approveSignUpRequest(id: long)
+	+rejectSignUpRequest(id: long)
+	+getSignUpRequests(listener: ResponseListener<ArrayList<Request>>)
+	+getPatients(listener: ResponseListener<ArrayList<Patient>>)
+	+getDoctors(listener: ResponseListener<ArrayList<Doctor>>)
+	+getPatient(email: String, listener: ResponseListener<Patient>)
+	+getDoctor(email: String, listener: ResponseListener<Doctor>)
+	+getRequestStatus(email: String, userType: UserType, listener: ResponseListener<RequestStatus>)
+	-getStatus(email: String, userType: UserType): RequestStatus
+	+checkUserIsInUsers(userType: UserType, checkToDo: ValidationType, fieldToValidate: String): boolean
+	-checkEmailIsInUsers(userType: UserType, email: String): boolean
+	-checkPhoneIsInUsers(userType: UserType, email: String): boolean
+	-checkHealthCardNumberIsInUsers(healthCardNumber: String): boolean
+	-checkEmployeeNumberIsInUsers(employeeNumber: String): boolean
+	+checkUserIsInRequests(userType: UserType, checkToDo: ValidationType, fieldToValidate: String)
+	-checkEmailIsInRequests(userType: UserType, email: String): Boolean
+	-checkHealthCardNumberIsInRequests(healthCardNumber: String): boolean
+	-checkEmployeeNumberIsInRequests(employeeNumber: String): boolean
+	-checkPhoneIsInRequests(userType: UserType, email: String): boolean
+	-getRequestStatusFromRequests(email: String): RequestStatus
+	+sendEmail(user: User, status: RequestStatus): void
+}
+class Request {
+	-id: long
+	-userType: userType
+	-doctor: Doctor
+	-patient: Patient
+	-status: RequestStatus
+	--
+	+Request()
+	+Request(long id, Patient patient, RequestStatus status)
+	+Request(long id, Doctor doctor, RequestStatus status)
+	..Getters..
+	+getID(): long
+	+getStatus(): RequestStatus
+	+getPatient(): Patient
+	+getDoctor(): Doctor
+	+getUserType: UserType
+	+getEmail(): String
+	+getPhoneNumber(): String
+	+getHealthCardNumber: String
+	+getEmpolyeeNumber: SALT
+	+{static}getUserFromRequest(request: Request): User
 }
 class Validator {
 	+{static}textFieldIsEmpty(stringField: String..): boolean
 	+{static}textFieldsAreEmpty(fields: String...): boolean
-	+{static}emailAddressIsValid(): ValidationTaskResult
+	+{static}emailAddressIsValid(emailAddress: String, userType: UserType): ValidationTaskResult
 	+{static}nameIsValid(): boolean
 	+{static}passwordIsValid(): boolean
 	+{static}phoneNumberIsValid(): boolean
+	+{static}checkIfHealthCardNumberExists(healthCardNumber: String): boolean
+	+{static}checkIfEmployeeNumberExists(employeeNumber: String): boolean
+	+{static}checkIfPhoneNumberExists(phoneNumber: String, userType: UserType): boolean
 }
 enum ValidationTaskResult {
         INVALID_FORMAT,
@@ -89,7 +161,14 @@ enum ValidationTaskResult {
         INVALID_LOCAL_EMAIL_ADDRESS,
         ATTRIBUTE_ALREADY_REGISTERED,
         ATTRIBUTE_IS_FREE_TO_USE,
-        VALID
+        VALID,
+        ERROR
+}
+enum ValidationType {
+    EMAIL_ADDRESS,
+    PHONE_NUMBER,
+    HEALTH_CARD_NUMBER,
+    EMPLOYEE_NUMBER
 }
 enum Specialties {
 	FAMILY_MEDICINE,
@@ -104,11 +183,20 @@ enum UserType {
 	ADMIN
 }
 
-enum LoginReturnCodes {
+enum LoginStatusCodes {
     SUCCESS,
     USER_DOES_NOT_EXIST,
-    INCORRECT_PASSWORD
+    INCORRECT_PASSWORD,
+	REQUEST_ERROR
+}
+enum RequestStatus {
+    APPROVED,
+    PENDING,
+    REJECTED
 }
 
 Doctor "1" -- "1..*" Specialties : has
+Doctor "1" -- "1" Database
+Patient "1" -- "1" Database
+Request "1" -- "1..*" Database
 @enduml

@@ -8,13 +8,13 @@ import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
 public class Request {
-    long id;
-    UserType userType;
+    private long id;
+    private UserType userType;
 
-    Doctor doctor;
-    Patient patient;
+    private Doctor doctor;
+    private Patient patient;
 
-    RequestStatus status;
+    private RequestStatus status;
 
     Request() {
 
