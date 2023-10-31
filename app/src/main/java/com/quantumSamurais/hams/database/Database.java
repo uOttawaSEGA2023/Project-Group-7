@@ -639,7 +639,7 @@ public class Database {
                                     "We are sad to inform you, that your request to the best Health Care Appointment app on the planet has been rejected.\n" +
                                     "If you'd like to inquire further about the reasons of our refusal, please contact the admin at: " + "\n" +
                                     "(819)-123-1234" +
-                                    "Standard call charges or fees may apply when using this phone number." + "\n" +
+                                    " Standard call charges or fees may apply when using this phone number." + "\n" +
                                     "Best, " + "Admin";
                         msgSbjct = "We are sorry to inform you, that your account registration has been denied. >:0 ";
                         break;

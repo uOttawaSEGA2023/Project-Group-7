@@ -1,14 +1,15 @@
 package com.quantumSamurais.hams.login;
-import static com.quantumSamurais.hams.utils.Validator.textFieldIsEmpty;
+
 import static com.quantumSamurais.hams.utils.Validator.textFieldsAreEmpty;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import android.view.View;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.quantumSamurais.hams.R;
@@ -78,8 +79,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
                 break;
             case REJECTED:
                 runOnUiThread(() -> {
-                    toast("Your registration request was denied by the Administrator.",Toast.LENGTH_SHORT);
-                    toast("For further inquiry contact the Admin at (819)-123-1234",Toast.LENGTH_SHORT);
+                    toast("Your signup request was denied. For more information, call Admin @ (819)-123-1234.",Toast.LENGTH_LONG);
                 });
                 break;
             case PENDING:
