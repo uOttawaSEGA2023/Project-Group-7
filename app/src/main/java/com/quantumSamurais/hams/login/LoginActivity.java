@@ -17,7 +17,6 @@ import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.user.UserType;
 
 public class LoginActivity extends AppCompatActivity implements LoginEventListener {
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
     private EditText emailEditText, passwordEditText;
     private Button signInButton;
 
