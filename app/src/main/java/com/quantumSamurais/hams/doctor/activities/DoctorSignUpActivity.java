@@ -168,7 +168,8 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
         }
 
         signUp.setEnabled(false);
-        currentDoctor = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList);
+        boolean acceptsByDefault = false; //TODO: Connect it to XML that sets that.
+        currentDoctor = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList, acceptsByDefault);
         Database db = Database.getInstance();
         db.getSignUpRequests(this);
     }

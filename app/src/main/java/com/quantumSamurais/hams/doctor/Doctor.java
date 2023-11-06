@@ -17,24 +17,27 @@ public class Doctor extends User {
 
 	private String employeeNumber;
 	private ArrayList<Specialties> specialties;
+	private boolean acceptsAppointmentsByDefault = false;
 
 	public Doctor() {
 	}
 
 	public Doctor(String firstName, String lastName, char[] hashedPassword, String email,
-				  String phone, String address, String employeeNumber, ArrayList<Specialties> specialties) {
+				  String phone, String address, String employeeNumber, ArrayList<Specialties> specialties, boolean acceptsByDefault) {
 		super(firstName, lastName, hashedPassword, email, phone, address);
 		this.employeeNumber = employeeNumber;
 		this.specialties = specialties;
+		acceptsAppointmentsByDefault = acceptsByDefault;
 		Database db = Database.getInstance();
 		db.addSignUpRequest(this);
 	}
 
 	public Doctor(String firstName, String lastName, ArrayList<Integer> hashedPassword, ArrayList<Integer> salt, String email,
-				  String phone, String address, String employeeNumber,ArrayList<Specialties> specialties) {
+				  String phone, String address, String employeeNumber,ArrayList<Specialties> specialties, boolean acceptsByDefault) {
 		super(firstName, lastName, hashedPassword, salt, email, phone, address);
 		this.employeeNumber = employeeNumber;
 		this.specialties = specialties;
+		acceptsAppointmentsByDefault = acceptsByDefault;
 	}
 	@Override
 	public void changeView(Context currentContext) {
@@ -65,6 +68,15 @@ public class Doctor extends User {
 				"\nSpecialties: " +
 				specialties.toString();
 	}
+
+	public boolean getAcceptAppointmentsByDefault(){
+		return acceptsAppointmentsByDefault;
+	}
+
+	public void setAcceptAppointmentsByDefault(boolean value){
+		acceptsAppointmentsByDefault = value;
+	}
+
 
 
 //<editor-fold desc="Getters & Setters">
