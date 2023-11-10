@@ -8,13 +8,16 @@ import com.quantumSamurais.hams.patient.Patient;
 import java.time.LocalDateTime;
 
 public class Appointment {
+    static long APPOINTMENT_ID = 0;
     LocalDateTime startTime, endTime;
+    long appointmentID;
+
     Doctor myDoctor;
     Patient myPatient;
-    public Appointment(LocalDateTime startTime, LocalDateTime endTime, Doctor doctor, Patient patient){
+    public Appointment(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient){
         long interval = MINUTES.between(startTime, endTime);
         boolean isIncrementOf30Minutes = interval % 30 == 0 ? true:false;
-        if (doctor == null || patient == null){
+        if (shift == null || patient == null){
             throw new NullPointerException("Please do not pass null objects.");
         }
         if (endTime.isBefore(startTime) || endTime.isEqual(startTime)) {
@@ -23,24 +26,37 @@ public class Appointment {
         if (!isIncrementOf30Minutes){
             throw new IllegalArgumentException("The passed startTime and endTime are not 30 minutes apart.");
         }
+        //Set the time
         this.startTime = startTime;
         this.endTime = endTime;
+        //Checks if the appointment would overlap with whatever is in shift.
+        boolean appointmentProperlyAssigned = shift.takeAppointment(this);
+        if (appointmentProperlyAssigned){
+            appointmentID = APPOINTMENT_ID;
+            APPOINTMENT_ID++;
+        }
+        throw new IllegalArgumentException("This appointment overlaps with other appointments.");
+
+
     }
 
-    public boolean appointmentsOverlap(Appointment someAppointment){
-        // Either smth like 10:00 - 11:00 and 10:30-11:00 (or more)
-        if (startTime.isBefore(someAppointment.getStartTime()) && !endTime.isBefore(someAppointment.getStartTime())){
+    public boolean overlaps(Appointment someAppointment){
+        if (startTime.isBefore(someAppointment.getEndTime()) && someAppointment.getStartTime().isBefore(endTime)){
             return true;
-        } // or 10:00 - 11:00 (other) and 10:30 - 12:00(this)
-        else if (endTime.isAfter(someAppointment.getEndTime()) && !startTime.isAfter(someAppointment.getEndTime())){
+        } return false;
+    }
+
+    public long getAppointmentID(){
+        return appointmentID;
+    }
+
+    public boolean tieAppointment(long shiftID, Doctor doctor, Patient patient){
+        if (doctor.hasThisShift(shiftID)){
+            myDoctor = doctor;
+            myPatient = patient;
             return true;
         }
-        //If there's any overlap
-        else if ( startTime.isEqual(someAppointment.getStartTime()) || endTime.isEqual(someAppointment.getEndTime())){
-            return true;
-        } else{
-            return false;
-        }
+        return false;
     }
 
     public LocalDateTime getStartTime(){
