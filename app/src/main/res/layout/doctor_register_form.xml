@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/doctorConstraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,13 +12,12 @@
         android:id="@+id/doctorRegistrationFormText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginTop="48dp"
         android:text="@string/doctorRegistrationFormText"
         android:textAlignment="center"
         android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/firstNameDoctorReg"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,27 +25,27 @@
         android:id="@+id/firstNameDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginTop="16dp"
         android:autofillHints="name"
         android:ems="10"
         android:hint="@string/firstNameHint"
         android:inputType="textPersonName"
-        app:layout_constraintBottom_toTopOf="@+id/lastNameDoctorReg"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/doctorRegistrationFormText"
+        app:layout_constraintHorizontal_bias="0.571"
+        app:layout_constraintStart_toStartOf="@+id/doctorRegistrationFormText"
         app:layout_constraintTop_toBottomOf="@+id/doctorRegistrationFormText" />
 
     <EditText
         android:id="@+id/lastNameDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginTop="4dp"
         android:autofillHints="name"
         android:ems="10"
         android:hint="@string/lastNameHint"
         android:inputType="textPersonName"
-        app:layout_constraintBottom_toTopOf="@+id/emailAddressDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/firstNameDoctorReg"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/firstNameDoctorReg"
         app:layout_constraintTop_toBottomOf="@+id/firstNameDoctorReg" />
 
@@ -53,12 +53,10 @@
         android:id="@+id/emailAddressDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginBottom="15dp"
         android:autofillHints="emailAddress"
         android:ems="10"
         android:hint="@string/emailHint"
         android:inputType="textEmailAddress"
-        app:layout_constraintBottom_toTopOf="@+id/passwordDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/lastNameDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/lastNameDoctorReg"
         app:layout_constraintTop_toBottomOf="@+id/lastNameDoctorReg" />
@@ -67,12 +65,11 @@
         android:id="@+id/passwordDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginBottom="14dp"
+        android:layout_marginTop="27dp"
         android:autofillHints="password"
         android:ems="10"
         android:hint="@string/passwordHint"
         android:inputType="textPassword"
-        app:layout_constraintBottom_toTopOf="@+id/phoneNumberDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/emailAddressDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/emailAddressDoctorReg"
         app:layout_constraintTop_toBottomOf="@+id/emailAddressDoctorReg" />
@@ -81,12 +78,11 @@
         android:id="@+id/phoneNumberDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginTop="10dp"
         android:autofillHints="phone"
         android:ems="10"
         android:hint="@string/phoneHint"
         android:inputType="phone"
-        app:layout_constraintBottom_toTopOf="@+id/postalAddressDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/passwordDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/passwordDoctorReg"
         app:layout_constraintTop_toBottomOf="@+id/passwordDoctorReg" />
@@ -95,13 +91,13 @@
         android:id="@+id/postalAddressDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginTop="32dp"
         android:autofillHints="postalAddress"
         android:ems="10"
         android:hint="@string/addressHint"
         android:inputType="textPostalAddress"
-        app:layout_constraintBottom_toTopOf="@+id/employeeNumberDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/phoneNumberDoctorReg"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/phoneNumberDoctorReg"
         app:layout_constraintTop_toBottomOf="@+id/phoneNumberDoctorReg" />
 
@@ -109,24 +105,23 @@
         android:id="@+id/employeeNumberDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginTop="8dp"
         android:autofillHints=""
         android:ems="10"
         android:hint="@string/employeeNumberHint"
         android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/specialtiesSelect"
         app:layout_constraintEnd_toEndOf="@+id/postalAddressDoctorReg"
         app:layout_constraintStart_toStartOf="@+id/postalAddressDoctorReg"
         app:layout_constraintTop_toBottomOf="@+id/postalAddressDoctorReg" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/specialtiesSelect"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="15dp"
+        android:layout_width="214dp"
+        android:layout_height="54dp"
+        android:layout_marginTop="16dp"
         app:layout_constrainedHeight="false"
-        app:layout_constraintBottom_toTopOf="@+id/signUpButtonDoctorReg"
         app:layout_constraintEnd_toEndOf="@+id/employeeNumberDoctorReg"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/employeeNumberDoctorReg"
         app:layout_constraintTop_toBottomOf="@+id/employeeNumberDoctorReg" />
 
@@ -134,12 +129,27 @@
         android:id="@+id/signUpButtonDoctorReg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
+        android:layout_marginBottom="16dp"
         android:text="@string/singUpBtnText"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/specialtiesSelect" />
+        app:layout_constraintEnd_toEndOf="@+id/appointmentByDefaultButton"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="@+id/appointmentByDefaultButton" />
+
+    <CheckBox
+        android:id="@+id/appointmentByDefaultButton"
+        android:layout_width="282dp"
+        android:layout_height="62dp"
+        android:layout_marginTop="597dp"
+        android:layout_marginBottom="18dp"
+        android:text="accept appointments by default"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/signUpButtonDoctorReg"
+        app:layout_constraintEnd_toEndOf="@+id/specialtiesSelect"
+        app:layout_constraintHorizontal_bias="0.485"
+        app:layout_constraintStart_toStartOf="@+id/specialtiesSelect"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.095" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

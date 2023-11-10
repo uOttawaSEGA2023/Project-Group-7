@@ -14,7 +14,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,6 +46,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
 
     private CheckableItemAdapter<Specialties> adapter;
     private Button signUp;
+    private CheckBox appointmentsPerDefault;
 
     private Doctor currentDoctor;
 
@@ -63,6 +67,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
         employeeNumberET = findViewById(R.id.employeeNumberDoctorReg);
         signUp = findViewById(R.id.signUpButtonDoctorReg);
         specialtiesSelect = findViewById(R.id.specialtiesSelect);
+        appointmentsPerDefault = findViewById(R.id.appointmentByDefaultButton);
         // Setup RecyclerView
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
         adapter = new CheckableItemAdapter<>(this, EnumSet.allOf(Specialties.class));
@@ -168,7 +173,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
         }
 
         signUp.setEnabled(false);
-        boolean acceptsByDefault = false; //TODO: Connect it to XML that sets that.
+        boolean acceptsByDefault = appointmentsPerDefault.isChecked();
         currentDoctor = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList, acceptsByDefault);
         Database db = Database.getInstance();
         db.getSignUpRequests(this);
