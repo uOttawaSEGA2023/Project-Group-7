@@ -21,6 +21,8 @@ public class Shift {
         }
         else if (endTime.isBefore(startTime)){
             throw new IllegalArgumentException("The shift cannot end before it begins. End Time < Start Time.");
+        } else if (!isValidShiftTime(startTime, endTime)) {
+            throw new IllegalArgumentException("The shift time must be in increments of 30 minutes");
         }
         //Check if this shift would overlap with other shifts.
         aDoctor = myDoctor;
@@ -68,4 +70,8 @@ public class Shift {
     public boolean isVacant(){
         return appointments.isEmpty();
     }
+    private boolean isValidShiftTime(LocalDateTime startTime, LocalDateTime endTime) {
+        long interval = startTime.until(endTime, java.time.temporal.ChronoUnit.MINUTES);
+        return interval % 30 == 0;
+    }    
 }
