@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/health_app_navigation.xml"
+    app:startDestination="@layout/login_interactive_message">
+
+    <!-- change StartDestination to id of first fragment later.-->
+    <fragment
+        android:id="@+id/viewAppointments"
+        android:label="MainPage"
+        android:layout="@layout/login_interactive_message"
+        />
+
+    <fragment
+        android:id="@+id/viewShifts"
+        android:label="shifts"
+        android:layout=""/>
+    <fragment
+        android:id="@+id/viewSettings"
+        android:label="appointments"
+        android:layout="@layout/fragment_settingspage"
+        />
+</navigation>

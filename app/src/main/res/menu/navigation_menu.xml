@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity"
+    tools:showIn="@layout/navigation_drawer_main">
+
+    <group android:checkableBehvaior="single">
+        <item
+            android:id="@+id/menu_item1"
+            android:title="Item 1"
+            android:icon="@drawable/ic_launcher_background"
+            app:showAsAction="always"/>
+        <item
+            android:id="@+id/menu_item2"
+            android:title="Item 2"
+            android:icon="@drawable/ic_launcher_background"
+            />
+        <item
+            android:id="@+id/menu_item3"
+            android:title="Item 3"
+            android:icon="@drawable/ic_launcher_background"/>
+
+    </group>
+</menu>
