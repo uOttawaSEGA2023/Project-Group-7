@@ -10,7 +10,7 @@
 
     <include
         android:id="@+id/login_interactive_message"
-        layout="@layout/login_interactive_message"
+        layout="@layout/app_bar_menu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
