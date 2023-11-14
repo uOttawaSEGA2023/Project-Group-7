@@ -2,24 +2,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MainActivity"
-    tools:showIn="@layout/navigation_drawer_main">
+    tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/menu_item1"
-            android:title="Item 1"
-            android:icon="@drawable/ic_launcher_background"
+            android:id="@+id/nav_appointments"
+            android:title="Appointments"
+            android:icon="@drawable/baseline_home_24"
             app:showAsAction="always"/>
         <item
-            android:id="@+id/menu_item2"
-            android:title="Item 2"
-            android:icon="@drawable/ic_launcher_background"
+            android:id="@+id/nav_shifts"
+            android:title="Shifts"
+            android:icon="@drawable/baseline_more_time_24"
             />
         <item
-            android:id="@+id/menu_item3"
-            android:title="Item 3"
-            android:icon="@drawable/ic_launcher_background"/>
+            android:id="@+id/nav_settings"
+            android:title="Settings"
+            android:icon="@drawable/baseline_settings_24"/>
 
     </group>
 </menu>
