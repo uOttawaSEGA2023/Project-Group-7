@@ -1,5 +1,9 @@
 package com.quantumSamurais.hams.appointment;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import com.quantumSamurais.hams.doctor.Doctor;
 
 import java.time.LocalDate;
@@ -14,6 +18,7 @@ public class Shift {
     LocalDateTime startTime, endTime;
     long shiftID;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public Shift(Doctor myDoctor, LocalDate day, LocalDateTime startTime, LocalDateTime endTime){
         //Basic sanity checks
         if (day.isBefore(LocalDate.now())){
@@ -34,6 +39,7 @@ public class Shift {
         SHIFT_ID++;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean takeAppointment(Appointment appointment){
         //If the appointment is compatible with the shift
         if (appointment.getStartTime().isBefore(startTime) || appointment.getEndTime().isAfter(endTime)){
@@ -70,6 +76,7 @@ public class Shift {
     public boolean isVacant(){
         return appointments.isEmpty();
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private boolean isValidShiftTime(LocalDateTime startTime, LocalDateTime endTime) {
         long interval = startTime.until(endTime, java.time.temporal.ChronoUnit.MINUTES);
         return interval % 30 == 0;
