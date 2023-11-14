@@ -13,8 +13,7 @@
 
     <fragment
         android:id="@+id/viewShifts"
-        android:label="shifts"
-        android:layout=""/>
+        android:label="shifts" />
     <fragment
         android:id="@+id/viewSettings"
         android:label="appointments"

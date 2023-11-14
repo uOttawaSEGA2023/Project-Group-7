@@ -17,8 +17,7 @@
             android:layout_height="?attr/actionBarSize"
             android:layout_width="match_parent"
             android:background="?attr/colorPrimary"
-            app:popUpTheme="@style/Theme.HealthManagementSystem"
-            />
+            app:popupTheme="@style/Theme.HealthManagmentSystem" />
     </com.google.android.material.appbar.AppBarLayout>
 
 

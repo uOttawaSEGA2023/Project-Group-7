@@ -5,7 +5,7 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/navigation_drawer_main">
 
-    <group android:checkableBehvaior="single">
+    <group android:checkableBehavior="single">
         <item
             android:id="@+id/menu_item1"
             android:title="Item 1"
