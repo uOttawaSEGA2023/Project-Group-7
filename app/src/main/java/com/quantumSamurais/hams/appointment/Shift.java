@@ -38,6 +38,10 @@ public class Shift {
         shiftID = SHIFT_ID;
         SHIFT_ID++;
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public boolean overlapsWith(Shift otherShift) {
+        return !this.endTime.isBefore(otherShift.startTime) && !this.startTime.isAfter(otherShift.endTime);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean takeAppointment(Appointment appointment){
@@ -57,6 +61,9 @@ public class Shift {
         if(appointments.containsKey(appointmentID)){
             appointments.remove(appointmentID);
         }
+    }
+    public Map<Long, Appointment> getAppointments() {
+        return appointments;
     }
 
     public LocalDate getShiftDay(){

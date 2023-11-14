@@ -2,8 +2,10 @@ package com.quantumSamurais.hams.doctor;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.appointment.Shift;
@@ -96,6 +98,11 @@ public class Doctor extends User {
 		acceptsAppointmentsByDefault = value;
 	}
 
+	public ArrayList<Shift> getShifts() {
+		return shifts;
+	}
+	
+	@RequiresApi(api = Build.VERSION_CODES.O)
 	public boolean createShift(LocalDate dayOfShift, LocalDateTime startDate, LocalDateTime endDate){
 		Shift shiftToAdd = new Shift(this, dayOfShift, startDate, endDate);
 		if (!shiftOverlap(shiftToAdd)){
@@ -105,6 +112,7 @@ public class Doctor extends User {
 		return false;
 	}
 
+	@RequiresApi(api = Build.VERSION_CODES.O)
 	private boolean shiftOverlap(Shift someShift){
 		for (Shift shift: shifts){
 			if (!someShift.getStartTime().isAfter(shift.getEndTime()) && !shift.getStartTime().isAfter(someShift.getEndTime())){
@@ -127,6 +135,7 @@ public class Doctor extends User {
 		}
 	}
 
+	@RequiresApi(api = Build.VERSION_CODES.O)
 	public void acceptAppointment(Appointment appointment, long shiftID){
 		for (Shift shift: shifts){
 			if (shift.getShiftID() == shiftID){
