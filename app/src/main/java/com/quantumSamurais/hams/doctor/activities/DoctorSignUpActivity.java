@@ -50,6 +50,8 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
 
     private Doctor currentDoctor;
 
+    private boolean acceptsByDefault;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.doctor_register_form);
@@ -173,7 +175,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
         }
 
         signUp.setEnabled(false);
-        boolean acceptsByDefault = appointmentsPerDefault.isChecked();
+        acceptsByDefault = appointmentsPerDefault.isChecked();
         currentDoctor = new Doctor(firstName,lastName, password.toCharArray(),emailAddress,phoneNumber,postalAddress,employeeNumber, specialtiesArrayList, acceptsByDefault);
         Database db = Database.getInstance();
         db.getSignUpRequests(this);
@@ -198,6 +200,7 @@ public class DoctorSignUpActivity extends AppCompatActivity implements ResponseL
             // Switch to login
             Intent login = new Intent(this, LoginActivity.class);
             login.putExtra("userType",r.getUserType());
+            login.putExtra("acceptsByDefault", acceptsByDefault);
             startActivity(login);
             finish();
         }
