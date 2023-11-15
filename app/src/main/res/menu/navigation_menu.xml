@@ -6,19 +6,15 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_appointments"
-            android:title="Appointments"
+            android:id="@+id/nav_home"
+            android:title="Home"
             android:icon="@drawable/baseline_home_24"
             app:showAsAction="always"/>
         <item
-            android:id="@+id/nav_shifts"
-            android:title="Shifts"
-            android:icon="@drawable/baseline_more_time_24"
-            />
-        <item
             android:id="@+id/nav_settings"
             android:title="Settings"
-            android:icon="@drawable/baseline_settings_24"/>
+            android:icon="@drawable/baseline_settings_24"
+            app:showAsAction="always"/>
 
     </group>
 </menu>
