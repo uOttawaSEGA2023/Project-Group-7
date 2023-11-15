@@ -8,7 +8,10 @@ import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_NUMBER;
 import static com.quantumSamurais.hams.utils.ValidationType.HEALTH_CARD_NUMBER;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+import android.os.Build;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -30,8 +33,10 @@ import com.quantumSamurais.hams.utils.ValidationType;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -179,6 +184,7 @@ public class Database {
                 .collection("appointments").add(appointment)).start();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void approveAppointment(long appointmentID) {
         Appointment appointment = getAppointment(appointmentID);
         Shift shift = getShift(appointment.getShiftID());
@@ -199,6 +205,7 @@ public class Database {
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void cancelAppointment(long appointmentID) {
         Appointment appointment = getAppointment(appointmentID);
         Shift shift = getShift(appointment.getShiftID());
@@ -273,12 +280,44 @@ public class Database {
 
 
 
-    public void addShift() {
+    public void addShift(Shift shift, ResponseListener<Void> listener) {
+        new Thread(() -> {
+            try {
+                // Convert Shift object to Map to avoid serialization issues
+                Map<String, Object> shiftData = new HashMap<>();
+                shiftData.put("shiftID", shift.getShiftID());
+                // Add other shift properties to shiftData as needed
 
+                // Add the shift data to the "shift" collection
+                await(db.collection("users").document("software").collection("shift").add(shiftData));
+                listener.onSuccess(null);
+            } catch (ExecutionException | InterruptedException e) {
+                listener.onFailure(e);
+                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+            }
+        }).start();
     }
 
-    public void deleteShift(long id) {
+    public void deleteShift(long shiftID, ResponseListener<Void> listener) {
+        new Thread(() -> {
+            try {
+                // Find the shift document to delete
+                QuerySnapshot shift = await(db.collection("users").document("software").collection("shift").whereEqualTo("shiftID", shiftID).get());
 
+                // Check if the shift exists
+                if (!shift.isEmpty()) {
+                    // Delete the shift document
+                    await(shift.getDocuments().get(0).getReference().delete());
+                    listener.onSuccess(null);
+                } else {
+                    // Shift not found
+                    listener.onFailure(new NoSuchElementException("Shift not found for shiftID: " + shiftID));
+                }
+            } catch (ExecutionException | InterruptedException e) {
+                listener.onFailure(e);
+                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+            }
+        }).start();
     }
 
     public void getPatientAppointments() {
