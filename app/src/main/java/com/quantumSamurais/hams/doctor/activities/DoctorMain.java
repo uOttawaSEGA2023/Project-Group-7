@@ -65,7 +65,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         refreshShifts = new Handler();
         refresh_runnable.run();
 
-        boolean acceptApptDefault = myDoctor.getAcceptAppointmentsByDefault();
+        boolean acceptApptDefault = myDoctor.getAcceptsAppointmentsByDefault();
         SettingFragment fragment = SettingFragment.newInstance(acceptApptDefault);
 
 

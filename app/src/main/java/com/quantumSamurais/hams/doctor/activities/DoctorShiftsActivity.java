@@ -90,7 +90,7 @@ public class DoctorShiftsActivity extends AppCompatActivity {
             LocalDateTime endDateTime = LocalDateTime.of(selectedDate, LocalTime.of(endHour, endMinute));
 
             if (isValidNewShift(selectedDate, startDateTime, endDateTime)) {
-                Database.getInstance().addShift(new Shift(currentDoctor, selectedDate, startDateTime, endDateTime), new SimpleResponseListener<Void>() {
+                Database.getInstance().addShift(new Shift(currentDoctor.getEmployeeNumber(), selectedDate, startDateTime, endDateTime), new SimpleResponseListener<Void>() {
                     @Override
                     public void onSuccess(Void response) {
                         updateShiftsList();
