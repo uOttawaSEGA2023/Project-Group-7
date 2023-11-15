@@ -23,7 +23,7 @@ public class Shift {
     private boolean pastShiftFlag;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public Shift(Doctor myDoctor, LocalDate day, LocalDateTime startTime, LocalDateTime endTime){
+    public Shift(String employeeNumber, LocalDate day, LocalDateTime startTime, LocalDateTime endTime){
         //Basic sanity checks
         if (day.isBefore(LocalDate.now())){
             throw new IllegalArgumentException("The date you passed is in the past");
@@ -34,7 +34,7 @@ public class Shift {
             throw new IllegalArgumentException("The shift time must be in increments of 30 minutes");
         }
         //Check if this shift would overlap with other shifts.
-        aDoctor = myDoctor;
+
 
         this.shiftDay = day;
         this.startTime = startTime;

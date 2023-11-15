@@ -104,7 +104,7 @@ public class DoctorShiftsActivity extends AppCompatActivity {
 
         // Check for conflicts with existing shifts
         for (Shift existingShift : currentDoctor.getShifts()) {
-            if (existingShift.overlapsWith(new Shift(currentDoctor, date, startTime, endTime))) {
+            if (existingShift.overlapsWith(new Shift(currentDoctor.getEmployeeNumber(), date, startTime, endTime))) {
                 return false;
             }
         }
