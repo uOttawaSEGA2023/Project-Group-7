@@ -13,4 +13,12 @@
         android:clipToPadding="false"
         android:scrollbars="vertical"/>
 
+    <!-- Button to add a new shift -->
+    <Button
+        android:id="@+id/btnAddShift"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="Add Shift"/>
 </RelativeLayout>
