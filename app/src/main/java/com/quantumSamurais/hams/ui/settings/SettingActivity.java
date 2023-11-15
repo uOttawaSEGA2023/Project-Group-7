@@ -1,4 +1,4 @@
-package com.quantumSamurais.hams.settings;
+package com.quantumSamurais.hams.ui.settings;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,7 +29,6 @@ public class SettingActivity extends AppCompatActivity {
         if (val) {
             acceptApptDefaultRB.toggle();
         }
-
 
     }
 
