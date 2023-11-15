@@ -2,19 +2,55 @@ package com.quantumSamurais.hams.appointment;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
+import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 
 import java.time.LocalDateTime;
 
 public class Appointment {
+    Database db;
+    RequestStatus requestStatus;
     static long APPOINTMENT_ID = 0;
     LocalDateTime startTime, endTime;
     long appointmentID;
+    private boolean pastAppointmentFlag;
 
-    Doctor myDoctor;
+    Shift shift;
     Patient myPatient;
     public Appointment(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient){
+        db = Database.getInstance();
+        if (inputsAreValid(startTime, endTime, shift, patient)){
+            //Set the time
+            this.startTime = startTime;
+            this.endTime = endTime;
+
+            appointmentID = APPOINTMENT_ID;
+            APPOINTMENT_ID++;
+            requestStatus = RequestStatus.PENDING;
+        }
+        db.addAppointmentRequest(this);
+
+    }
+
+    public Appointment(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient, RequestStatus requestStatus){
+        db = Database.getInstance();
+        if (inputsAreValid(startTime, endTime, shift, patient)){
+            //Set the time
+            this.startTime = startTime;
+            this.endTime = endTime;
+
+            appointmentID = APPOINTMENT_ID;
+            APPOINTMENT_ID++;
+            this.requestStatus = requestStatus;
+
+        }
+
+
+    }
+
+    public boolean inputsAreValid(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient){
         long interval = MINUTES.between(startTime, endTime);
         boolean isIncrementOf30Minutes = interval % 30 == 0 ? true:false;
         if (shift == null || patient == null){
@@ -26,18 +62,7 @@ public class Appointment {
         if (!isIncrementOf30Minutes){
             throw new IllegalArgumentException("The passed startTime and endTime are not 30 minutes apart.");
         }
-        //Set the time
-        this.startTime = startTime;
-        this.endTime = endTime;
-        //Checks if the appointment would overlap with whatever is in shift.
-        boolean appointmentProperlyAssigned = shift.takeAppointment(this);
-        if (appointmentProperlyAssigned){
-            appointmentID = APPOINTMENT_ID;
-            APPOINTMENT_ID++;
-        }
-        throw new IllegalArgumentException("This appointment overlaps with other appointments.");
-
-
+        return true;
     }
 
     public boolean overlaps(Appointment someAppointment){
@@ -50,14 +75,14 @@ public class Appointment {
         return appointmentID;
     }
 
-    public boolean tieAppointment(long shiftID, Doctor doctor, Patient patient){
-        if (doctor.hasThisShift(shiftID)){
-            myDoctor = doctor;
-            myPatient = patient;
-            return true;
-        }
-        return false;
-    }
+//    public boolean tieAppointment(long shiftID, Doctor doctor, Patient patient){
+//        if (doctor.hasThisShift(shiftID)){
+//            myDoctor = doctor;
+//            myPatient = patient;
+//            return true;
+//        }
+//        return false;
+//    }
 
     public LocalDateTime getStartTime(){
         return startTime;
@@ -65,6 +90,15 @@ public class Appointment {
 
     public LocalDateTime getEndTime(){
         return endTime;
+    }
+
+    public long getShiftID(){
+        return shift.getShiftID();
+    }
+
+    public boolean appointmentIsPassed(){
+        pastAppointmentFlag = endTime.isBefore(LocalDateTime.now());
+        return  pastAppointmentFlag;
     }
 }
 

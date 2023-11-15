@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.quantumSamurais.hams.login.Login;
 import com.quantumSamurais.hams.utils.ArrayUtils;
 
+import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public abstract class User {
+public abstract class User implements Serializable {
     private String firstName;
     private String lastName;
 

@@ -10,10 +10,16 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Transaction;
+import com.quantumSamurais.hams.appointment.Appointment;
+import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
@@ -21,9 +27,11 @@ import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationType;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -52,58 +60,29 @@ public class Database {
     }
 
     public static Database getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new Database();
         }
         return instance;
     }
 
     /**
-     *
      * @param user The patient to sign up.
      */
     public void addSignUpRequest(Patient user) {
         new Thread(() -> {
             // Acquire lock, this lock is used to make sure the request id is different between all requests.
-               signUpLock.lock();
-                try {
-                   DocumentSnapshot software = await(db.collection("users").document("software").get());
-                   requestID = (Long) software.get("requestID");
-                   if(requestID == null) {
-                       await(db.collection("users").document("software").update("requestID",0));
-                       requestID = 0L;
-                   }
-                   db.collection("users").document("software").collection("requests").add(new Request(requestID,user,RequestStatus.PENDING));
-                   requestID++;
-                   db.collection("users").document("software").update("requestID",requestID);
-                } catch (ExecutionException | InterruptedException e) {
-                    Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
-                }
-                // Release Lock
-               signUpLock.unlock();
-        }).start();
-    }
-    /**
-     *
-     * @param user The doctor to sign up.
-     */
-    public void addSignUpRequest(Doctor user) {
-        new Thread(() -> {
-            // Acquire lock, this lock is used to make sure the request id is different between all requests.
             signUpLock.lock();
             try {
-                if(requestID == null) {
-                    DocumentSnapshot software = await(db.collection("users").document("software").get());
-                    requestID = (Long) software.get("requestID");
-                }
-                if(requestID == null) {
-                    await(db.collection("users").document("software").update("requestID",0));
+                DocumentSnapshot software = await(db.collection("users").document("software").get());
+                requestID = (Long) software.get("requestID");
+                if (requestID == null) {
+                    await(db.collection("users").document("software").update("requestID", 0));
                     requestID = 0L;
                 }
-                db.collection("users").document("software")
-                        .collection("requests").add(new Request(requestID,user,RequestStatus.PENDING));
+                db.collection("users").document("software").collection("requests").add(new Request(requestID, user, RequestStatus.PENDING));
                 requestID++;
-                db.collection("users").document("software").update("requestID",requestID);
+                db.collection("users").document("software").update("requestID", requestID);
             } catch (ExecutionException | InterruptedException e) {
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
@@ -113,21 +92,48 @@ public class Database {
     }
 
     /**
-     *
+     * @param user The doctor to sign up.
+     */
+    public void addSignUpRequest(Doctor user) {
+        new Thread(() -> {
+            // Acquire lock, this lock is used to make sure the request id is different between all requests.
+            signUpLock.lock();
+            try {
+                if (requestID == null) {
+                    DocumentSnapshot software = await(db.collection("users").document("software").get());
+                    requestID = (Long) software.get("requestID");
+                }
+                if (requestID == null) {
+                    await(db.collection("users").document("software").update("requestID", 0));
+                    requestID = 0L;
+                }
+                db.collection("users").document("software")
+                        .collection("requests").add(new Request(requestID, user, RequestStatus.PENDING));
+                requestID++;
+                db.collection("users").document("software").update("requestID", requestID);
+            } catch (ExecutionException | InterruptedException e) {
+                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+            }
+            // Release Lock
+            signUpLock.unlock();
+        }).start();
+    }
+
+    /**
      * @param id Id of the request to approve
      */
     public void approveSignUpRequest(long id) {
         //TODO: Send email
         new Thread(() -> {
             try {
-                QuerySnapshot requests = await(db.collection("users").document("software").collection("requests").whereEqualTo("id",id).get());
-                if(requests.getDocuments().size() > 1)
+                QuerySnapshot requests = await(db.collection("users").document("software").collection("requests").whereEqualTo("id", id).get());
+                if (requests.getDocuments().size() > 1)
                     return;
                 for (QueryDocumentSnapshot document : requests) {
                     Request current = document.toObject(Request.class);
                     db.collection("users").document("software")
                             .collection("requests").document(document.getId()).update("status", RequestStatus.APPROVED);
-                    switch(current.getUserType()) {
+                    switch (current.getUserType()) {
                         case PATIENT:
                             db.collection("users").document("software")
                                     .collection("patients").add(current.getPatient());
@@ -144,8 +150,8 @@ public class Database {
             }
         }).start();
     }
+
     /**
-     *
      * @param id Id of the request to reject
      */
     public void rejectSignUpRequest(long id) {
@@ -168,38 +174,155 @@ public class Database {
     }
 
     // <editor-fold desc="Deliverable 3 & 4">
-    public void addAppointmentRequest() {
+    public void addAppointmentRequest(Appointment appointment) {
+        new Thread(() -> db.collection("users").document("software")
+                .collection("appointments").add(appointment)).start();
+    }
+
+    public void approveAppointment(long appointmentID) {
+        Appointment appointment = getAppointment(appointmentID);
+        Shift shift = getShift(appointment.getShiftID());
+        if (shift.takeAppointment(appointment)) {
+            //If we successfully added the appointment to the shift
+            db.runTransaction((Transaction.Function<Void>) transaction -> {
+                updateShift(transaction, shift.getShiftID(), shift.getAppointments());
+                updateAppointment(transaction, appointmentID, RequestStatus.APPROVED);
+                return null;
+            });
+        }
+    }
+
+    public void rejectAppointment(long appointmentID) {
+        db.runTransaction((Transaction.Function<Void>) transaction -> {
+            updateAppointment(transaction, appointmentID, RequestStatus.REJECTED);
+            return null;
+        });
+    }
+
+    public void cancelAppointment(long appointmentID) {
+        Appointment appointment = getAppointment(appointmentID);
+        Shift shift = getShift(appointment.getShiftID());
+
+        if (shift.cancelAppointment(appointment.getAppointmentID())) {
+            //If we successfully removed the appointment from the shift
+            db.runTransaction((Transaction.Function<Void>) transaction -> {
+                updateShift(transaction, appointment.getShiftID(), shift.getAppointments());
+                updateAppointment(transaction, appointmentID, RequestStatus.REJECTED);
+                return null;
+            });
+        }
+
 
     }
-    public void approveAppointment(long id) {
 
+    public Appointment getAppointment(long appointmentID) {
+        Supplier<QuerySnapshot> findMatchingAppointment = () -> {
+            QuerySnapshot appointment = null;
+            try {
+                appointment = await(db.collection("users").document("software").collection("appointments").whereEqualTo("appointmentID", appointmentID).get());
+            } catch (ExecutionException | InterruptedException e) {
+                Log.d("Database", "Something went wrong: " + e.getStackTrace());
+            }
+            if (appointment != null) {
+                return appointment;
+            }
+            throw new NullPointerException("Appointment couldn't be initialized.");
+        };
+        CompletableFuture<QuerySnapshot> appointment = supplyAsync(findMatchingAppointment);
+        //Takes the object obtained, and then transform into an appointment
+        return appointment.join().getDocuments().get(0).toObject(Appointment.class);
     }
-    public void rejectAppointment(long id) {
 
-    }
-    public void cancelAppointment(long id) {
 
+    private void updateShift(Transaction transaction, long shiftID, Map<Long, Appointment> updatedAppointments) {
+        CollectionReference myShifts = db.collection("users").document("software").collection("shifts");
+        Query query = myShifts.whereEqualTo("shiftID", shiftID);
+        query.get().addOnCompleteListener(getShift -> {
+            if (getShift.isSuccessful()) {
+                for (QueryDocumentSnapshot document : getShift.getResult()) {
+                    String documentId = document.getId();
+                    DocumentReference docRef = myShifts.document(documentId);
+                    transaction.update(docRef, "appointments", updatedAppointments);
+                }
+            } else {
+                Log.d("Database", "Error getting documents: ", getShift.getException());
+            }
+        });
     }
+
+    private void updateAppointment(Transaction transaction, long appointmentID, RequestStatus newRequestStatus){
+        CollectionReference myAppointments = db.collection("users").document("software").collection("appointments");
+        myAppointments.whereEqualTo("appointmentID", appointmentID).get().addOnCompleteListener(getAppointment -> {
+            if (getAppointment.isSuccessful()){
+                QuerySnapshot appointmentSnap = getAppointment.getResult(); //Should be unique
+                for (QueryDocumentSnapshot singularAppointment: appointmentSnap){
+                    String documentId = singularAppointment.getId();
+                    DocumentReference docRef = myAppointments.document(documentId);
+                    transaction.update(docRef, "requestStatus", newRequestStatus);
+                }
+            }
+            else{
+                Log.d("Database", "Error getting documents: ", getAppointment.getException());
+            }
+
+        });
+    }
+
+
+
+
+
+
     public void addShift() {
 
     }
+
     public void deleteShift(long id) {
 
     }
+
     public void getPatientAppointments() {
 
     }
-    public void getDoctorAppointments() {
 
+    public Shift getShift(long shiftID) {
+        Supplier<QuerySnapshot> findMatchingShift = () -> {
+            QuerySnapshot shift = null;
+            try {
+                shift = await(db.collection("users").document("software").collection("shift").whereEqualTo("shiftID", shiftID).get());
+            } catch (ExecutionException | InterruptedException e) {
+                Log.d("Database", "Something went wrong: " + e.getStackTrace());
+            }
+            if (shift != null) {
+                return shift;
+            }
+            throw new NullPointerException("Shift couldn't be initialized.");
+        };
+        CompletableFuture<QuerySnapshot> shift = supplyAsync(findMatchingShift);
+        //Takes the object obtained, and then transform into an appointment
+        return shift.join().getDocuments().get(0).toObject(Shift.class);
     }
-    public void getShifts() {
 
+    public ArrayList<Appointment> getDoctorAppointments(Doctor doctor) {
+        Doctor theDoctor = getDoctor(doctor.getEmail());
+        return theDoctor.getAppointments();
+    }
+
+    /**
+     * A method to fetch the shifts from the database. IT RETURNS A COMPLETABLE FUTURE!
+     * takes in a string, and returns a completableFuture.
+     *
+     * @param email : the email address of the doctor we're trying to access.
+     **/
+    public ArrayList<Shift> getShifts(String email) {
+        Doctor doctor = getDoctor(email);
+        return doctor.getShifts();
     }
     // </editor-fold>
 
     // Deliverable 2
+
     /**
-     *
      * @param listener Returns array list of all sign up requests by calling listener.onSuccess;
      */
     public void getSignUpRequests(ResponseListener<ArrayList<Request>> listener) {
@@ -221,7 +344,6 @@ public class Database {
     }
 
     /**
-     *
      * @param listener Returns array list of all patients by calling listener.onSuccess;
      */
     public void getPatients(ResponseListener<ArrayList<Patient>> listener) {
@@ -239,8 +361,27 @@ public class Database {
             }
         }).start();
     }
+
+    public Doctor getDoctor(String email) {
+        Supplier<QuerySnapshot> getMyDoctor = () -> {
+            QuerySnapshot doctor = null;
+            try {
+                doctor = await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
+            } catch (ExecutionException | InterruptedException e) {
+                Log.d("Database", email + ": this email is likely invalid. Error while fetching doctor from DB");
+                throw new IllegalArgumentException("The email that was passed couldn't be found in db. (Or a problem occurred with the thread)");
+            }
+            return doctor;
+        };
+
+        CompletableFuture<QuerySnapshot> doctorSnapshot = supplyAsync(getMyDoctor);
+
+        Doctor doctor = doctorSnapshot.join().getDocuments().get(0).toObject(Doctor.class);
+
+        return doctor;
+    }
+
     /**
-     *
      * @param listener Returns array list of all doctor by calling listener.onSuccess;
      */
     public void getDoctors(ResponseListener<ArrayList<Doctor>> listener) {
@@ -260,30 +401,29 @@ public class Database {
     }
 
     /**
-     *
-     * @param email The patients email
+     * @param email    The patients email
      * @param listener Returns the patient object by calling listener.onSuccess(Patient);
      */
     public void getPatient(String email, ResponseListener<Patient> listener) {
         new Thread(() -> {
             try {
-                QuerySnapshot doctors = await(db.collection("users").document("software").collection("patients").whereEqualTo("email",email).get());
-                listener.onSuccess(doctors.getDocuments().get(0).toObject(Patient.class));
+                QuerySnapshot patients = await(db.collection("users").document("software").collection("patients").whereEqualTo("email", email).get());
+                listener.onSuccess(patients.getDocuments().get(0).toObject(Patient.class));
             } catch (ExecutionException | InterruptedException e) {
                 listener.onFailure(e);
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
         }).start();
     }
+
     /**
-     *
-     * @param email The doctors email
+     * @param email    The doctors email
      * @param listener Returns the doctor object by calling listener.onSuccess(Patient);
      */
     public void getDoctor(String email, ResponseListener<Doctor> listener) {
         new Thread(() -> {
             try {
-                QuerySnapshot doctors = await(db.collection("users").document("software").collection("doctors").whereEqualTo("email",email).get());
+                QuerySnapshot doctors = await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
                 listener.onSuccess(doctors.getDocuments().get(0).toObject(Doctor.class));
             } catch (ExecutionException | InterruptedException e) {
                 listener.onFailure(e);
@@ -293,25 +433,25 @@ public class Database {
     }
 
     /**
-     * @param email Email of the user
+     * @param email    Email of the user
      * @param userType Type of user
-     * @param listener  Returns the request status by calling listener.onSuccess;
+     * @param listener Returns the request status by calling listener.onSuccess;
      */
     public void getRequestStatus(String email, UserType userType, ResponseListener<RequestStatus> listener) {
-        new Thread(()-> listener.onSuccess(getStatus(email,userType))).start();
+        new Thread(() -> listener.onSuccess(getStatus(email, userType))).start();
     }
 
 
     /**
-     * @param email Email of the user
+     * @param email    Email of the user
      * @param userType Type of user
      * @return The status of the users signUp request, returns null if the user cannot be found. Always Returns Approved for admin.
-    * */
+     */
     private RequestStatus getStatus(String email, UserType userType) {
         boolean foundInPatients = checkUserIsInUsers(PATIENT, EMAIL_ADDRESS, email);
         boolean foundInDoctors = checkUserIsInUsers(DOCTOR, EMAIL_ADDRESS, email);
         boolean foundInRequests = checkUserIsInRequests(userType, EMAIL_ADDRESS, email);
-        if(userType == UserType.ADMIN)
+        if (userType == UserType.ADMIN)
             return RequestStatus.APPROVED;
 
         if ((foundInPatients && userType == PATIENT) || (foundInDoctors && userType == DOCTOR)) {
@@ -328,14 +468,13 @@ public class Database {
             throw new NullPointerException("Please do not pass null arguments to this function");
         }
         //Coherence Checks
-        else if (userType == PATIENT && checkToDo == EMPLOYEE_NUMBER){
+        else if (userType == PATIENT && checkToDo == EMPLOYEE_NUMBER) {
             throw new IllegalArgumentException("Patients cannot have employee numbers");
-        }
-        else if (userType == DOCTOR && checkToDo == HEALTH_CARD_NUMBER)  {
+        } else if (userType == DOCTOR && checkToDo == HEALTH_CARD_NUMBER) {
             throw new IllegalArgumentException("Doctors cannot have health card numbers");
         }
         boolean itIs = true;
-        switch (checkToDo){
+        switch (checkToDo) {
             case EMAIL_ADDRESS:
                 itIs = checkEmailIsInUsers(userType, fieldToValidate);
                 break;
@@ -352,13 +491,13 @@ public class Database {
         return itIs;
     }
 
-    private boolean checkEmailIsInUsers(UserType userType, String email){
+    private boolean checkEmailIsInUsers(UserType userType, String email) {
         try {
             // Define a lambda task to run along the completable future.
             Supplier<QuerySnapshot> isEmailInUsers = () -> {
                 try {
                     //return of the lambda.
-                    switch(userType){
+                    switch (userType) {
                         case PATIENT:
                             return await(db.collection("users").document("software").collection("patients").whereEqualTo("email", email).get());
                         case DOCTOR:
@@ -385,11 +524,11 @@ public class Database {
         }
     }
 
-    private boolean checkPhoneIsInUsers(UserType userType, String phone){
+    private boolean checkPhoneIsInUsers(UserType userType, String phone) {
         try {
             Supplier<QuerySnapshot> isPhoneInUsers = () -> {
                 try {
-                    switch(userType){
+                    switch (userType) {
                         case PATIENT:
                             return await(db.collection("users").document("software").collection("patients").whereEqualTo("phone", phone).get());
                         case DOCTOR:
@@ -416,7 +555,7 @@ public class Database {
         }
     }
 
-    private boolean checkHealthCardNumberIsInUsers(String healthCardNumber){
+    private boolean checkHealthCardNumberIsInUsers(String healthCardNumber) {
         try {
             // Define a lambda task to run along the completable future.
             Supplier<QuerySnapshot> isHealthCardNumberInPatients = () -> {
@@ -441,7 +580,7 @@ public class Database {
         }
     }
 
-    private boolean checkEmployeeNumberIsInUsers(String employeeNumber){
+    private boolean checkEmployeeNumberIsInUsers(String employeeNumber) {
         try {
             // Define a lambda task to run along the completable future.
             Supplier<QuerySnapshot> isEmployeeNumberInDoctors = () -> {
@@ -467,28 +606,24 @@ public class Database {
     }
 
 
-
-
-
     public boolean checkUserIsInRequests(UserType userType, ValidationType checkToDo, String fieldToValidate) {
         //Sanity Check
         if (fieldToValidate == null || userType == null || checkToDo == null) {
             throw new NullPointerException("Please do not pass null arguments to this function");
         }
         //Coherence Checks
-        else if (userType == PATIENT && checkToDo == EMPLOYEE_NUMBER){
+        else if (userType == PATIENT && checkToDo == EMPLOYEE_NUMBER) {
             throw new IllegalArgumentException("Patients cannot have employee numbers");
-        }
-        else if (userType == DOCTOR && checkToDo == HEALTH_CARD_NUMBER)  {
+        } else if (userType == DOCTOR && checkToDo == HEALTH_CARD_NUMBER) {
             throw new IllegalArgumentException("Doctors cannot have health card numbers");
         }
         boolean itIs = true;
-        switch (checkToDo){
+        switch (checkToDo) {
             case EMAIL_ADDRESS:
                 itIs = checkEmailIsInRequests(userType, fieldToValidate);
                 break;
             case PHONE_NUMBER:
-                itIs =  checkPhoneIsInRequests(userType, fieldToValidate);
+                itIs = checkPhoneIsInRequests(userType, fieldToValidate);
                 break;
             case HEALTH_CARD_NUMBER:
                 itIs = checkHealthCardNumberIsInRequests(fieldToValidate);
@@ -500,21 +635,21 @@ public class Database {
         return itIs;
     }
 
-    private Boolean checkEmailIsInRequests(UserType userType, String email){
+    private Boolean checkEmailIsInRequests(UserType userType, String email) {
         Supplier<Boolean> isEmailInRequests = () -> {
-            try{
-            List<DocumentSnapshot> allRequests = await(db.collection("users").document("software").collection("requests").get()).getDocuments();
-            for (DocumentSnapshot request : allRequests){
-                Request currentRequest = request.toObject(Request.class);
-                UserType currentRequestType = currentRequest.getUserType();
-                if (userType == currentRequestType){
-                    if (currentRequest.getEmail().equals(email)){
-                        return true; //email is in requests.
+            try {
+                List<DocumentSnapshot> allRequests = await(db.collection("users").document("software").collection("requests").get()).getDocuments();
+                for (DocumentSnapshot request : allRequests) {
+                    Request currentRequest = request.toObject(Request.class);
+                    UserType currentRequestType = currentRequest.getUserType();
+                    if (userType == currentRequestType) {
+                        if (currentRequest.getEmail().equals(email)) {
+                            return true; //email is in requests.
+                        }
                     }
-                }
 
-            }
-            }catch (Exception e) {
+                }
+            } catch (Exception e) {
                 Log.d("Zone of despair", "Please never reach this");
                 throw new RuntimeException("Something didn't go well while checking to database");
             }
@@ -525,20 +660,20 @@ public class Database {
         return isEmailInRequest.join();
     }
 
-    private boolean checkHealthCardNumberIsInRequests(String healthCardNumber){
+    private boolean checkHealthCardNumberIsInRequests(String healthCardNumber) {
         Supplier<Boolean> isHealthCardNumberInRequests = () -> {
-            try{
+            try {
                 List<DocumentSnapshot> allRequests = await(db.collection("users").document("software").collection("requests").get()).getDocuments();
-                for (DocumentSnapshot request : allRequests){
+                for (DocumentSnapshot request : allRequests) {
                     Request currentRequest = request.toObject(Request.class);
                     UserType currentRequestType = currentRequest.getUserType();
-                    if (currentRequestType == PATIENT){
-                        if (currentRequest.getHealthCardNumber().equals(healthCardNumber)){
+                    if (currentRequestType == PATIENT) {
+                        if (currentRequest.getHealthCardNumber().equals(healthCardNumber)) {
                             return true;
                         }
                     }
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 Log.d("Zone of despair", "Please never reach this");
                 throw new RuntimeException("Something went wrong while checking to DB");
             }
@@ -548,20 +683,20 @@ public class Database {
         return healthCardNumberInRequests.join();
     }
 
-    private boolean checkEmployeeNumberIsInRequests(String employeeNumber){
+    private boolean checkEmployeeNumberIsInRequests(String employeeNumber) {
         Supplier<Boolean> isEmployeeNumberInRequests = () -> {
-            try{
+            try {
                 List<DocumentSnapshot> allRequests = await(db.collection("users").document("software").collection("requests").get()).getDocuments();
-                for (DocumentSnapshot request : allRequests){
+                for (DocumentSnapshot request : allRequests) {
                     Request currentRequest = request.toObject(Request.class);
                     UserType currentRequestType = currentRequest.getUserType();
-                    if (currentRequestType == DOCTOR){
-                        if (currentRequest.getEmployeeNumber().equals(employeeNumber)){
+                    if (currentRequestType == DOCTOR) {
+                        if (currentRequest.getEmployeeNumber().equals(employeeNumber)) {
                             return true;
                         }
                     }
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 Log.d("Zone of despair", "Please never reach this");
                 throw new RuntimeException("Something went wrong while checking to DB");
             }
@@ -571,20 +706,20 @@ public class Database {
         return employeeNumberInRequests.join();
     }
 
-    private boolean checkPhoneIsInRequests(UserType userType, String phoneNumber){
+    private boolean checkPhoneIsInRequests(UserType userType, String phoneNumber) {
         Supplier<Boolean> isPhoneNumberInRequests = () -> {
-            try{
+            try {
                 List<DocumentSnapshot> allRequests = await(db.collection("users").document("software").collection("requests").get()).getDocuments();
-                for (DocumentSnapshot request : allRequests){
+                for (DocumentSnapshot request : allRequests) {
                     Request currentRequest = request.toObject(Request.class);
                     UserType currentRequestType = currentRequest.getUserType();
-                    if (userType == currentRequestType){
-                        if (currentRequest.getPhoneNumber().equals(phoneNumber)){
+                    if (userType == currentRequestType) {
+                        if (currentRequest.getPhoneNumber().equals(phoneNumber)) {
                             return true;
                         }
                     }
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 Log.d("Zone of despair", "Please never reach this");
                 throw new RuntimeException("Something went wrong while checking to DB");
             }
@@ -628,19 +763,19 @@ public class Database {
                 String msgToSend = "", msgSbjct = ""; // message to send and message subject.
                 switch (status) {
                     case APPROVED:
-                        msgToSend = "Hello " + user.getLastName() + " " +user.getFirstName() + "," + "\n" + "\n" +
-                                    "This is just to inform you that your request to the Best Health Care Appointment app on the planet has been approved.\n" +
-                                    "We are glad to now count you among our members!" + "\n" + "\n" +
-                                    "Best, " + "Admin";
+                        msgToSend = "Hello " + user.getLastName() + " " + user.getFirstName() + "," + "\n" + "\n" +
+                                "This is just to inform you that your request to the Best Health Care Appointment app on the planet has been approved.\n" +
+                                "We are glad to now count you among our members!" + "\n" + "\n" +
+                                "Best, " + "Admin";
                         msgSbjct = "Welcome to the Best Health Care Appointment app on the Planet! :D";
                         break;
                     case REJECTED:
-                        msgToSend = "Hello " + user.getLastName() + " " +user.getFirstName() + "," + "\n" + "\n" +
-                                    "We are sad to inform you, that your request to the best Health Care Appointment app on the planet has been rejected.\n" +
-                                    "If you'd like to inquire further about the reasons of our refusal, please contact the admin at: " + "\n" +
-                                    "(819)-123-1234" +
-                                    " Standard call charges or fees may apply when using this phone number." + "\n" + "\n" +
-                                    "Best, " + "Admin";
+                        msgToSend = "Hello " + user.getLastName() + " " + user.getFirstName() + "," + "\n" + "\n" +
+                                "We are sad to inform you, that your request to the best Health Care Appointment app on the planet has been rejected.\n" +
+                                "If you'd like to inquire further about the reasons of our refusal, please contact the admin at: " + "\n" +
+                                "(819)-123-1234" +
+                                " Standard call charges or fees may apply when using this phone number." + "\n" + "\n" +
+                                "Best, " + "Admin";
                         msgSbjct = "We are sorry to inform you, that your account registration has been denied. >:0 ";
                         break;
                 }
@@ -670,13 +805,11 @@ public class Database {
                     Transport.send(message);
 
 
-
                 } catch (MessagingException e) {
                     throw new RuntimeException(e);
                 }
             }).start();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             Log.d("View ", "So that happened: " + e.getStackTrace());
         }
 
