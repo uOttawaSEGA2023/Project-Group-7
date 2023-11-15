@@ -1,5 +1,7 @@
 package com.quantumSamurais.hams.appointment;
 
+import static java.time.temporal.ChronoUnit.MINUTES;
+
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
@@ -8,6 +10,7 @@ import com.quantumSamurais.hams.doctor.Doctor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class Shift {
@@ -17,6 +20,7 @@ public class Shift {
     LocalDate shiftDay;
     LocalDateTime startTime, endTime;
     long shiftID;
+    private boolean pastShiftFlag;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public Shift(Doctor myDoctor, LocalDate day, LocalDateTime startTime, LocalDateTime endTime){
@@ -57,10 +61,16 @@ public class Shift {
         appointments.put(appointment.getAppointmentID(), appointment);
         return true;
     }
-    public void cancelAppointment(long appointmentID){
+    public boolean cancelAppointment(long appointmentID){
         if(appointments.containsKey(appointmentID)){
-            appointments.remove(appointmentID);
+            //check to make
+            boolean atLeast60HoursBefore = MINUTES.between(startTime, endTime) >= 60;
+            if (atLeast60HoursBefore){
+                appointments.remove(appointmentID);
+                return true;}
         }
+        //in all other cases we couldn't return.
+        return false;
     }
     public Map<Long, Appointment> getAppointments() {
         return appointments;
@@ -87,5 +97,18 @@ public class Shift {
     private boolean isValidShiftTime(LocalDateTime startTime, LocalDateTime endTime) {
         long interval = startTime.until(endTime, java.time.temporal.ChronoUnit.MINUTES);
         return interval % 30 == 0;
-    }    
+    }
+
+    private boolean shiftIsPassed(){
+        pastShiftFlag = endTime.isBefore(LocalDateTime.now());
+        return pastShiftFlag;
+    }
+
+    public ArrayList<Appointment> appointmentsAsList(){
+        ArrayList<Appointment> myAppointments = new ArrayList<>();
+        for (Appointment appointment: appointments.values()){
+            myAppointments.add(appointment);
+        }
+        return myAppointments;
+    }
 }

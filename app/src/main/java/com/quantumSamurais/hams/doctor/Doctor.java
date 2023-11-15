@@ -11,9 +11,7 @@ import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.activities.DoctorMain;
-import com.quantumSamurais.hams.login.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
-import com.quantumSamurais.hams.user.UserType;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -27,6 +25,7 @@ public class Doctor extends User implements Serializable {
 	private ArrayList<Specialties> specialties;
 	private boolean acceptsAppointmentsByDefault = false;
 	private ArrayList<Shift> shifts;
+	//private Database db;
 
 	public Doctor() {
 	}
@@ -65,7 +64,7 @@ public class Doctor extends User implements Serializable {
 	@Override
 	public void changeView(Context currentContext) {
 		Intent doctorView = new Intent(currentContext, DoctorMain.class);
-		doctorView.putExtra("doctor", this);
+		doctorView.putExtra("doctorEmailAddress", getEmail());
 		currentContext.startActivity(doctorView);
 	}
 
@@ -138,25 +137,31 @@ public class Doctor extends User implements Serializable {
 	}
 
 	@RequiresApi(api = Build.VERSION_CODES.O)
-	public void acceptAppointment(Appointment appointment, long shiftID){
+	public void acceptAppointment(Appointment appointment){
+		Database db = Database.getInstance();
+		db.approveAppointment(appointment.getAppointmentID());
+		/*long appointmentShiftID = appointment.getShiftID();
 		for (Shift shift: shifts){
-			if (shift.getShiftID() == shiftID){
+			if (shift.getShiftID() == appointmentShiftID){
 				boolean appointmentWasAdded = shift.takeAppointment(appointment);
 				if (!appointmentWasAdded){
 					throw new IllegalStateException("The appointment passed overlaps with other appointments in the shift");
 				}
 			}
 		}
-		throw new IllegalArgumentException("This shift ID does not belong to any shifts of this doctor.");
+		throw new IllegalArgumentException("This shift ID does not belong to any shifts of this doctor.");*/
 
 	}
 
 
 	public void cancelAppointment(long appointmentID){
-		for (Shift shift:shifts){
+		Database db = Database.getInstance();
+		db.cancelAppointment(appointmentID);
+		/*for (Shift shift:shifts){
 			//this is fine, since it does nothing if the id does not exist.
 			shift.cancelAppointment(appointmentID);
-		}
+		}*/
+
 	}
 
 	public boolean hasThisShift(long shiftID){
@@ -184,6 +189,18 @@ public class Doctor extends User implements Serializable {
 	public Doctor setSpecialties(ArrayList<Specialties> specialties) {
 		this.specialties = specialties;
 		return this;
+	}
+
+	public ArrayList<Appointment> getAppointments(){
+		ArrayList<Appointment> appointments = new ArrayList<>();
+		ArrayList<Appointment> temp = new ArrayList<>();
+		for (Shift shift: shifts){
+			temp = shift.appointmentsAsList();
+			for (Appointment appointment: temp){
+				appointments.add(appointment);
+			}
+		}
+		return appointments;
 	}
 //</editor-fold>
 
