@@ -1,17 +1,23 @@
 package com.quantumSamurais.hams.appointment;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
-
 import android.os.Build;
-
 import androidx.annotation.RequiresApi;
-
 import com.quantumSamurais.hams.doctor.Doctor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Transaction;
 
 public class Shift {
     static long SHIFT_ID = 0;
@@ -61,6 +67,7 @@ public class Shift {
         appointments.put(appointment.getAppointmentID(), appointment);
         return true;
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean cancelAppointment(long appointmentID){
         if(appointments.containsKey(appointmentID)){
             //check to make
@@ -99,6 +106,7 @@ public class Shift {
         return interval % 30 == 0;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private boolean shiftIsPassed(){
         pastShiftFlag = endTime.isBefore(LocalDateTime.now());
         return pastShiftFlag;

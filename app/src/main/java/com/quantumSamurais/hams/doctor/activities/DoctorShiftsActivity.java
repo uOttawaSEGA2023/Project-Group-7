@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Shift;
+import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
 import java.util.List;
@@ -52,6 +54,17 @@ public class DoctorShiftsActivity extends AppCompatActivity {
         btnAddShift.setOnClickListener(v -> showAddShiftDialog());
     }
 
+    public abstract class SimpleResponseListener<T> implements ResponseListener<T> {
+        @Override
+        public abstract void onSuccess(T response);
+
+        @Override
+        public void onFailure(Exception e) {
+            // Provide a default implementation or override as needed
+            e.printStackTrace();
+        }
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void showAddShiftDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
@@ -64,26 +77,31 @@ public class DoctorShiftsActivity extends AppCompatActivity {
         TimePicker endTimePicker = dialogView.findViewById(R.id.endTimePicker);
 
         dialogBuilder.setPositiveButton("Add", (dialog, which) -> {
-            // Retrieve selected date, start time, and end time
             int year = datePicker.getYear();
-            int month = datePicker.getMonth() + 1; // Month is 0-based
+            int month = datePicker.getMonth() + 1;
             int day = datePicker.getDayOfMonth();
-
             int startHour = startTimePicker.getHour();
             int startMinute = startTimePicker.getMinute();
-
             int endHour = endTimePicker.getHour();
             int endMinute = endTimePicker.getMinute();
 
-            // Create LocalDateTime objects
             LocalDate selectedDate = LocalDate.of(year, month, day);
             LocalDateTime startDateTime = LocalDateTime.of(selectedDate, LocalTime.of(startHour, startMinute));
             LocalDateTime endDateTime = LocalDateTime.of(selectedDate, LocalTime.of(endHour, endMinute));
 
-            // Add the new shift if it's valid
             if (isValidNewShift(selectedDate, startDateTime, endDateTime)) {
-                currentDoctor.createShift(selectedDate, startDateTime, endDateTime);
-                updateShiftsList();
+                Database.getInstance().addShift(new Shift(currentDoctor, selectedDate, startDateTime, endDateTime), new SimpleResponseListener<Void>() {
+                    @Override
+                    public void onSuccess(Void response) {
+                        updateShiftsList();
+                        Toast.makeText(DoctorShiftsActivity.this, "Shift added successfully", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(DoctorShiftsActivity.this, "Failed to add shift. Please check for conflicts.", Toast.LENGTH_SHORT).show();
+                    }
+                });
             } else {
                 Toast.makeText(this, "Invalid shift. Please check the date and time.", Toast.LENGTH_SHORT).show();
             }
@@ -117,14 +135,22 @@ public class DoctorShiftsActivity extends AppCompatActivity {
     private void onShiftDeleteClick(int position) {
         Shift shiftToDelete = shiftsAdapter.getShiftAt(position);
 
-        // Ask for confirmation before deleting the shift
         AlertDialog.Builder confirmDialog = new AlertDialog.Builder(this);
         confirmDialog.setTitle("Confirm Deletion");
         confirmDialog.setMessage("Are you sure you want to delete this shift?");
         confirmDialog.setPositiveButton("Yes", (dialog, which) -> {
-            currentDoctor.cancelShift(shiftToDelete.getShiftID());
-            updateShiftsList();
-            Toast.makeText(this, "Shift deleted successfully", Toast.LENGTH_SHORT).show();
+            Database.getInstance().deleteShift(shiftToDelete.getShiftID(), new SimpleResponseListener<Void>() {
+                @Override
+                public void onSuccess(Void response) {
+                    updateShiftsList();
+                    Toast.makeText(DoctorShiftsActivity.this, "Shift deleted successfully", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(DoctorShiftsActivity.this, "Failed to delete shift. Please try again.", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
         confirmDialog.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
 
@@ -132,7 +158,7 @@ public class DoctorShiftsActivity extends AppCompatActivity {
     }
 
     private void updateShiftsList() {
-        List<Shift> updatedShifts = currentDoctor.getShifts();
+        List<Shift> updatedShifts = Database.getInstance().getDoctor(currentDoctor.getEmail()).getShifts();
         shiftsAdapter.updateList(updatedShifts);
     }
 }
