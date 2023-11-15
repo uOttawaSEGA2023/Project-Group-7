@@ -123,7 +123,29 @@ public class Database {
      * @param id Id of the request to approve
      */
     public void approveSignUpRequest(long id) {
-        //TODO: Send email
+        /*Supplier<User> findMatchingRequest = () -> {
+
+            QuerySnapshot request = db.collection("users").document("software").
+                    collection("requests").whereEqualTo("id", requestID).get().addOnCompleteListener(getRequestList ->{
+                        if (getRequestList.isSuccessful()){
+                            for (QueryDocumentSnapshot singularRequest : getRequestList.getResult()){
+                                Request singularUserRequest = singularRequest.toObject(Request.class);
+                                switch (singularUserRequest.getUserType()) {
+                                    case PATIENT:
+                                        Patient singularPatient = singularUserRequest.getPatient();
+                                        return singularPatient;
+                                    case DOCTOR:
+                                        Doctor singularDoctor = singularUserRequest.getDoctor();
+                                        return singularDoctor;
+                                }
+                            }
+                        }else{
+                            Log.d("Database", "An error occured while trying to fetch element: " + getRequestList.getException());
+                        }
+                    });
+
+        };*/
+
         new Thread(() -> {
             try {
                 QuerySnapshot requests = await(db.collection("users").document("software").collection("requests").whereEqualTo("id", id).get());
@@ -289,7 +311,7 @@ public class Database {
         Supplier<QuerySnapshot> findMatchingShift = () -> {
             QuerySnapshot shift = null;
             try {
-                shift = await(db.collection("users").document("software").collection("shift").whereEqualTo("shiftID", shiftID).get());
+                shift = await(db.collection("users").document("software").collection("shifts").whereEqualTo("shiftID", shiftID).get());
             } catch (ExecutionException | InterruptedException e) {
                 Log.d("Database", "Something went wrong: " + e.getStackTrace());
             }
