@@ -2,19 +2,20 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/health_app_navigation.xml"
-    app:startDestination="@layout/login_interactive_message">
+    app:startDestination="@layout/main_doctor_view">
 
     <!-- change StartDestination to id of first fragment later.-->
-    <fragment
+    <activity
         android:id="@+id/viewAppointments"
         android:label="MainPage"
-        android:layout="@layout/login_interactive_message"
+        android:layout="@layout/main_doctor_view"
+        android:name="com.quantumSamurais.hams.doctor.activities.DoctorMain"
         />
 
     <fragment
         android:id="@+id/viewSettings"
-        android:label="appointments"
-        android:name="com.quantumSamurais.hams.admin.activities.fragments.requestsFragment"
+        android:label="settings"
+        android:name="com.quantumSamurais.hams.ui.settings.SettingFragment"
         android:layout="@layout/fragment_settingspage"
         />
 </navigation>
