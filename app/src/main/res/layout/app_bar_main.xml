@@ -21,15 +21,5 @@
             app:popupTheme="@style/Theme.HealthManagmentSystem" />
     </com.google.android.material.appbar.AppBarLayout>
 
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        app:srcCompat="@android:drawable/ic_dialog_email"
-        />
     <!-- maybe make this the setting button ^^^-->
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
