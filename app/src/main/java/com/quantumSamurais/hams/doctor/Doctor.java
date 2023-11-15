@@ -10,16 +10,18 @@ import androidx.annotation.RequiresApi;
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.doctor.activities.DoctorMain;
 import com.quantumSamurais.hams.login.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class Doctor extends User {
+public class Doctor extends User implements Serializable {
 
 	private String employeeNumber;
 	private ArrayList<Specialties> specialties;
@@ -62,8 +64,8 @@ public class Doctor extends User {
 
 	@Override
 	public void changeView(Context currentContext) {
-		Intent doctorView = new Intent(currentContext, LoginInteractiveMessage.class);
-		doctorView.putExtra("userType", UserType.DOCTOR);
+		Intent doctorView = new Intent(currentContext, DoctorMain.class);
+		doctorView.putExtra("doctor", this);
 		currentContext.startActivity(doctorView);
 	}
 
