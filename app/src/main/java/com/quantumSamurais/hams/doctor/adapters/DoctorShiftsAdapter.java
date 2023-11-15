@@ -7,7 +7,7 @@ import android.widget.TextView;
 import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
+ 
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Shift;
 

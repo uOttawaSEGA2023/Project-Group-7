@@ -12,7 +12,7 @@ import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
 import java.util.List;
-import android.app.AlertDialog;
+import android.app.AlertDialog; 
 import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
