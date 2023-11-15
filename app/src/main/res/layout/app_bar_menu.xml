@@ -8,13 +8,6 @@
     <!-- not sure if it should be mainActivity; probably should be login interactive message's context-->
 
 
-    <include
-        layout="@layout/login_interactive_message"
-        android:id="@+id/app_bar_menu"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
-
     <com.google.android.material.appbar.AppBarLayout
         android:layout_height="wrap_content"
         android:layout_width="match_parent"

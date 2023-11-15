@@ -12,11 +12,9 @@
         />
 
     <fragment
-        android:id="@+id/viewShifts"
-        android:label="shifts" />
-    <fragment
         android:id="@+id/viewSettings"
         android:label="appointments"
+        android:name="com.quantumSamurais.hams.admin.activities.fragments.requestsFragment"
         android:layout="@layout/fragment_settingspage"
         />
 </navigation>
