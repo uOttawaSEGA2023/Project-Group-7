@@ -91,21 +91,25 @@ public class Doctor extends User implements Serializable {
 				specialties.toString();
 	}
 
-	public boolean getAcceptAppointmentsByDefault(){
+	public boolean getAcceptsAppointmentsByDefault(){
 		return acceptsAppointmentsByDefault;
 	}
 
-	public void setAcceptAppointmentsByDefault(boolean value){
+	public void setAcceptsAppointmentsByDefault(boolean value){
 		acceptsAppointmentsByDefault = value;
 	}
 
 	public ArrayList<Shift> getShifts() {
 		return shifts;
 	}
+
+	public void setShifts(ArrayList<Shift> shifts){
+		this.shifts = shifts;
+	}
 	
 	@RequiresApi(api = Build.VERSION_CODES.O)
 	public boolean createShift(LocalDate dayOfShift, LocalDateTime startDate, LocalDateTime endDate){
-		Shift shiftToAdd = new Shift(this, dayOfShift, startDate, endDate);
+		Shift shiftToAdd = new Shift(this.getEmployeeNumber(), dayOfShift, startDate, endDate);
 		if (!shiftOverlap(shiftToAdd)){
 			shifts.add(shiftToAdd);
 			return true;
