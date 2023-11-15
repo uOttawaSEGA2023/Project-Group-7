@@ -6,9 +6,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,9 +48,11 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     ArrayList<Shift> shifts;
     Handler refreshShifts;
 
-    private AppBarConfiguration myAppBarConfig;
+    DrawerLayout drawerLayout;
 
-    private NavigationDrawerMainBinding binding;
+    ActionBarDrawerToggle actionBarDrawerToggle;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,31 +73,18 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         boolean acceptApptDefault = myDoctor.getAcceptsAppointmentsByDefault();
         SettingFragment fragment = SettingFragment.newInstance(acceptApptDefault);
 
+        drawerLayout = findViewById(R.id.drawer_layout);
 
 
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
 
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
 
-        binding = NavigationDrawerMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-
-        DrawerLayout drawer = binding.drawerLayout;
-        NavigationView navigationView = binding.navigationView;
-
-        setSupportActionBar(binding.appBarMain.toolbar);
-        myAppBarConfig = new AppBarConfiguration.Builder(R.id.viewSettings)
-                .setOpenableLayout(drawer)
-                .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, myAppBarConfig);
-        NavigationUI.setupWithNavController(navigationView, navController);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
     }
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, myAppBarConfig) || super.onSupportNavigateUp();
-    }
+
 
     private final Runnable refresh_runnable = new Runnable(){
         public void run(){
@@ -147,6 +139,13 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         finish();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+     if(actionBarDrawerToggle.onOptionsItemSelected(item)) {
+         return true;
+     }
+     return super.onOptionsItemSelected(item);
+    }
 
 
 
