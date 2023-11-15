@@ -35,6 +35,10 @@ android {
             // You can add more exclusions if needed
         }
     }
+
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
