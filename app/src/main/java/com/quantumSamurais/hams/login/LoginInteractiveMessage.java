@@ -2,6 +2,7 @@ package com.quantumSamurais.hams.login;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,10 +21,13 @@ public class LoginInteractiveMessage extends AppCompatActivity {
     Button logoffButton;
     String welcomeMessage;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_interactive_message);
+
+
         setup(getIntent());
         addListeners();
     }
