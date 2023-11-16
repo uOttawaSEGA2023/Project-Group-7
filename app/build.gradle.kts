@@ -60,5 +60,4 @@ dependencies {
     implementation("com.sun.mail:android-activation:1.6.7")
     implementation("com.google.android.material:material:1.3.0-alpha03")
     api("com.github.prolificinteractive:material-calendarview:2.0.0")
-
 }
