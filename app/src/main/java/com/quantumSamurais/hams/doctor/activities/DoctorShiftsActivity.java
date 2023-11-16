@@ -90,18 +90,9 @@ public class DoctorShiftsActivity extends AppCompatActivity {
             LocalDateTime endDateTime = LocalDateTime.of(selectedDate, LocalTime.of(endHour, endMinute));
 
             if (isValidNewShift(selectedDate, startDateTime, endDateTime)) {
-                Database.getInstance().addShift(new Shift(currentDoctor.getEmployeeNumber(), selectedDate, startDateTime, endDateTime), new SimpleResponseListener<Void>() {
-                    @Override
-                    public void onSuccess(Void response) {
-                        updateShiftsList();
-                        Toast.makeText(DoctorShiftsActivity.this, "Shift added successfully", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        Toast.makeText(DoctorShiftsActivity.this, "Failed to add shift. Please check for conflicts.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                Database.getInstance().addShift(new Shift(currentDoctor.getEmployeeNumber(), selectedDate, startDateTime, endDateTime));
+                updateShiftsList();
+                Toast.makeText(DoctorShiftsActivity.this, "Shift added successfully", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Invalid shift. Please check the date and time.", Toast.LENGTH_SHORT).show();
             }
@@ -132,6 +123,7 @@ public class DoctorShiftsActivity extends AppCompatActivity {
         return interval % 30 == 0;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void onShiftDeleteClick(int position) {
         Shift shiftToDelete = shiftsAdapter.getShiftAt(position);
 
@@ -139,18 +131,9 @@ public class DoctorShiftsActivity extends AppCompatActivity {
         confirmDialog.setTitle("Confirm Deletion");
         confirmDialog.setMessage("Are you sure you want to delete this shift?");
         confirmDialog.setPositiveButton("Yes", (dialog, which) -> {
-            Database.getInstance().deleteShift(shiftToDelete.getShiftID(), new SimpleResponseListener<Void>() {
-                @Override
-                public void onSuccess(Void response) {
-                    updateShiftsList();
-                    Toast.makeText(DoctorShiftsActivity.this, "Shift deleted successfully", Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    Toast.makeText(DoctorShiftsActivity.this, "Failed to delete shift. Please try again.", Toast.LENGTH_SHORT).show();
-                }
-            });
+            Database.getInstance().deleteShift(shiftToDelete.getShiftID());
+            updateShiftsList();
+            Toast.makeText(DoctorShiftsActivity.this, "Shift deleted successfully", Toast.LENGTH_SHORT).show();
         });
         confirmDialog.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
 
