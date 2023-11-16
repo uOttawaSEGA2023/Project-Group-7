@@ -1,4 +1,4 @@
-package com.quantumSamurais.hams.admin.activities;
+package com.quantumSamurais.hams.doctor.activities;
 
 import static com.quantumSamurais.hams.admin.activities.fragments.requestsFragment.newInstance;
 import static com.quantumSamurais.hams.core.enums.FragmentTab.ALL_REQUESTS;
@@ -15,21 +15,20 @@ import com.google.android.material.tabs.TabLayout;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.core.adapters.ViewPagerAdapter;
 
-public class ViewRequestsActivity extends AppCompatActivity  {
-
+public class DoctorViewAppointments extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.see_requests_view_tabbed);
+        setContentView(R.layout.see_appointments);
         setup();
     }
 
     public void setup() {
-        tabLayout = findViewById(R.id.requestsTabs);
-        viewPager = findViewById(R.id.tabsViewPager);
+        tabLayout = findViewById(R.id.appointmentsTabs);
+        viewPager = findViewById(R.id.tabsViewPager4Appointments);
 
         tabLayout.setupWithViewPager(viewPager);
 
@@ -40,11 +39,6 @@ public class ViewRequestsActivity extends AppCompatActivity  {
         vpAdapter.addFragments(newInstance(REJECTED_REQUESTS), "Rejected");
         viewPager.setAdapter(vpAdapter);
     }
-
-
-
-
-
 
 
 }

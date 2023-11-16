@@ -1,4 +1,4 @@
-package com.quantumSamurais.hams.admin.adapters;
+package com.quantumSamurais.hams.core.adapters;
 
 import static com.quantumSamurais.hams.database.Request.getUserFromRequest;
 import static com.quantumSamurais.hams.database.RequestStatus.PENDING;
@@ -18,7 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.Administrator;
-import com.quantumSamurais.hams.admin.listeners.RequestsActivityListener;
+import com.quantumSamurais.hams.core.enums.FragmentTab;
+import com.quantumSamurais.hams.core.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
@@ -33,11 +34,6 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
     private final Context currentContext;
     FragmentTab activeTab;
 
-    public enum FragmentTab{
-        ALL_REQUESTS,
-        PENDING_REQUESTS,
-        REJECTED_REQUESTS
-    }
 
     public RequestItemAdapter(Context context, FragmentTab activeTab,ArrayList<Request> requestsFromDatabase, RequestsActivityListener listener) {
         Log.d("RequestItemAdapter", "Number of items in requests: " + requestsFromDatabase.size());

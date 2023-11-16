@@ -1,12 +1,12 @@
 @startuml
 !theme carbon-gray
 abstract class User {
-	-_firstName: String
-	-_lastName: String
-	-_hashedPassword: byte[]
-	-_email: String
-	-_phone: String
-	-_address: String
+	-firstName: String
+	-lastName: String
+	-hashedPassword: byte[]
+	-_mail: String
+	-phone: String
+	-address: String
 	__
 	+User (firstName: String, lastName: String, password: char[], email: String, phone: String, adress: String)
 	+User (firstName: String, lastName: String, password: ArrayList<Integer>, salt: ArrayList<Integer>, email: String, phone: String, adress: String)
@@ -27,14 +27,15 @@ abstract class User {
 	+setLastName(String lastName): User
 	+setEmail (String email): User
 	+setPassword(char[] oldPassword, char[] newPassword): User
-	+setAddress (String adress): User
+	+setAddress (String address): User
 	+setPhone(String phone): User
 }
 
 
 class Patient extends User {
 	db: FirebaseFirestore
-	-_healthCardNumber: String
+	-healthCardNumber: String
+	-
 	+Patient (firstName: String, lastName: String, password: char[], email: String, phone: String, adress: String, healthCardNumber: String)
 	+Patient (firstName: String, lastName: String, password: ArrayList<Integer>, salt: ArrayList<Integer>, email: String, phone: String, adress: String, healthCardNumber: String)
 	+toString(): String
@@ -48,22 +49,73 @@ class Patient extends User {
 	+setHealthCardNumber(healthCardNumber: String): Patient
 }
 class Doctor extends User {
-	-_employeeNumber: String
-	-_specialties: ArrayList<Specialties>
-	-newUserInformation: HashMap<String, Object> = new HashMap<>(9){read-only};
+	-employeeNumber: String
+	-acceptsAppointmentsByDefault: boolean
+	-specialties: ArrayList<Specialties>
+	-shifts: ArrayList<Shifts>
+	-shiftOverlap(someShift: shift): boolean
 	+Doctor (firstName: String, lastName: String, password: char[], email: String, phone: String, adress: String, employeeNumber: String, specialties: ArrayList<Specialties>)
 	+ Doctor (firstName: String, lastName: String, password: ArrayList<Integer>, salt: ArrayList<Integer>, email: String, phone: String, adress: String, employeeNumber: String, specialties: ArrayList<Specialties>))
+	+cancelShift(shiftID: long): void
+	+acceptAppointment(appointment: Appointment): void
+	+cancelAppointment(AppointmentID: long): void
+	+hasThisShift(shiftID: long): void
+
 	+toString(): String
 	+equals(o: Object): boolean
 	+hashCode(): int
 	..Getters..
-	+getEmpolyeeNumber(): String
+	+getEmployeeNumber(): String
 	+getSpecialties(): ArrayList<Specialties>
+	+getAcceptsAppointmentsByDefault(): boolean
+	+getShifts(): ArrayList<Shifts>
 	..Setters..
 	+setEmployeeNumber(employeeNumber: String): Doctor
 	+setSpecialties(specialties: ArrayList<Specialties>): Doctor
+	+setShifts(shifts: ArrayList<Shifts>): void
 }
+class Shift {
+    {static} SHIFT_ID: long
+    appointments: Map<long, Appointment>
+    aDoctor: Doctor
+    shiftDay: Date
+    startTime: DateTime
+    endTime: DateTime
+    shiftID: long
+    pastShiftFlag: boolean
+    --
+    Shift(employeeNumber: String, day: Date, startTime: DateTime, endTime: DateTime)
+    +overlapsWith(Shift otherShift): boolean
+    +takeAppointment(Appointment appointment): boolean
+    +cancelAppointment(appointmentID: long): boolean
+    +appointmentsAsList(): ArrayList<Appointment>
+    +getAppointments(): Map<long, Appointment>
+    +getShiftID(): long
+    +isVacant(): boolean
+    -shiftIsPassed(): boolean
+}
+class Appointment {
+    db: Database
+    requestStatus: RequestStatus
+    {static}APPOINTMENT_ID: long
+    startTime: DateTime
+    endTime: DateTime
+    appointmentID: long
+    pastAppointmentFlag: boolean
+    shift: Shift
+    myPatient: Patient
+    Appointment(startTime: DateTime, endTime: DateTime, shift: Shift, patient: Patient)
+    Appointment(startTime: DateTime, endTime: DateTime, shift: Shift, patient: Patient, requestStatus: RequestStatus)
+    --
+    +inputsAreValid(startTime: DateTime, endTime: DateTime, shift: Shift, patient: Patient): boolean
+    +overlaps(someAppointment: Appointment): boolean
+    +getAppointmentID(): boolean
+    +appointmentIsPassed(): boolean
+    +getStartTime(): DateTime
+    +getEndTime(): DateTime
+    +getShiftID(): long
 
+}
 class Administrator extends User {
 	-{static} PASSWORD: byte[] =  [24, 119, 82, 18, 72, 61, -68, -20, 6, 24, -96, -33, 41, 103, -43, -84]{read-only}
 	-{static} SALT: byte[] = [-21, -20, 33, 117, 26, -112, -119, 124, -47, -58, 73, -106, 10, -5, -82, 18]{read-only}

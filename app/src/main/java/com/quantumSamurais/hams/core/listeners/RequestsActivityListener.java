@@ -1,4 +1,4 @@
-package com.quantumSamurais.hams.admin.listeners;
+package com.quantumSamurais.hams.core.listeners;
 
 public interface RequestsActivityListener {
     void onAcceptClick(int position);
