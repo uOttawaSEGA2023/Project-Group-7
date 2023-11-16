@@ -1,11 +1,9 @@
 package com.quantumSamurais.hams.doctor.activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,12 +11,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
+import com.google.android.material.navigation.NavigationView;
+import com.quantumSamurais.hams.MainActivity;
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.databinding.NavigationDrawerMainBinding;
+
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
@@ -26,21 +27,15 @@ import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
 
 //<>
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.navigation.ui.NavigationUI;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.Navigation;
-import androidx.navigation.NavController;
 
-
-import com.google.android.material.navigation.NavigationView;
-import com.quantumSamurais.hams.ui.settings.SettingFragment;
+import com.quantumSamurais.hams.ui.settings.SettingActivity;
 
 //<> may be used; will delete later
 //TODO potentially delete these items.
 
 import java.util.ArrayList;
 
-public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter.OnDeleteClickListener {
+public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter.OnDeleteClickListener, NavigationView.OnNavigationItemSelectedListener{
     private Doctor myDoctor;
     DoctorShiftsAdapter shiftsAdapter;
     RecyclerView shiftsStack;
@@ -51,6 +46,9 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     DrawerLayout drawerLayout;
 
     ActionBarDrawerToggle actionBarDrawerToggle;
+
+    NavigationView navView;
+
 
 
     @Override
@@ -71,7 +69,13 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         refresh_runnable.run();
 
         boolean acceptApptDefault = myDoctor.getAcceptsAppointmentsByDefault();
-        SettingFragment fragment = SettingFragment.newInstance(acceptApptDefault);
+
+        String doctorName = myDoctor.getFirstName() + " " + myDoctor.getLastName();
+        String doctorEmail = myDoctor.getEmail();
+
+        // headerName = findViewById(R.id.header_name);
+        // headerEmail = findViewById(R.id.header_email);
+
 
         drawerLayout = findViewById(R.id.drawer_layout);
 
@@ -81,7 +85,14 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
 
+
+        navView = findViewById(R.id.navigation_view);
+        navView.setNavigationItemSelectedListener(this);
+
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
 
     }
 
@@ -147,6 +158,26 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
      return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        Intent newIntent;
 
+        if(item.getItemId() == R.id.nav_home) {
+            if (getWindow().getDecorView().findViewById(android.R.id.content).getId() !=
+            R.id.drawer_layout) {
+                newIntent = new Intent(this, DoctorMain.class);
+                startActivity(newIntent);
+            }
+        } else if (item.getItemId() == R.id.nav_settings) {
+            newIntent = new Intent(this, SettingActivity.class);
+            startActivity(newIntent);
+
+        } else if (item.getItemId() == R.id.nav_appointments ) {
+            newIntent = new Intent(this,MainActivity.class);
+            startActivity(newIntent);
+        }
+
+        return true;
+    }
 
 }

@@ -13,6 +13,7 @@
     <string name="floatingActionButton">New Shift</string>
     <string name="extended_floatingActionButton_desc">This is a button that serves to add new shifts</string>
     <string name="header_name">This is my name</string>
+    <string name="header_email">This is my email</string>
     <string name="nav_open">Open</string>
     <string name="nav_close">Close</string>
 </resources>
