@@ -54,6 +54,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,6 +130,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         shiftsStack.setAdapter(shiftsAdapter);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void showAddShiftDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
@@ -171,19 +173,36 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     private boolean isValidNewShift(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
         // Check if the date is not in the past
         if (date.isBefore(LocalDate.now())) {
+            showWarningMessage("Selected date is in the past. Please choose a future date.");
+            return false;
+        }
+
+        // Check if start time is before end time
+        if (startTime.isEqual(endTime) || startTime.isAfter(endTime)) {
+            showWarningMessage("End time must be after start time. Please adjust the times.");
             return false;
         }
 
         // Check for conflicts with existing shifts
         for (Shift existingShift : myDoctor.getShifts()) {
             if (existingShift.overlapsWith(new Shift(myDoctor.getEmployeeNumber(), startTime, endTime))) {
+                showWarningMessage("Shift conflicts with an existing shift. Please choose different times.");
                 return false;
             }
         }
 
         // Check if the start and end times are in increments of 30 minutes
         long interval = startTime.until(endTime, java.time.temporal.ChronoUnit.MINUTES);
-        return interval % 30 == 0;
+        if (interval % 30 != 0) {
+            showWarningMessage("Shift times must be in increments of 30 minutes. Please adjust the times.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void showWarningMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
