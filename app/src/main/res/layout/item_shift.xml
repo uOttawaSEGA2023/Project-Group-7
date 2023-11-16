@@ -3,31 +3,36 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp"
-    android:clickable="true">
- 
+    android:padding="16dp"
+    android:gravity="center"
+    android:layout_gravity="center_vertical">
+
     <TextView
         android:id="@+id/textViewDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Date"/>
+        android:text="Date"
+        android:layout_marginTop="16dp"/>
 
     <TextView
-        android:id="@+id/textViewStartTime" 
+        android:id="@+id/textViewStartTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Time"/>
+        android:text="Start Time"
+        android:layout_marginTop="8dp"/>
 
     <TextView
         android:id="@+id/textViewEndTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="End Time"/>
+        android:text="End Time"
+        android:layout_marginTop="8dp"/>
 
     <!-- Button to delete the shift -->
     <Button
         android:id="@+id/btnDeleteShift"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Delete Shift"/>
+        android:text="Delete Shift"
+        android:layout_marginTop="16dp"/>
 </LinearLayout>
