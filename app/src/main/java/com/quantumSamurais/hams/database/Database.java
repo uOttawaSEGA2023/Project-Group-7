@@ -30,7 +30,6 @@ import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationType;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,6 +39,8 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -57,6 +58,7 @@ public class Database {
     private static Database instance;
 
     private Long requestID;
+    private ExecutorService myThreadPool = Executors.newFixedThreadPool(10);
 
     private final Lock signUpLock;
 
@@ -124,6 +126,27 @@ public class Database {
         }).start();
     }
 
+    public Patient getPatientFromAppointmentID(long appointmentID){
+
+        Supplier<Patient> findPatientFromAppointmentID = () -> {
+            QuerySnapshot appointments;
+            try {
+                appointments = await(db.collection("users").document("software").collection("appointments").get());
+                for (QueryDocumentSnapshot appointmentDocument : appointments){
+                    Appointment properAppointment = appointmentDocument.toObject(Appointment.class);
+                    if (properAppointment.getAppointmentID() == appointmentID){
+                        return properAppointment.getMyPatient();
+                    }
+                }
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            return null;
+        };
+        CompletableFuture<Patient> myPatient = supplyAsync(findPatientFromAppointmentID, myThreadPool);
+        return myPatient.join();
+    }
+
     /**
      * @param id Id of the request to approve
      */
@@ -176,7 +199,7 @@ public class Database {
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
         }).start();
-    }
+   }
 
     /**
      * @param id Id of the request to reject
@@ -359,7 +382,7 @@ public class Database {
             }
             throw new NullPointerException("Shift couldn't be initialized.");
         };
-        CompletableFuture<QuerySnapshot> shift = supplyAsync(findMatchingShift);
+        CompletableFuture<QuerySnapshot> shift = supplyAsync(findMatchingShift, myThreadPool);
         //Takes the object obtained, and then transform into an appointment
         return shift.join().getDocuments().get(0).toObject(Shift.class);
     }
