@@ -333,7 +333,7 @@ public class Database {
             // Add other shift properties to shiftData as needed
 
             // Add the shift data to the "shift" collection
-            await(db.collection("users").document("software").collection("shift").add(shiftData));
+            await(db.collection("users").document("software").collection("shifts").add(shiftData));
         } catch (ExecutionException | InterruptedException e) {
             Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
         }
@@ -343,7 +343,7 @@ public class Database {
     public void deleteShift(long shiftID) {
         try {
             // Find the shift document to delete
-            QuerySnapshot shift = await(db.collection("users").document("software").collection("shift").whereEqualTo("shiftID", shiftID).get());
+            QuerySnapshot shift = await(db.collection("users").document("software").collection("shifts").whereEqualTo("shiftID", shiftID).get());
 
             // Check if the shift exists
             if (!shift.isEmpty()) {
