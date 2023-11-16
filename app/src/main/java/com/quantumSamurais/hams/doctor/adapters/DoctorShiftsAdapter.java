@@ -37,7 +37,7 @@ public class DoctorShiftsAdapter extends RecyclerView.Adapter<DoctorShiftsAdapte
         Shift shift = shifts.get(position);
 
         // Set your shift information to the views
-        holder.textViewDate.setText("Date: " + shift.getShiftDay());
+        holder.textViewDate.setText("Date: " + shift.getStartTime().getDayOfYear());
         holder.textViewStartTime.setText("Start Time: " + shift.getStartTime());
         holder.textViewEndTime.setText("End Time: " + shift.getEndTime());
     }
