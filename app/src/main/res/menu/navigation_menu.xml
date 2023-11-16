@@ -4,11 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
+    <group
+        android:id="@+id/group1"
+        android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
             android:title="Home"
             android:icon="@drawable/baseline_home_24"
+            app:showAsAction="always"
+            />
+        <item
+            android:id="@+id/nav_appointments"
+            android:title="Appointments"
+            android:icon="@drawable/baseline_more_time_24"
             app:showAsAction="always"/>
         <item
             android:id="@+id/nav_settings"
