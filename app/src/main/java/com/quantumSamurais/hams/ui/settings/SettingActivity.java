@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
@@ -16,10 +17,11 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import com.quantumSamurais.hams.MainActivity;
 import com.quantumSamurais.hams.R;
+import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.activities.DoctorMain;
 
 public class SettingActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private RadioButton acceptApptDefaultRB;
+    private CheckBox acceptApptDefaultCB;
     private Intent intent;
 
     DrawerLayout drawerLayout;
@@ -28,11 +30,14 @@ public class SettingActivity extends AppCompatActivity implements NavigationView
 
     NavigationView navView;
 
+    private boolean acceptByDefault;
+    private Doctor doctor;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.setting_activity);
         setup();
-        acceptApptDefaultRB.setOnClickListener(this::onRBClicked);
+        acceptApptDefaultCB.setOnClickListener(this::onCBClicked);
 
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -52,18 +57,19 @@ public class SettingActivity extends AppCompatActivity implements NavigationView
 
     }
     private void setup() {
-        acceptApptDefaultRB = findViewById(R.id.acceptRB);
+        acceptApptDefaultCB = findViewById(R.id.acceptCB);
         intent = getIntent();
-        boolean val = intent.getBooleanExtra("acceptsByDefault", false);
-        if (val) {
-            acceptApptDefaultRB.toggle();
+
+        acceptByDefault = intent.getBooleanExtra("acceptByDefault", false);
+        if (acceptByDefault) {
+            acceptApptDefaultCB.toggle();
         }
 
 
     }
 
-    private void onRBClicked(View view) {
-        boolean state = acceptApptDefaultRB.isChecked();
+    private void onCBClicked(View view) {
+        boolean state = acceptApptDefaultCB.isChecked();
         Intent newIntent = new Intent();
         newIntent.putExtras(intent);
         if(state) { // was clicked; meaning that the option was not done before.
