@@ -16,7 +16,6 @@
     <string name="header_email">This is my email</string>
     <string name="nav_open">Open</string>
     <string name="nav_close">Close</string>
-    <string name="header_email">someEmailIGuess</string>
     <string name="all_appointments">All\n</string>
     <string name="welcome">"Welcome, Dr "</string>
 </resources>
