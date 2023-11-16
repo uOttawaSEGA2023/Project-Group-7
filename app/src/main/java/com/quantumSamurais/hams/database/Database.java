@@ -326,21 +326,19 @@ public class Database {
 
 
     public void addShift(Shift shift) {
-        try {
             // Convert Shift object to Map to avoid serialization issues
             Map<String, Object> shiftData = new HashMap<>();
             shiftData.put("shiftID", shift.getShiftID());
             // Add other shift properties to shiftData as needed
 
             // Add the shift data to the "shift" collection
-            await(db.collection("users").document("software").collection("shifts").add(shiftData));
-        } catch (ExecutionException | InterruptedException e) {
-            Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
-        }
+            new Thread(() -> {db.collection("users").document("software").collection("shifts").add(shiftData);}).run();
+
     }
 
 
     public void deleteShift(long shiftID) {
+        new Thread(() -> {
         try {
             // Find the shift document to delete
             QuerySnapshot shift = await(db.collection("users").document("software").collection("shifts").whereEqualTo("shiftID", shiftID).get());
@@ -355,7 +353,7 @@ public class Database {
             }
         } catch (ExecutionException | InterruptedException e) {
             Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
-        }
+        }}).run();
     }
 
     public void getPatientAppointments() {
