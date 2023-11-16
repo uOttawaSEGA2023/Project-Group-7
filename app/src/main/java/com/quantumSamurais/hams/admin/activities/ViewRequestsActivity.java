@@ -10,7 +10,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.admin.adapters.RequestItemAdapter;
+import com.quantumSamurais.hams.core.adapters.RequestItemAdapter;
 import com.quantumSamurais.hams.core.adapters.ViewPagerAdapter;
 
 public class ViewRequestsActivity extends AppCompatActivity  {
