@@ -34,6 +34,8 @@
         <activity android:name=".AccountTypeSelectionActivity" />
         <activity android:name="com.quantumSamurais.hams.admin.activities.ViewRequestsActivity" />
         <activity android:name="com.quantumSamurais.hams.admin.activities.ShowMoreActivity" />
+        <activity android:name="com.quantumSamurais.hams.appointment.ViewShiftsActivity" />
+
     </application>
 
 </manifest>
