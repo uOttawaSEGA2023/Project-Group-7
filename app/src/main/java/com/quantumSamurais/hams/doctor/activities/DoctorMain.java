@@ -1,11 +1,8 @@
 package com.quantumSamurais.hams.doctor.activities;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,30 +10,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.databinding.NavigationDrawerMainBinding;
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
-
-//<>
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.navigation.ui.NavigationUI;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.Navigation;
-import androidx.navigation.NavController;
-
-
-import com.google.android.material.navigation.NavigationView;
 import com.quantumSamurais.hams.ui.settings.SettingFragment;
-
-//<> may be used; will delete later
-//TODO potentially delete these items.
 
 import java.util.ArrayList;
 
@@ -70,8 +53,8 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         refreshShifts = new Handler();
         refresh_runnable.run();
 
-        boolean acceptApptDefault = myDoctor.getAcceptsAppointmentsByDefault();
-        SettingFragment fragment = SettingFragment.newInstance(acceptApptDefault);
+        boolean acceptsAppointmentsByDefault = myDoctor.getAcceptsAppointmentsByDefault();
+        SettingFragment fragment = SettingFragment.newInstance(acceptsAppointmentsByDefault);
 
         drawerLayout = findViewById(R.id.drawer_layout);
 

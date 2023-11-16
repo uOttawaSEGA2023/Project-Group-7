@@ -4,14 +4,13 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.database.RequestStatus;
-import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 
 import java.time.LocalDateTime;
 
 public class Appointment {
     Database db;
-    RequestStatus requestStatus;
+    RequestStatus appointmentStatus;
     static long APPOINTMENT_ID = 0;
     LocalDateTime startTime, endTime;
     long appointmentID;
@@ -25,10 +24,10 @@ public class Appointment {
             //Set the time
             this.startTime = startTime;
             this.endTime = endTime;
-
+            this.shift = shift;
             appointmentID = APPOINTMENT_ID;
             APPOINTMENT_ID++;
-            requestStatus = RequestStatus.PENDING;
+            appointmentStatus = RequestStatus.PENDING;
         }
         db.addAppointmentRequest(this);
 
@@ -43,7 +42,7 @@ public class Appointment {
 
             appointmentID = APPOINTMENT_ID;
             APPOINTMENT_ID++;
-            this.requestStatus = requestStatus;
+            this.appointmentStatus = requestStatus;
 
         }
 
@@ -69,6 +68,14 @@ public class Appointment {
         if (startTime.isBefore(someAppointment.getEndTime()) && someAppointment.getStartTime().isBefore(endTime)){
             return true;
         } return false;
+    }
+
+    public Patient getMyPatient(){
+        return myPatient;
+    }
+
+    public RequestStatus getAppointmentStatus(){
+        return appointmentStatus;
     }
 
     public long getAppointmentID(){

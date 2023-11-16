@@ -15,4 +15,5 @@
     <string name="header_name">This is my name</string>
     <string name="nav_open">Open</string>
     <string name="nav_close">Close</string>
+    <string name="header_email">someEmailIGuess</string>
 </resources>

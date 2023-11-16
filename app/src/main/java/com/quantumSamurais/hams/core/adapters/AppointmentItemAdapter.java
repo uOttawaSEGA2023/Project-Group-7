@@ -1,6 +1,5 @@
-package com.quantumSamurais.hams.admin.adapters;
+package com.quantumSamurais.hams.core.adapters;
 
-import static com.quantumSamurais.hams.database.Request.getUserFromRequest;
 import static com.quantumSamurais.hams.database.RequestStatus.PENDING;
 import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
 
@@ -18,8 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.Administrator;
-import com.quantumSamurais.hams.admin.listeners.RequestsActivityListener;
-import com.quantumSamurais.hams.database.Request;
+import com.quantumSamurais.hams.appointment.Appointment;
+import com.quantumSamurais.hams.core.listeners.RequestsActivityListener;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
@@ -27,61 +27,65 @@ import com.quantumSamurais.hams.user.User;
 import java.util.ArrayList;
 
 
-public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.RequestViewHolder>{
+
+
+public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItemAdapter.RequestViewHolder> {
     private final RequestsActivityListener requestClickListener;
-    private ArrayList<Request> requests;
+    private ArrayList<Appointment> appointments; // Renamed from 'requests'
     private final Context currentContext;
     FragmentTab activeTab;
+    Database db = Database.getInstance();
 
-    public enum FragmentTab{
+    public enum FragmentTab {
         ALL_REQUESTS,
         PENDING_REQUESTS,
         REJECTED_REQUESTS
     }
 
-    public RequestItemAdapter(Context context, FragmentTab activeTab,ArrayList<Request> requestsFromDatabase, RequestsActivityListener listener) {
-        Log.d("RequestItemAdapter", "Number of items in requests: " + requestsFromDatabase.size());
+    public AppointmentItemAdapter(Context context, FragmentTab activeTab, ArrayList<Appointment> appointmentsFromDatabase, RequestsActivityListener listener) {
+        Log.d("AppointmentItemAdapter", "Number of items in appointments: " + appointmentsFromDatabase.size());
         this.activeTab = activeTab;
-        setRequests(requestsFromDatabase);
+        setAppointments(appointmentsFromDatabase);
         currentContext = context;
         requestClickListener = listener;
-        Log.d("RequestItemAdapter", "Number of items in requests: " + requests.size());
+        Log.d("AppointmentItemAdapter", "Number of items in appointments: " + appointments.size());
     }
 
-    public void setRequests(ArrayList<Request> requestsFromDatabase){
+
+    public void setAppointments(ArrayList<Appointment> appointmentsFromDatabase){
         // Filters the passed list, and makes it so it contains only the required info
-        ArrayList<Request> tempRequest = requestsFromDatabase;
+        ArrayList<Appointment> tempAppointments = appointmentsFromDatabase;
         switch(activeTab){
             case ALL_REQUESTS:
                 break;
             case PENDING_REQUESTS:
-                ArrayList<Request> pendingRequests = new ArrayList<>();
-                for (Request request : requestsFromDatabase){
-                    if (request.getStatus() == PENDING){
-                        pendingRequests.add(request);
+                ArrayList<Appointment> pendingAppointments = new ArrayList<>();
+                for (Appointment appointment : appointmentsFromDatabase){
+                    if (appointment.getAppointmentStatus() == PENDING){
+                        pendingAppointments.add(appointment);
                     }
                 }
-                tempRequest = pendingRequests;
+                tempAppointments = pendingAppointments;
                 break;
 
             case REJECTED_REQUESTS:
-                ArrayList<Request> rejectedRequests = new ArrayList<>();
-                for (Request request : requestsFromDatabase){
-                    if (request.getStatus() == REJECTED){
-                        rejectedRequests.add(request);
+                ArrayList<Appointment> rejectedAppointments = new ArrayList<>();
+                for (Appointment appointment : appointmentsFromDatabase){
+                    if (appointment.getAppointmentStatus() == REJECTED){
+                        rejectedAppointments.add(appointment);
                     }
                 }
-                tempRequest = rejectedRequests;
+                tempAppointments  = rejectedAppointments;
                 break;
         }
-        requests = tempRequest;
+        appointments = tempAppointments ;
         notifyDataSetChanged();
     }
 
     public static class RequestViewHolder extends RecyclerView.ViewHolder{
         TextView name, emailAddress, userType, requestId;
         ImageButton accept, reject, moreInfo;
-        Request request;
+        Appointment appointment;
         RequestsActivityListener requestsActivityListener;
 
         public RequestViewHolder(@NonNull View itemView, RequestsActivityListener requestClickListener) {
@@ -111,17 +115,17 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
             } else if (user instanceof Administrator) {
                 Log.d("Request Screen", "Someone managed to create an account as ADMIN... how?");
             }
-            setOnClickListeners(request);
+            setOnClickListeners(appointment);
 
 
 
 
         }
 
-        public void setRequest(Request request){
-            this.request = request;
+        public void setAppointment(Appointment appointment) {
+            this.appointment = appointment;
         }
-        private void setOnClickListeners(Request request){
+        private void setOnClickListeners(Appointment appointment){
             View.OnClickListener acceptListener = view -> {
                 if (requestsActivityListener != null) {
                     int position = getAdapterPosition();
@@ -160,7 +164,7 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
 
 
             //It only makes sense to have X button for requests that are pending.
-            if (request.getStatus() == REJECTED) {
+            if (appointment.getAppointmentStatus() == REJECTED) {
                 reject.setVisibility(View.INVISIBLE); // Hide the button
                 reject.setEnabled(false); // Make the button uninteractable
             } else {
@@ -178,16 +182,17 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
 
     @NonNull
     @Override
-    public RequestItemAdapter.RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(currentContext).inflate(R.layout.request_item2,parent,false);
+    public AppointmentItemAdapter.RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(currentContext).inflate(R.layout.patient_appointment, parent,false);
         return new RequestViewHolder(v, requestClickListener);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RequestItemAdapter.RequestViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull AppointmentItemAdapter.RequestViewHolder holder, int position) {
         try {
-            holder.setRequest(requests.get(position));
-            holder.setData(getUserFromRequest(requests.get(position)), requests.get(position).getID());
+            long appointmentID = appointments.get(position).getAppointmentID();
+            holder.setAppointment(appointments.get(position));
+            holder.setData(db.getPatientFromAppointmentID(appointmentID), appointmentID);
         } catch (Exception e) {
             Log.d("Requests Screen", e.getMessage() + " " + e.getCause());
         }
@@ -195,7 +200,7 @@ public class RequestItemAdapter extends RecyclerView.Adapter<RequestItemAdapter.
 
     @Override
     public int getItemCount() {
-        return requests.size();
+        return appointments.size();
     }
 
 }

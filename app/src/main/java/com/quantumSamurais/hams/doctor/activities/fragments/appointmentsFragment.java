@@ -1,10 +1,5 @@
-package com.quantumSamurais.hams.admin.activities.fragments;
+package com.quantumSamurais.hams.doctor.activities.fragments;
 
-import static com.quantumSamurais.hams.database.Database.sendEmail;
-import static com.quantumSamurais.hams.database.Request.getUserFromRequest;
-import static com.quantumSamurais.hams.database.RequestStatus.APPROVED;
-import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
-import static com.quantumSamurais.hams.user.UserType.DOCTOR;
 import static com.quantumSamurais.hams.user.UserType.PATIENT;
 
 import android.content.Context;
@@ -23,11 +18,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.activities.ShowMoreActivity;
-import com.quantumSamurais.hams.core.adapters.RequestItemAdapter;
-import com.quantumSamurais.hams.core.adapters.RequestItemAdapter.FragmentTab;
+import com.quantumSamurais.hams.appointment.Appointment;
+import com.quantumSamurais.hams.core.adapters.AppointmentItemAdapter;
+import com.quantumSamurais.hams.core.adapters.AppointmentItemAdapter.FragmentTab;
 import com.quantumSamurais.hams.core.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Database;
-import com.quantumSamurais.hams.database.Request;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
@@ -35,38 +30,41 @@ import com.quantumSamurais.hams.patient.Patient;
 import java.util.ArrayList;
 
 
-public class requestsFragment extends Fragment implements RequestsActivityListener, ResponseListener<ArrayList<Request>> {
+public class appointmentsFragment extends Fragment implements RequestsActivityListener, ResponseListener<ArrayList<Appointment>> {
     FragmentTab activeTab;
-    RequestItemAdapter requestsAdapter;
+    AppointmentItemAdapter requestsAdapter;
     RecyclerView requestsStack;
-    Database tools;
-    ArrayList<Request> requests;
+    Database db;
+    ArrayList<Appointment> appointments;
+    Doctor myDoctor;
 
-    public requestsFragment() {
+    public appointmentsFragment() {
         // Required empty public constructor
     }
 
-    public static requestsFragment newInstance(FragmentTab activeTab) {
-        requestsFragment fragment = new requestsFragment();
+    public static appointmentsFragment newInstance(FragmentTab activeTab, Doctor doctor) {
+        appointmentsFragment fragment = new appointmentsFragment();
+        fragment.setMyDoctor(doctor);
         Bundle args = new Bundle();
         args.putSerializable("activeTab", activeTab);
         fragment.setArguments(args);
         return fragment;
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_requests, container, false);
         requestsStack = view.findViewById(R.id.requestsRecyclerViewFragment);
-        tools = Database.getInstance();
-        requests = new ArrayList<>();
+        db = Database.getInstance();
+        appointments = new ArrayList<>();
 
         Bundle args = getArguments();
         if (args != null) {
             activeTab = (FragmentTab) args.getSerializable("activeTab");
             refreshHandler.post(refreshRunnable);
-            Log.d("requests Fragment", "Instance requests size after refreshRunnable : " + requests.size());
-            requestsAdapter = new RequestItemAdapter(getActivity(), activeTab, requests, this);
+            Log.d("requests Fragment", "Instance requests size after refreshRunnable : " + appointments.size());
+            requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
             requestsStack.setLayoutManager(layoutManager);
             requestsStack.setAdapter(requestsAdapter);
@@ -86,7 +84,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     @Override
     public void onResume() {
         super.onResume();
-        viewRegistrationRequests();
+        viewAppointments();
     }
 
     @Override
@@ -95,9 +93,10 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
         stopDataRefresh();
     }
 
-    public void viewRegistrationRequests() {
-        // a list of registration requests from Patients and Doctors
-        tools.getSignUpRequests(this);
+    public void setMyDoctor(Doctor someDoctor){myDoctor = someDoctor;}
+
+    public void viewAppointments() {
+        db.getDoctorAppointments(null);
     }
 
 
@@ -107,17 +106,18 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     private final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
-            viewRegistrationRequests();
+            viewAppointments();
         }
     };
+
     @Override
-    public void onSuccess(ArrayList<Request> requestsFromDatabase) {
-        Log.d("RequestFragment", "Number of items in requests prechange: " + requests.size());
-        requests = requestsFromDatabase;
-        Log.d("RequestFragmentX", "Number of items in requests after change: " + requests.size());
+    public void onSuccess(ArrayList<Appointment> appointmentsFromDatabase) {
+        Log.d("RequestFragment", "Number of items in requests prechange: " + appointments.size());
+        appointments = appointmentsFromDatabase;
+        Log.d("RequestFragmentX", "Number of items in requests after change: " + appointments.size());
 
         getActivity().runOnUiThread(() -> {
-            requestsAdapter.setRequests(requests);
+            requestsAdapter.setAppointments(appointments);
         });
         //Clear the Handler Queue
         stopDataRefresh();
@@ -125,6 +125,7 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
         refreshHandler.postDelayed(refreshRunnable, 5000);
 
     }
+
     private void stopDataRefresh() {
         refreshHandler.removeCallbacks(refreshRunnable);
     }
@@ -139,9 +140,8 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     public void onAcceptClick(int position) {
         stopDataRefresh(); //I do not want the requests to be updated as I am accessing it.
         Log.d("requests Fragment", "accept click was pressed");
-        long idToAccept = requests.get(position).getID();
-        tools.approveSignUpRequest(idToAccept);
-        sendEmail(getUserFromRequest(requests.get(position)), APPROVED);
+        long idToAccept = appointments.get(position).getAppointmentID();
+        db.approveSignUpRequest(idToAccept);
         refreshHandler.post(refreshRunnable);
     }
 
@@ -149,45 +149,28 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     public void onRejectClick(int position) {
         stopDataRefresh();
         Log.d("requests Fragment", "reject click was pressed");
-        long idToReject = requests.get(position).getID();
-        tools.rejectSignUpRequest(idToReject);
-        sendEmail(getUserFromRequest(requests.get(position)), REJECTED);
+        long idToReject = appointments.get(position).getAppointmentID();
+        db.rejectSignUpRequest(idToReject);
         refreshHandler.post(refreshRunnable);
     }
-
 
 
     @Override
     public void onShowMoreClick(int position) {
         stopDataRefresh();
         //Get the selected request from the list
-        Request selectedRequest = requests.get(position);
+        Appointment selectedAppointment = appointments.get(position);
         Intent showMoreIntent = new Intent(getActivity(), ShowMoreActivity.class);
-        switch (selectedRequest.getUserType()){
-            case DOCTOR:
-                Doctor someDoctor = (Doctor) getUserFromRequest(selectedRequest);
-                showMoreIntent.putExtra("userType", DOCTOR);
-                showMoreIntent.putExtra("firstName", someDoctor.getFirstName());
-                showMoreIntent.putExtra("lastName", someDoctor.getLastName());
-                showMoreIntent.putExtra("email", someDoctor.getEmail());
-                showMoreIntent.putExtra("phoneNumber", someDoctor.getPhone());
-                showMoreIntent.putExtra("address", someDoctor.getAddress());
-                showMoreIntent.putExtra("employeeNumber", someDoctor.getEmployeeNumber());
-                showMoreIntent.putExtra("specialties", someDoctor.getSpecialties()) ;
-                break;
-            case PATIENT:
-                Patient somePatient = (Patient) getUserFromRequest(selectedRequest);
-                showMoreIntent.putExtra("userType", PATIENT);
-                showMoreIntent.putExtra("firstName", somePatient.getFirstName());
-                showMoreIntent.putExtra("lastName", somePatient.getLastName());
-                showMoreIntent.putExtra("email", somePatient.getEmail());
-                showMoreIntent.putExtra("phoneNumber", somePatient.getPhone());
-                showMoreIntent.putExtra("address", somePatient.getAddress());
-                showMoreIntent.putExtra("healthCardNumber", somePatient.getHealthCardNumber());
-                break;
-            case ADMIN:
-                //Shouldn't happen
-        }
+
+        Patient somePatient = (Patient) db.getPatientFromAppointmentID(selectedAppointment.getAppointmentID());
+        showMoreIntent.putExtra("userType", PATIENT);
+        showMoreIntent.putExtra("firstName", somePatient.getFirstName());
+        showMoreIntent.putExtra("lastName", somePatient.getLastName());
+        showMoreIntent.putExtra("email", somePatient.getEmail());
+        showMoreIntent.putExtra("phoneNumber", somePatient.getPhone());
+        showMoreIntent.putExtra("address", somePatient.getAddress());
+        showMoreIntent.putExtra("healthCardNumber", somePatient.getHealthCardNumber());
+
 
         startActivity(showMoreIntent);
     }

@@ -14,7 +14,6 @@ import com.quantumSamurais.hams.doctor.activities.DoctorMain;
 import com.quantumSamurais.hams.user.User;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -108,8 +107,8 @@ public class Doctor extends User implements Serializable {
 	}
 	
 	@RequiresApi(api = Build.VERSION_CODES.O)
-	public boolean createShift(LocalDate dayOfShift, LocalDateTime startDate, LocalDateTime endDate){
-		Shift shiftToAdd = new Shift(this.getEmployeeNumber(), dayOfShift, startDate, endDate);
+	public boolean createShift(LocalDateTime startDate, LocalDateTime endDate){
+		Shift shiftToAdd = new Shift(this.getEmployeeNumber(), startDate, endDate);
 		if (!shiftOverlap(shiftToAdd)){
 			shifts.add(shiftToAdd);
 			return true;
