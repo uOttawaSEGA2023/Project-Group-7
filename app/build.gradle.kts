@@ -2,7 +2,6 @@ plugins {
     id("com.android.application")
     id("com.google.gms.google-services")
 }
-
 android {
     namespace = "com.quantumSamurais.hams"
     compileSdk = 34
@@ -27,6 +26,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
 
     packagingOptions {
         resources {
@@ -59,4 +59,6 @@ dependencies {
     implementation("com.sun.mail:android-mail:1.6.7")
     implementation("com.sun.mail:android-activation:1.6.7")
     implementation("com.google.android.material:material:1.3.0-alpha03")
+    api("com.github.prolificinteractive:material-calendarview:2.0.0")
+
 }

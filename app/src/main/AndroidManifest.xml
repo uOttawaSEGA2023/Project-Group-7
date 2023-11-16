@@ -37,6 +37,8 @@
         <activity android:name="com.quantumSamurais.hams.doctor.activities.DoctorMain" />
         <activity android:name="com.quantumSamurais.hams.doctor.activities.DoctorViewAppointments" />
         <activity android:name="com.quantumSamurais.hams.ui.settings.SettingActivity" />
+        <activity android:name="com.quantumSamurais.hams.appointment.ViewShiftsActivity" />
+
     </application>
 
 </manifest>

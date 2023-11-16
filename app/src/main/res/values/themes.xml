@@ -6,6 +6,9 @@
     </style>
 
     <style name="Theme.HealthManagmentSystem" parent="Base.Theme.HealthManagmentSystem" />
+    <style name="CustomTextAppearance" parent="TextAppearance.MaterialCalendarWidget.Date">
+        <item name="android:textColor">@color/calendar_colors</item>
+    </style>
 
     <style name="Theme.App" parent = "Theme.MaterialComponents.DayNight">
         <item name="android:windowTranslucentStatus">true</item>
