@@ -1,52 +1,44 @@
 package com.quantumSamurais.hams.appointment;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
+
 import android.os.Build;
+
 import androidx.annotation.RequiresApi;
+
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.Transaction;
-
 public class Shift {
+    Database db;
     static long SHIFT_ID = 0;
     Map<Long, Appointment> appointments;
     Doctor aDoctor;
-    LocalDate shiftDay;
     LocalDateTime startTime, endTime;
     long shiftID;
     private boolean pastShiftFlag;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public Shift(String employeeNumber, LocalDate day, LocalDateTime startTime, LocalDateTime endTime){
+    public Shift(String emailAddress, LocalDateTime startTime, LocalDateTime endTime){
         //Basic sanity checks
-        if (day.isBefore(LocalDate.now())){
-            throw new IllegalArgumentException("The date you passed is in the past");
-        }
-        else if (endTime.isBefore(startTime)){
+        if (endTime.isBefore(startTime)){
             throw new IllegalArgumentException("The shift cannot end before it begins. End Time < Start Time.");
         } else if (!isValidShiftTime(startTime, endTime)) {
             throw new IllegalArgumentException("The shift time must be in increments of 30 minutes");
         }
         //Check if this shift would overlap with other shifts.
 
-
-        this.shiftDay = day;
+        db = Database.getInstance();
+        aDoctor = db.getDoctor(emailAddress);
         this.startTime = startTime;
         this.endTime = endTime;
         shiftID = SHIFT_ID;
         SHIFT_ID++;
+        //db.addShift(this, );
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean overlapsWith(Shift otherShift) {
@@ -81,10 +73,6 @@ public class Shift {
     }
     public Map<Long, Appointment> getAppointments() {
         return appointments;
-    }
-
-    public LocalDate getShiftDay(){
-        return shiftDay;
     }
     public LocalDateTime getStartTime(){
         return startTime;
