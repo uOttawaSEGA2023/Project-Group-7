@@ -1,8 +1,8 @@
 package com.quantumSamurais.hams.doctor.activities;
 
 import android.app.AlertDialog;
-import android.os.Build;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -19,25 +19,16 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-
 import com.google.android.material.navigation.NavigationView;
-import com.quantumSamurais.hams.MainActivity;
 import com.quantumSamurais.hams.R;
-
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
-
-
-//<>
-import androidx.drawerlayout.widget.DrawerLayout;
-
 import com.quantumSamurais.hams.ui.settings.SettingActivity;
 
 import java.time.LocalDate;
@@ -269,7 +260,8 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             startActivity(newIntent);
 
         } else if (item.getItemId() == R.id.nav_appointments ) {
-            newIntent = new Intent(this,MainActivity.class);
+            newIntent = new Intent(this, DoctorViewAppointments.class);
+            newIntent.putExtra("doctor", myDoctor);
             startActivity(newIntent);
         }
 
