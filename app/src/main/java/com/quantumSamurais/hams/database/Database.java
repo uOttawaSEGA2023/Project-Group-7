@@ -302,44 +302,37 @@ public class Database {
 
 
 
-    public void addShift(Shift shift, ResponseListener<Void> listener) {
-        new Thread(() -> {
-            try {
-                // Convert Shift object to Map to avoid serialization issues
-                Map<String, Object> shiftData = new HashMap<>();
-                shiftData.put("shiftID", shift.getShiftID());
-                // Add other shift properties to shiftData as needed
+    public void addShift(Shift shift) {
+        try {
+            // Convert Shift object to Map to avoid serialization issues
+            Map<String, Object> shiftData = new HashMap<>();
+            shiftData.put("shiftID", shift.getShiftID());
+            // Add other shift properties to shiftData as needed
 
-                // Add the shift data to the "shift" collection
-                await(db.collection("users").document("software").collection("shift").add(shiftData));
-                listener.onSuccess(null);
-            } catch (ExecutionException | InterruptedException e) {
-                listener.onFailure(e);
-                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
-            }
-        }).start();
+            // Add the shift data to the "shift" collection
+            await(db.collection("users").document("software").collection("shift").add(shiftData));
+        } catch (ExecutionException | InterruptedException e) {
+            Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+        }
     }
 
-    public void deleteShift(long shiftID, ResponseListener<Void> listener) {
-        new Thread(() -> {
-            try {
-                // Find the shift document to delete
-                QuerySnapshot shift = await(db.collection("users").document("software").collection("shift").whereEqualTo("shiftID", shiftID).get());
 
-                // Check if the shift exists
-                if (!shift.isEmpty()) {
-                    // Delete the shift document
-                    await(shift.getDocuments().get(0).getReference().delete());
-                    listener.onSuccess(null);
-                } else {
-                    // Shift not found
-                    listener.onFailure(new NoSuchElementException("Shift not found for shiftID: " + shiftID));
-                }
-            } catch (ExecutionException | InterruptedException e) {
-                listener.onFailure(e);
-                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+    public void deleteShift(long shiftID) {
+        try {
+            // Find the shift document to delete
+            QuerySnapshot shift = await(db.collection("users").document("software").collection("shift").whereEqualTo("shiftID", shiftID).get());
+
+            // Check if the shift exists
+            if (!shift.isEmpty()) {
+                // Delete the shift document
+                await(shift.getDocuments().get(0).getReference().delete());
+            } else {
+                // Shift not found
+                throw new NoSuchElementException("Shift not found for shiftID: " + shiftID);
             }
-        }).start();
+        } catch (ExecutionException | InterruptedException e) {
+            Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+        }
     }
 
     public void getPatientAppointments() {
