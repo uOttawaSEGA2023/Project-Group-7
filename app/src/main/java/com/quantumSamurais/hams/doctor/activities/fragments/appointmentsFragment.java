@@ -20,7 +20,7 @@ import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.activities.ShowMoreActivity;
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.core.adapters.AppointmentItemAdapter;
-import com.quantumSamurais.hams.core.adapters.AppointmentItemAdapter.FragmentTab;
+import com.quantumSamurais.hams.core.enums.FragmentTab;
 import com.quantumSamurais.hams.core.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
@@ -141,7 +141,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         stopDataRefresh(); //I do not want the requests to be updated as I am accessing it.
         Log.d("requests Fragment", "accept click was pressed");
         long idToAccept = appointments.get(position).getAppointmentID();
-        db.approveSignUpRequest(idToAccept);
+        db.approveAppointment(idToAccept);
         refreshHandler.post(refreshRunnable);
     }
 
@@ -150,7 +150,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         stopDataRefresh();
         Log.d("requests Fragment", "reject click was pressed");
         long idToReject = appointments.get(position).getAppointmentID();
-        db.rejectSignUpRequest(idToReject);
+        db.rejectAppointment(idToReject);
         refreshHandler.post(refreshRunnable);
     }
 
@@ -162,7 +162,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         Appointment selectedAppointment = appointments.get(position);
         Intent showMoreIntent = new Intent(getActivity(), ShowMoreActivity.class);
 
-        Patient somePatient = (Patient) db.getPatientFromAppointmentID(selectedAppointment.getAppointmentID());
+        Patient somePatient = db.getPatientFromAppointmentID(selectedAppointment.getAppointmentID());
         showMoreIntent.putExtra("userType", PATIENT);
         showMoreIntent.putExtra("firstName", somePatient.getFirstName());
         showMoreIntent.putExtra("lastName", somePatient.getLastName());
@@ -170,7 +170,6 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         showMoreIntent.putExtra("phoneNumber", somePatient.getPhone());
         showMoreIntent.putExtra("address", somePatient.getAddress());
         showMoreIntent.putExtra("healthCardNumber", somePatient.getHealthCardNumber());
-
 
         startActivity(showMoreIntent);
     }

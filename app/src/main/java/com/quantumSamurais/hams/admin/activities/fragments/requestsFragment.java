@@ -24,7 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.activities.ShowMoreActivity;
 import com.quantumSamurais.hams.core.adapters.RequestItemAdapter;
-import com.quantumSamurais.hams.core.adapters.RequestItemAdapter.FragmentTab;
+import com.quantumSamurais.hams.core.enums.FragmentTab;
 import com.quantumSamurais.hams.core.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.database.Request;

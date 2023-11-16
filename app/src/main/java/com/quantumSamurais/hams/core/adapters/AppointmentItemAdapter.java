@@ -23,6 +23,7 @@ import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
+import com.quantumSamurais.hams.core.enums.FragmentTab;
 
 import java.util.ArrayList;
 
@@ -36,11 +37,6 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
     FragmentTab activeTab;
     Database db = Database.getInstance();
 
-    public enum FragmentTab {
-        ALL_REQUESTS,
-        PENDING_REQUESTS,
-        REJECTED_REQUESTS
-    }
 
     public AppointmentItemAdapter(Context context, FragmentTab activeTab, ArrayList<Appointment> appointmentsFromDatabase, RequestsActivityListener listener) {
         Log.d("AppointmentItemAdapter", "Number of items in appointments: " + appointmentsFromDatabase.size());
