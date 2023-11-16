@@ -39,9 +39,9 @@ public class DoctorShiftsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_doctor_shifts);
+        setContentView(R.layout.main_doctor_view);
 
-        recyclerViewShifts = findViewById(R.id.recyclerViewShifts);
+        recyclerViewShifts = findViewById(R.id.shiftsRecyclerView);
 
         List<Shift> shifts = currentDoctor.getShifts();
 
@@ -50,7 +50,7 @@ public class DoctorShiftsActivity extends AppCompatActivity {
 
         recyclerViewShifts.setLayoutManager(new LinearLayoutManager(this));
 
-        Button btnAddShift = findViewById(R.id.btnAddShift);
+        Button btnAddShift = findViewById(R.id.extended_fab);
         btnAddShift.setOnClickListener(v -> showAddShiftDialog());
     }
 
