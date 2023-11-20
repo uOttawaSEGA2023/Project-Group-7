@@ -13,12 +13,6 @@ jobs:
       - run:
          name: Chmod permissions  
          command: sudo chmod +x ./gradlew
-      - run:
-         name: Debug Info
-         command: |
-                  ls -la
-                  ./gradlew -v
-                  ./gradlew check
 
       - run:
           name: Download Dependencies
