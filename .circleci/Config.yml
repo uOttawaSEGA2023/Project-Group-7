@@ -14,8 +14,12 @@ jobs:
          name: Chmod permissions  
          command: sudo chmod +x ./gradlew
       - run:
-         name: Check file
-         command: ls -l gradlew
+         name: Debug Info
+         command: |
+                  ls -la
+                  ./gradlew -v
+                  ./gradlew check
+
       - run:
           name: Download Dependencies
           command: ./gradlew androidDependencies
