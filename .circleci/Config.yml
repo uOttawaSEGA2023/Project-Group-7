@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/Project-Group-7
+    working_directory: C:\Users\Ange-Emmanuel K\Documents\The Vault\University Notes\SEG2105\Project-Group-7
     docker:
       - image: circleci/android:api-28-alpha
     environment:
