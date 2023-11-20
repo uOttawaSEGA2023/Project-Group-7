@@ -14,10 +14,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.database.Request;
@@ -32,7 +32,6 @@ import java.util.concurrent.ExecutionException;
 public class PatientSignUpActivity extends AppCompatActivity implements ResponseListener<ArrayList<Request>> {
     private EditText firstNameEditText, lastNameEditText, emailAddressEditText, passwordEditText, phoneNumberEditText, postalAddressEditText, healthCardNumberEditText;
     private Button signUpButton;
-
     private Patient currentPatient;
 
     @Override
@@ -50,111 +49,104 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
         signUpButton = findViewById(R.id.formSignUpButton);
 
         signUpButton.setOnClickListener(v -> {
-                    // Get user input
-                    String firstName = firstNameEditText.getText().toString().trim();
-                    String lastName = lastNameEditText.getText().toString().trim();
-                    String emailAddress = emailAddressEditText.getText().toString().trim();
-                    String password = passwordEditText.getText().toString().trim();
-                    String phoneNumber = phoneNumberEditText.getText().toString().trim();
-                    String postalAddress = postalAddressEditText.getText().toString().trim();
-                    String healthCardNumber = healthCardNumberEditText.getText().toString().trim();
+            String firstName = firstNameEditText.getText().toString().trim();
+            String lastName = lastNameEditText.getText().toString().trim();
+            String emailAddress = emailAddressEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString().trim();
+            String phoneNumber = phoneNumberEditText.getText().toString().trim();
+            String postalAddress = postalAddressEditText.getText().toString().trim();
+            String healthCardNumber = healthCardNumberEditText.getText().toString().trim();
 
-                    //First make sure no field is empty
-                    if (textFieldIsEmpty(firstName) || textFieldIsEmpty(lastName) || textFieldIsEmpty(emailAddress) || textFieldIsEmpty(password) || textFieldIsEmpty(phoneNumber) || textFieldIsEmpty(postalAddress) || textFieldIsEmpty(healthCardNumber)) {
-                        Toast.makeText(PatientSignUpActivity.this, "Please make sure to fill all the fields.", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    //Validations Gauntlet
-                    // Validate names
-                    if (!(nameIsValid(firstName) && nameIsValid(lastName))) {
-                        Toast.makeText(PatientSignUpActivity.this, "Please make sure your name follows a human format (no numbers, spaces, etc.)", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    //emailAddressIsValid throws errors due to be a wifi/threaded method, so we require a try/catch
-                    try {
-                        ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, PATIENT);
+            if (textFieldIsEmpty(firstName) || textFieldIsEmpty(lastName) || textFieldIsEmpty(emailAddress) || textFieldIsEmpty(password) || textFieldIsEmpty(phoneNumber) || textFieldIsEmpty(postalAddress) || textFieldIsEmpty(healthCardNumber)) {
+                showSnackbar("Please make sure to fill all the fields.");
+                return;
+            }
 
-                        if (emailValidityCheck == ValidationTaskResult.INVALID_FORMAT) {
-                            shortToast("This email address is not formatted like an email address.");
-                            return;
+            if (!(nameIsValid(firstName) && nameIsValid(lastName))) {
+                showSnackbar("Please make sure your name follows a human format (no numbers, spaces, etc.)");
+                return;
+            }
 
-                        } else if (emailValidityCheck == ValidationTaskResult.INVALID_DOMAIN) {
-                            shortToast("Please ensure this email address' domain exists");
-                            return;
+            try {
+                ValidationTaskResult emailValidityCheck = emailAddressIsValid(emailAddress, PATIENT);
 
-                        } else if (emailValidityCheck == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS) {
-                            shortToast("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
-                            return;
-                        } else if (emailValidityCheck == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED) {
-                            shortToast("This email address is already in use, please try signing in instead.");
-                            return;
-                        }
-                    } catch (ExecutionException e) {
-                        shortToast("Something went wrong during email's domain verification, please check your connection and try again.");
-                        Log.d("emailVerificationPatient", "ExecutionException occurred : " + e.getCause());
-                        return;
-                    } catch (InterruptedException e) {
-                        shortToast("Something went wrong with the email address' verification thread, please wait a bit and try again.");
-                        Log.d("emailVerificationPatient", "InterruptedException occurred : " + e.getCause());
-                        return;
-
-                    }
-                    if (!passwordIsValid(password)) {
-                        shortToast("This password is not secure enough. It must have 8 characters...");
-                        shortToast("and at least: 1 capital, 1 small letter; one number; and one special character.");
-                        return;
-                    }
-                    if (!phoneNumberIsValid(phoneNumber)) {
-                        shortToast("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
-                        return;
-                    }
-                    boolean phoneNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
-                    try {
-                        phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, PATIENT);
-                        if (phoneNumberIsAlreadyInDatabase) {
-                            shortToast("This phone number is already in use, please try signing in.");
-                            return;
-                        }
-                    } catch (ExecutionException e) {
-                        shortToast("Something went wrong during phone number's verification, please check your connection and try again.");
-                        Log.d("phoneNumberVerificationPatient", "ExecutionException occurred : " + e.getCause());
-                        return;
-                    } catch (InterruptedException e) {
-                        shortToast("Something went wrong with the phone number's verification thread, please wait a bit and try again.");
-                        Log.d("phoneNumberVerificationPatient", "InterruptedException occurred : " + e.getCause());
-                        return;
-
-                    }
-                    boolean healthCardNumberIsAlreadyInDatabase = true; //we assume it's there to prevent creation if something is wrong
-                    try {
-                        healthCardNumberIsAlreadyInDatabase = checkIfHealthCardNumberExists(healthCardNumber);
-                        if (healthCardNumberIsAlreadyInDatabase) {
-                            shortToast("This health card number is already in use, please try signing in.");
-                            return;
-                        }
-                    } catch (ExecutionException e) {
-                        shortToast("Something went wrong during health card number's verification, please check your connection and try again.");
-                        Log.d("healthCardNumberVerification", "ExecutionException occurred : " + e.getCause());
-                        return;
-                    } catch (InterruptedException e) {
-                        shortToast("Something went wrong with the health card number's verification thread, please wait a bit and try again.");
-                        Log.d("healthCardNumberVerification", "InterruptedException occurred : " + e.getCause());
-                        return;
-
-                    }
-
-
-                    signUpButton.setEnabled(false);
-                    //If we haven't returned yet, it means the verifiable inputs have been verified. So we can attempt registration.
-                    currentPatient = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
-                    Database db = Database.getInstance();
-                    db.getSignUpRequests(this);
+                if (emailValidityCheck == ValidationTaskResult.INVALID_FORMAT) {
+                    showSnackbar("This email address is not formatted like an email address.");
+                    return;
+                } else if (emailValidityCheck == ValidationTaskResult.INVALID_DOMAIN) {
+                    showSnackbar("Please ensure this email address' domain exists.");
+                    return;
+                } else if (emailValidityCheck == ValidationTaskResult.INVALID_LOCAL_EMAIL_ADDRESS) {
+                    showSnackbar("Please ensure the localPart of your email address is correct, ensure there are no spaces.");
+                    return;
+                } else if (emailValidityCheck == ValidationTaskResult.ATTRIBUTE_ALREADY_REGISTERED) {
+                    showSnackbar("This email address is already in use, please try signing in instead.");
+                    return;
                 }
-        );
+            } catch (ExecutionException e) {
+                showSnackbar("Something went wrong during email's domain verification, please check your connection and try again.");
+                Log.d("emailVerificationPatient", "ExecutionException occurred : " + e.getCause());
+                return;
+            } catch (InterruptedException e) {
+                showSnackbar("Something went wrong with the email address' verification thread, please wait a bit and try again.");
+                Log.d("emailVerificationPatient", "InterruptedException occurred : " + e.getCause());
+                return;
+            }
+
+            if (!passwordIsValid(password)) {
+                showSnackbar("This password is not secure enough. It must have 8 characters...");
+                showSnackbar("and at least: 1 capital, 1 small letter; one number; and one special character.");
+                return;
+            }
+
+            if (!phoneNumberIsValid(phoneNumber)) {
+                showSnackbar("Please make sure your phone number contains exactly 10 numbers, and only numbers.");
+                return;
+            }
+
+            boolean phoneNumberIsAlreadyInDatabase = true;
+            try {
+                phoneNumberIsAlreadyInDatabase = checkIfPhoneNumberExists(phoneNumber, PATIENT);
+                if (phoneNumberIsAlreadyInDatabase) {
+                    showSnackbar("This phone number is already in use, please try signing in.");
+                    return;
+                }
+            } catch (ExecutionException e) {
+                showSnackbar("Something went wrong during phone number's verification, please check your connection and try again.");
+                Log.d("phoneNumberVerificationPatient", "ExecutionException occurred : " + e.getCause());
+                return;
+            } catch (InterruptedException e) {
+                showSnackbar("Something went wrong with the phone number's verification thread, please wait a bit and try again.");
+                Log.d("phoneNumberVerificationPatient", "InterruptedException occurred : " + e.getCause());
+                return;
+            }
+
+            boolean healthCardNumberIsAlreadyInDatabase = true;
+            try {
+                healthCardNumberIsAlreadyInDatabase = checkIfHealthCardNumberExists(healthCardNumber);
+                if (healthCardNumberIsAlreadyInDatabase) {
+                    showSnackbar("This health card number is already in use, please try signing in.");
+                    return;
+                }
+            } catch (ExecutionException e) {
+                showSnackbar("Something went wrong during health card number's verification, please check your connection and try again.");
+                Log.d("healthCardNumberVerification", "ExecutionException occurred : " + e.getCause());
+                return;
+            } catch (InterruptedException e) {
+                showSnackbar("Something went wrong with the health card number's verification thread, please wait a bit and try again.");
+                Log.d("healthCardNumberVerification", "InterruptedException occurred : " + e.getCause());
+                return;
+            }
+
+            signUpButton.setEnabled(false);
+            currentPatient = new Patient(firstName, lastName, password.toCharArray(), emailAddress, phoneNumber, postalAddress, healthCardNumber);
+            Database db = Database.getInstance();
+            db.getSignUpRequests(this);
+        });
     }
 
-    private void shortToast(String text) {
-        Toast.makeText(PatientSignUpActivity.this, text, Toast.LENGTH_SHORT).show();
+    private void showSnackbar(String message) {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
@@ -164,10 +156,9 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
                 continue;
             if (!r.getPatient().equals(currentPatient))
                 continue;
-            runOnUiThread(() -> shortToast("Registration successful"));
-            // Switch to login
+            runOnUiThread(() -> showSnackbar("Registration successful"));
             Intent login = new Intent(this, LoginActivity.class);
-            login.putExtra("userType",r.getUserType());
+            login.putExtra("userType", r.getUserType());
             startActivity(login);
             finish();
         }
@@ -175,11 +166,7 @@ public class PatientSignUpActivity extends AppCompatActivity implements Response
 
     @Override
     public void onFailure(Exception error) {
-        runOnUiThread(() -> shortToast("Registration error, please try again in a few minutes."));
+        runOnUiThread(() -> showSnackbar("Registration error, please try again in a few minutes."));
         signUpButton.setEnabled(true);
     }
-
-
 }
-
-
