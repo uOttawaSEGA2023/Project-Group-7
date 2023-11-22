@@ -15,6 +15,8 @@ public class Patient extends User {
 
     private String healthCardNumber;
 
+    public HashMap<long,Appointment> appointments;
+
     public Patient() {
 
     }
@@ -49,6 +51,10 @@ public class Patient extends User {
         return this;
     }
 
+    public booleean acceptAppointment(Appointment app){
+
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -62,4 +68,5 @@ public class Patient extends User {
     public int hashCode() {
         return Objects.hash(super.hashCode(), healthCardNumber);
     }
+    
 }
