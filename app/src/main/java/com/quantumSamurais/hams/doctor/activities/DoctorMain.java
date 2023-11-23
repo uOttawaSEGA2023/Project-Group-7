@@ -1,8 +1,8 @@
 package com.quantumSamurais.hams.doctor.activities;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -19,16 +19,29 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+
 import com.google.android.material.navigation.NavigationView;
+import com.quantumSamurais.hams.MainActivity;
 import com.quantumSamurais.hams.R;
+
 import com.quantumSamurais.hams.appointment.Shift;
+import com.quantumSamurais.hams.core.enums.FragmentTab;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
+import com.quantumSamurais.hams.doctor.activities.fragments.appointmentsFragment;
 import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
+
+
+//<>
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.quantumSamurais.hams.ui.settings.SettingActivity;
 
 import java.time.LocalDate;
@@ -37,7 +50,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter.OnDeleteClickListener, NavigationView.OnNavigationItemSelectedListener{
+public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter.OnDeleteClickListener{
     private Doctor myDoctor;
     DoctorShiftsAdapter shiftsAdapter;
     RecyclerView shiftsStack;
@@ -45,16 +58,16 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     ArrayList<Shift> shifts;
     Handler refreshShifts;
 
-    DrawerLayout drawerLayout;
+    private DrawerLayout drawerLayout;
     ExtendedFloatingActionButton addShiftFAB;
 
-    ActionBarDrawerToggle actionBarDrawerToggle;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
 
-    NavigationView navView;
+    private NavigationView navView;
 
 
+    private boolean acceptsAppointmentsByDefault;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,26 +96,28 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         // headerName = findViewById(R.id.header_name);
         // headerEmail = findViewById(R.id.header_email);
 
-        boolean acceptsAppointmentsByDefault = myDoctor.getAcceptsAppointmentsByDefault();
+        acceptsAppointmentsByDefault = myDoctor.getAcceptsAppointmentsByDefault();
 
 
         drawerLayout = findViewById(R.id.drawer_layout);
-
-
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
-
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
 
-
         navView = findViewById(R.id.navigation_view);
-        navView.setNavigationItemSelectedListener(this);
-
+        setupDrawerContent(navView);
+        //navView.setNavigationItemSelectedListener(this);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
 
-
-
+    private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(
+                menuItem -> {
+                    selectDrawerItem(menuItem);
+                    return true;
+                }
+        );
     }
 
 
@@ -130,7 +145,6 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         shiftsStack.setAdapter(shiftsAdapter);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void showAddShiftDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
@@ -173,36 +187,19 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     private boolean isValidNewShift(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
         // Check if the date is not in the past
         if (date.isBefore(LocalDate.now())) {
-            showWarningMessage("Selected date is in the past. Please choose a future date.");
-            return false;
-        }
-
-        // Check if start time is before end time
-        if (startTime.isEqual(endTime) || startTime.isAfter(endTime)) {
-            showWarningMessage("End time must be after start time. Please adjust the times.");
             return false;
         }
 
         // Check for conflicts with existing shifts
         for (Shift existingShift : myDoctor.getShifts()) {
             if (existingShift.overlapsWith(new Shift(myDoctor.getEmployeeNumber(), startTime, endTime))) {
-                showWarningMessage("Shift conflicts with an existing shift. Please choose different times.");
                 return false;
             }
         }
 
         // Check if the start and end times are in increments of 30 minutes
         long interval = startTime.until(endTime, java.time.temporal.ChronoUnit.MINUTES);
-        if (interval % 30 != 0) {
-            showWarningMessage("Shift times must be in increments of 30 minutes. Please adjust the times.");
-            return false;
-        }
-
-        return true;
-    }
-
-    private void showWarningMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        return interval % 30 == 0;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -264,8 +261,38 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
      return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+
+    public void selectDrawerItem(MenuItem item) {
+        myDoctor = db.getDoctor(getIntent().getStringExtra("doctorEmailAddress"));
+        Fragment fragment = null;
+        Class fragmentClass = null;
+
+
+        if (item.getItemId() == R.id.nav_settings) {
+            fragment = appointmentsFragment.newInstance(FragmentTab.VIEW_APPOINTMENTS, myDoctor);
+            fragmentClass = appointmentsFragment.class;
+
+        } else if (item.getItemId() == R.id.nav_appointments) {
+            fragmentClass = appointmentsFragment.class;
+        } else if (item.getItemId() == R.id.nav_home) {
+            fragmentClass = appointmentsFragment.class;
+        }else {
+            return;
+        }
+
+        /*
+        try {
+            fragment = (Fragment) fragmentClass.newInstance();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        */
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
+
+        item.setChecked(true);
+        /*
         Intent newIntent;
 
         if(item.getItemId() == R.id.nav_home) {
@@ -276,15 +303,17 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             }
         } else if (item.getItemId() == R.id.nav_settings) {
             newIntent = new Intent(this, SettingActivity.class);
+            newIntent.putExtra("acceptByDefault", acceptsAppointmentsByDefault);
             startActivity(newIntent);
 
         } else if (item.getItemId() == R.id.nav_appointments ) {
-            newIntent = new Intent(this, DoctorViewAppointments.class);
-            newIntent.putExtra("doctor", myDoctor);
+            newIntent = new Intent(this,DoctorViewAppointments.class);
             startActivity(newIntent);
         }
 
         return true;
+
+         */
     }
 
 }
