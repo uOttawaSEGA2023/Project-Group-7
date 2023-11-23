@@ -288,11 +288,11 @@ public class Database {
 
     private void updateShift(Transaction transaction, long shiftID, Map<Long, Appointment> updatedAppointments) {
         CollectionReference myShifts = db.collection("users").document("software").collection("shifts");
-        Query query = myShifts.whereEqualTo("shiftID", shiftID);
-        query.get().addOnCompleteListener(getShift -> {
+        myShifts.whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(getShift -> {
             if (getShift.isSuccessful()) {
-                for (QueryDocumentSnapshot document : getShift.getResult()) {
-                    String documentId = document.getId();
+                QuerySnapshot shiftSnap = getShift.getResult();
+                for (QueryDocumentSnapshot singularShift: shiftSnap) {
+                    String documentId = singularShift.getId();
                     DocumentReference docRef = myShifts.document(documentId);
                     transaction.update(docRef, "appointments", updatedAppointments);
                 }
@@ -326,14 +326,28 @@ public class Database {
 
 
     public void addShift(Shift shift) {
-            // Convert Shift object to Map to avoid serialization issues
-            Map<String, Object> shiftData = new HashMap<>();
-            shiftData.put("shiftID", shift.getShiftID());
-            // Add other shift properties to shiftData as needed
+        new Thread(() -> {
+            try {
+                // Convert Shift object to Map to avoid serialization issues
+                Map<String, Object> shiftData = new HashMap<>();
+                shiftData.put("shiftID", shift.getShiftID());
+                // Add other shift properties to shiftData as needed
 
-            // Add the shift data to the "shift" collection
-            new Thread(() -> {db.collection("users").document("software").collection("shifts").add(shiftData);}).run();
-
+                // Add the shift data to the "shifts" collection
+                db.collection("users")
+                        .document("software")
+                        .collection("shifts")
+                        .add(shiftData)
+                        .addOnSuccessListener(documentReference -> {
+                            Log.d("Database", "Shift added successfully with ID: " + documentReference.getId());
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.w("Database", "Error adding shift", e);
+                        });
+            } catch (Exception e) {
+                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+            }
+        }).start();
     }
 
 

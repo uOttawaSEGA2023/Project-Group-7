@@ -38,7 +38,7 @@ public class Shift {
         this.endTime = endTime;
         shiftID = SHIFT_ID;
         SHIFT_ID++;
-        //db.addShift(this, );
+        db.addShift(this);
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean overlapsWith(Shift otherShift) {
@@ -81,9 +81,7 @@ public class Shift {
         return endTime;
     }
 
-    public long getShiftID() {
-        return shiftID;
-    }
+    public long getShiftID() { return shiftID; }
 
     public boolean isVacant(){
         return appointments.isEmpty();

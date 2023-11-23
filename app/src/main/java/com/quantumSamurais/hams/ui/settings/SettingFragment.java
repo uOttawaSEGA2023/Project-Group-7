@@ -20,14 +20,14 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.databinding.FragmentSettingspageBinding;
+//import com.quantumSamurais.hams.databinding.FragmentSettingspageBinding;
 import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
 
 
 public class SettingFragment extends Fragment{
 
     RadioButton acceptApptDefaultRB;
-    private FragmentSettingspageBinding binding;
+    //private FragmentSettingspageBinding binding;
 
     Bundle args;
     View myView;
@@ -48,14 +48,14 @@ public class SettingFragment extends Fragment{
 
     public View onCreateview(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        myView = inflater.inflate(R.layout.fragment_settingspage, container, false);
+        //myView = inflater.inflate(R.layout.fragment_settingspage, container, false);
 
 
         Bundle args = getArguments();
         if (args != null) {
             rBVal = args.getBoolean("acceptsByDefault");
         }
-        acceptApptDefaultRB = (RadioButton) getView().findViewById(R.id.acceptRB);
+        //acceptApptDefaultRB = (RadioButton) getView().findViewById(R.id.acceptRB);
         if (rBVal) {
             acceptApptDefaultRB.toggle();
         }
@@ -85,7 +85,7 @@ public class SettingFragment extends Fragment{
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;
+        //binding = null;
     }
 }
 
