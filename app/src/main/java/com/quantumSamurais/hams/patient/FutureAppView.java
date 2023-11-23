@@ -1,8 +1,9 @@
-import com.quantumSamurais.hams.database.Database;
+package com.quantumSamurais.hams.patient;
+
 public class FutureAppView {
-   
+    public FutureAppView(){}
 
-
+/*
     public boolean bookApp(Doctor doctor, Appointment app, Patient pat){
         try{
             doctor.acceptAppointment(app);
@@ -10,11 +11,11 @@ public class FutureAppView {
             pat.appointments.put(id, app);
             return true;
 
-        } catch{
-            return false
+        } catch (Exception e){
+            return false;
 
-        }
-    }
+        }*/
+    //}
 
 
 

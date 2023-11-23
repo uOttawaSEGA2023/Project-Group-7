@@ -1,21 +1,23 @@
 package com.quantumSamurais.hams.patient;
+
 import android.content.Context;
 import android.content.Intent;
 
+import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.login.LoginInteractiveMessage;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class Patient extends User {
 
     private String healthCardNumber;
 
-    public HashMap<long,Appointment> appointments;
+    public HashMap<Long, Appointment> appointments;
 
     public Patient() {
 
@@ -51,8 +53,9 @@ public class Patient extends User {
         return this;
     }
 
-    public booleean acceptAppointment(Appointment app){
-
+    public boolean acceptAppointment(Appointment app){
+        //TODO: Implement this
+        return false;
     }
 
     @Override
