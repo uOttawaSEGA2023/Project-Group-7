@@ -190,21 +190,20 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     @RequiresApi(api = Build.VERSION_CODES.O)
     private boolean isValidNewShift(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
         // Check if the date is not in the past
-        if (date.isBefore(LocalDate.now())) {
+        if (date.isBefore(LocalDate.now()) || startTime.getMinute() % 30 != 0 || endTime.getMinute() % 30 != 0 || endTime.isBefore(startTime)) {
             return false;
         }
 
         // Check for conflicts with existing shifts
         for (Shift existingShift : myDoctor.getShifts()) {
-            if (existingShift.overlapsWith(new Shift(myDoctor.getEmployeeNumber(), startTime, endTime))) {
+            if (existingShift.overlapsWith(startTime, endTime)) {
                 return false;
             }
         }
 
-        // Check if the start and end times are in increments of 30 minutes
-        long interval = startTime.until(endTime, java.time.temporal.ChronoUnit.MINUTES);
-        return interval % 30 == 0;
+        return true;
     }
+    
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void onDeleteClick(int position) {

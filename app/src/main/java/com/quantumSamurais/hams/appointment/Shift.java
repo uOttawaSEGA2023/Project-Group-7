@@ -30,7 +30,6 @@ public class Shift {
         } else if (!isValidShiftTime(startTime, endTime)) {
             throw new IllegalArgumentException("The shift time must be in increments of 30 minutes");
         }
-        //Check if this shift would overlap with other shifts.
 
         db = Database.getInstance();
         aDoctor = db.getDoctor(emailAddress);
@@ -41,8 +40,8 @@ public class Shift {
         db.addShift(this);
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public boolean overlapsWith(Shift otherShift) {
-        return !this.endTime.isBefore(otherShift.startTime) && !this.startTime.isAfter(otherShift.endTime);
+    public boolean overlapsWith(LocalDateTime otherStartTime, LocalDateTime otherEndTime) {
+        return !this.endTime.isBefore(otherStartTime) && !this.startTime.isAfter(otherEndTime);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
