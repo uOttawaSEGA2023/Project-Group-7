@@ -76,12 +76,19 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             Toast.makeText(this, "An error occurred, this session will be terminated, try again", Toast.LENGTH_SHORT).show();
             finish();
         }
+        
 
         db = Database.getInstance();
         myDoctor = db.getDoctor(getIntent().getStringExtra("doctorEmailAddress"));
         shifts = myDoctor.getShifts();
         setContentView(R.layout.main_doctor_view);
-
+        // imp
+        shiftsAdapter = new DoctorShiftsAdapter(shifts, this);
+        shiftsStack = findViewById(R.id.shiftsRecyclerView);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        shiftsStack.setLayoutManager(layoutManager);
+        shiftsStack.setAdapter(shiftsAdapter);
+        // imp
         addShiftFAB = findViewById(R.id.extended_fab);
         addShiftFAB.setOnClickListener(v -> showAddShiftDialog());
         setup();
