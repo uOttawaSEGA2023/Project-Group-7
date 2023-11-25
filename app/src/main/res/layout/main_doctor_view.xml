@@ -9,7 +9,7 @@
     android:id="@+id/drawer_layout"
     tools:context=".doctor.activities.DoctorMain"
     android:fitsSystemWindows="true"
-    tools:openDrawer="start">
+    tools:openDrawer="end">
 
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -64,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="refresh"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:ignore="MissingConstraints" />
 
     <TextView
