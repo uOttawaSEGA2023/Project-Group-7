@@ -83,11 +83,18 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             finish();
         }
 
+
         db = Database.getInstance();
         myDoctor = db.getDoctor(getIntent().getStringExtra("doctorEmailAddress"));
         shifts = myDoctor.getShifts();
         setContentView(R.layout.main_doctor_view);
-
+        // imp
+        shiftsAdapter = new DoctorShiftsAdapter(shifts, this);
+        shiftsStack = findViewById(R.id.shiftsRecyclerView);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        shiftsStack.setLayoutManager(layoutManager);
+        shiftsStack.setAdapter(shiftsAdapter);
+        // imp
         addShiftFAB = findViewById(R.id.extended_fab);
         addShiftFAB.setOnClickListener(v -> showAddShiftDialog());
         setup();
@@ -177,9 +184,15 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             LocalDateTime endDateTime = LocalDateTime.of(selectedDate, LocalTime.of(endHour, endMinute));
 
             if (isValidNewShift(selectedDate, startDateTime, endDateTime)) {
-                Database.getInstance().addShift(new Shift(myDoctor.getEmployeeNumber(), startDateTime, endDateTime));
-                updateShiftsList();
-                Toast.makeText(this, "Shift added successfully", Toast.LENGTH_SHORT).show();
+                new Thread(() -> {
+                    // Use the getDoctor method to get the latest doctor information
+                    Doctor updatedDoctor = db.getDoctor(myDoctor.getEmail());
+                    Database.getInstance().addShift(new Shift(updatedDoctor.getEmail(), startDateTime, endDateTime));
+                    runOnUiThread(() -> {
+                        updateShiftsList();
+                        Toast.makeText(this, "Shift added successfully", Toast.LENGTH_SHORT).show();
+                    });
+                }).start();
             } else {
                 Toast.makeText(this, "Invalid shift. Please check the date and time.", Toast.LENGTH_SHORT).show();
             }
@@ -194,21 +207,20 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     @RequiresApi(api = Build.VERSION_CODES.O)
     private boolean isValidNewShift(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
         // Check if the date is not in the past
-        if (date.isBefore(LocalDate.now())) {
+        if (date.isBefore(LocalDate.now()) || startTime.getMinute() % 30 != 0 || endTime.getMinute() % 30 != 0 || endTime.isBefore(startTime)) {
             return false;
         }
 
         // Check for conflicts with existing shifts
         for (Shift existingShift : myDoctor.getShifts()) {
-            if (existingShift.overlapsWith(new Shift(myDoctor.getEmployeeNumber(), startTime, endTime))) {
+            if (existingShift.overlapsWith(startTime, endTime)) {
                 return false;
             }
         }
 
-        // Check if the start and end times are in increments of 30 minutes
-        long interval = startTime.until(endTime, java.time.temporal.ChronoUnit.MINUTES);
-        return interval % 30 == 0;
+        return true;
     }
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void onDeleteClick(int position) {
@@ -263,10 +275,10 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-     if(actionBarDrawerToggle.onOptionsItemSelected(item)) {
-         return true;
-     }
-     return super.onOptionsItemSelected(item);
+        if(actionBarDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 

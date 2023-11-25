@@ -65,6 +65,8 @@ public class Database {
     private Database() {
         signUpLock = new ReentrantLock();
     }
+    private List<Doctor> doctors; 
+    private List<Shift> shifts;   
 
     public static Database getInstance() {
         if (instance == null) {
@@ -288,11 +290,11 @@ public class Database {
 
     private void updateShift(Transaction transaction, long shiftID, Map<Long, Appointment> updatedAppointments) {
         CollectionReference myShifts = db.collection("users").document("software").collection("shifts");
-        Query query = myShifts.whereEqualTo("shiftID", shiftID);
-        query.get().addOnCompleteListener(getShift -> {
+        myShifts.whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(getShift -> {
             if (getShift.isSuccessful()) {
-                for (QueryDocumentSnapshot document : getShift.getResult()) {
-                    String documentId = document.getId();
+                QuerySnapshot shiftSnap = getShift.getResult();
+                for (QueryDocumentSnapshot singularShift: shiftSnap) {
+                    String documentId = singularShift.getId();
                     DocumentReference docRef = myShifts.document(documentId);
                     transaction.update(docRef, "appointments", updatedAppointments);
                 }
@@ -320,20 +322,40 @@ public class Database {
         });
     }
 
-
-
+    public Doctor getDoctorEmail(String doctorEmail) {
+        for (Doctor doctor : doctors) {
+            if (doctor.getEmail().equals(doctorEmail)) {
+                return doctor;
+            }
+        }
+        return null;  // Return null if the doctor is not found
+    }
 
 
 
     public void addShift(Shift shift) {
-            // Convert Shift object to Map to avoid serialization issues
-            Map<String, Object> shiftData = new HashMap<>();
-            shiftData.put("shiftID", shift.getShiftID());
-            // Add other shift properties to shiftData as needed
+        new Thread(() -> {
+            try {
+                // Convert Shift object to Map to avoid serialization issues
+                Map<String, Object> shiftData = new HashMap<>();
+                shiftData.put("shiftID", shift.getShiftID());
+                // Add other shift properties to shiftData as needed
 
-            // Add the shift data to the "shift" collection
-            new Thread(() -> {db.collection("users").document("software").collection("shifts").add(shiftData);}).run();
-
+                // Add the shift data to the "shifts" collection
+                db.collection("users")
+                        .document("software")
+                        .collection("shifts")
+                        .add(shiftData)
+                        .addOnSuccessListener(documentReference -> {
+                            Log.d("Database", "Shift added successfully with ID: " + documentReference.getId());
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.w("Database", "Error adding shift", e);
+                        });
+            } catch (Exception e) {
+                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+            }
+        }).start();
     }
 
 
@@ -443,17 +465,23 @@ public class Database {
             try {
                 doctor = await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
             } catch (ExecutionException | InterruptedException e) {
-                Log.d("Database", email + ": this email is likely invalid. Error while fetching doctor from DB");
-                throw new IllegalArgumentException("The email that was passed couldn't be found in db. (Or a problem occurred with the thread)");
+                Log.e("Database", "Error fetching doctor from DB", e);
+                throw new IllegalArgumentException("Error fetching doctor from DB", e);
             }
             return doctor;
         };
 
         CompletableFuture<QuerySnapshot> doctorSnapshot = supplyAsync(getMyDoctor);
 
-        Doctor doctor = doctorSnapshot.join().getDocuments().get(0).toObject(Doctor.class);
+        List<DocumentSnapshot> documents = doctorSnapshot.join().getDocuments();
 
-        return doctor;
+        if (documents.isEmpty()) {
+            // Handle case where no doctor is found for the given email
+            Log.w("Database", "No doctor found for email: " + email);
+            return null;
+        }
+
+        return documents.get(0).toObject(Doctor.class);
     }
 
     /**
