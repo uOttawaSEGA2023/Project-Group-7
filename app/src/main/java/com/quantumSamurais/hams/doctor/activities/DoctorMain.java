@@ -76,7 +76,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             Toast.makeText(this, "An error occurred, this session will be terminated, try again", Toast.LENGTH_SHORT).show();
             finish();
         }
-        
+
 
         db = Database.getInstance();
         myDoctor = db.getDoctor(getIntent().getStringExtra("doctorEmailAddress"));
@@ -177,7 +177,9 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
             if (isValidNewShift(selectedDate, startDateTime, endDateTime)) {
                 new Thread(() -> {
-                    Database.getInstance().addShift(new Shift(myDoctor.getEmail(), startDateTime, endDateTime));
+                    // Use the getDoctor method to get the latest doctor information
+                    Doctor updatedDoctor = db.getDoctor(myDoctor.getEmail());
+                    Database.getInstance().addShift(new Shift(updatedDoctor.getEmail(), startDateTime, endDateTime));
                     runOnUiThread(() -> {
                         updateShiftsList();
                         Toast.makeText(this, "Shift added successfully", Toast.LENGTH_SHORT).show();
@@ -210,7 +212,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
         return true;
     }
-    
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void onDeleteClick(int position) {
@@ -265,10 +267,10 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-     if(actionBarDrawerToggle.onOptionsItemSelected(item)) {
-         return true;
-     }
-     return super.onOptionsItemSelected(item);
+        if(actionBarDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 

@@ -65,6 +65,8 @@ public class Database {
     private Database() {
         signUpLock = new ReentrantLock();
     }
+    private List<Doctor> doctors; 
+    private List<Shift> shifts;   
 
     public static Database getInstance() {
         if (instance == null) {
@@ -320,8 +322,14 @@ public class Database {
         });
     }
 
-
-
+    public Doctor getDoctorEmail(String doctorEmail) {
+        for (Doctor doctor : doctors) {
+            if (doctor.getEmail().equals(doctorEmail)) {
+                return doctor;
+            }
+        }
+        return null;  // Return null if the doctor is not found
+    }
 
 
 
@@ -457,17 +465,23 @@ public class Database {
             try {
                 doctor = await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
             } catch (ExecutionException | InterruptedException e) {
-                Log.d("Database", email + ": this email is likely invalid. Error while fetching doctor from DB");
-                throw new IllegalArgumentException("The email that was passed couldn't be found in db. (Or a problem occurred with the thread)");
+                Log.e("Database", "Error fetching doctor from DB", e);
+                throw new IllegalArgumentException("Error fetching doctor from DB", e);
             }
             return doctor;
         };
 
         CompletableFuture<QuerySnapshot> doctorSnapshot = supplyAsync(getMyDoctor);
 
-        Doctor doctor = doctorSnapshot.join().getDocuments().get(0).toObject(Doctor.class);
+        List<DocumentSnapshot> documents = doctorSnapshot.join().getDocuments();
 
-        return doctor;
+        if (documents.isEmpty()) {
+            // Handle case where no doctor is found for the given email
+            Log.w("Database", "No doctor found for email: " + email);
+            return null;
+        }
+
+        return documents.get(0).toObject(Doctor.class);
     }
 
     /**
