@@ -2,7 +2,6 @@ package com.quantumSamurais.hams.doctor.activities;
 
 import android.app.AlertDialog;
 import android.os.Build;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -10,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -24,29 +22,23 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import com.google.android.material.navigation.NavigationView;
-import com.quantumSamurais.hams.MainActivity;
 import com.quantumSamurais.hams.R;
 
 import com.quantumSamurais.hams.appointment.Shift;
-import com.quantumSamurais.hams.core.enums.FragmentTab;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.activities.fragments.DoctorViewAppointmentsFragment;
-import com.quantumSamurais.hams.doctor.activities.fragments.appointmentsFragment;
 import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
 
 
 //<>
-import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.quantumSamurais.hams.ui.settings.SettingActivity;
 import com.quantumSamurais.hams.ui.settings.SettingFragment;
 
 import java.time.LocalDate;
@@ -103,19 +95,26 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
 
 
-        //String doctorName = myDoctor.getFirstName() + " " + myDoctor.getLastName();
+        String doctorName = myDoctor.getFirstName() + " " + myDoctor.getLastName();
         String doctorEmail = myDoctor.getEmail();
 
         acceptsAppointmentsByDefault = myDoctor.getAcceptsAppointmentsByDefault();
 
         fragment = null;
         drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navView = findViewById(R.id.navigation_view);
+        Log.d("navView", "navView: " + navView);
+        View navHeader = navView.getHeaderView(0);
+        Log.d("navHeader", "navHeader: " + navHeader);
 
-        TextView headerName = drawerLayout.findViewById(R.id.header_name);
-        TextView headerEmail = drawerLayout.findViewById(R.id.header_email);
 
-        //headerName.setText(doctorName);
-        //headerEmail.setText(doctorEmail);
+
+        TextView headerName = navHeader.findViewById(R.id.header_name);
+        TextView headerEmail = navHeader.findViewById(R.id.header_email);
+        Log.d("doctor name", "doctor name: " + headerName);
+        Log.d("doctor email", "doctor email: " + headerEmail);
+        headerName.setText(doctorName);
+        headerEmail.setText(doctorEmail);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
