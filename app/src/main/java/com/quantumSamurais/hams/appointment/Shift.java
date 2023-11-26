@@ -21,6 +21,8 @@ public class Shift {
     LocalDateTime startTime, endTime;
     long shiftID;
     private boolean pastShiftFlag;
+    private String doctorEmail;
+    private String doctorEmployeeNumber;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public Shift(String emailAddress, LocalDateTime startTime, LocalDateTime endTime){
@@ -81,6 +83,9 @@ public class Shift {
     }
 
     public long getShiftID() { return shiftID; }
+    public Doctor getDoctor() {
+        return aDoctor;
+    }
 
     public boolean isVacant(){
         return appointments.isEmpty();
