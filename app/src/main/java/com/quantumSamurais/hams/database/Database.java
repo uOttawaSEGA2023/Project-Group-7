@@ -16,7 +16,9 @@ import androidx.annotation.RequiresApi;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -349,14 +351,37 @@ public class Database {
                         .add(shiftData)
                         .addOnSuccessListener(documentReference -> {
                             Log.d("Database", "Shift added successfully with ID: " + documentReference.getId());
+
+                            // Update the doctor's shifts field in a transaction
+                            db.runTransaction((Transaction.Function<Void>) transaction -> {
+                                updateDoctorShifts(transaction, shift.getDoctor().getEmail(), shift.getShiftID());
+                                return null;
+                            });
                         })
                         .addOnFailureListener(e -> {
-                            Log.w("Database", "Error adding shift", e);
+                            Log.d("Database", "Error adding shift", e);
                         });
             } catch (Exception e) {
                 Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
             }
         }).start();
+    }
+
+    private void updateDoctorShifts(Transaction transaction, String doctorEmail, long shiftID) throws FirebaseFirestoreException {
+        // Get the doctor's document in the "doctors" collection
+        DocumentReference doctorRef = db.collection("users")
+                .document("software")
+                .collection("doctors")
+                .document(doctorEmail);
+
+        // Get the current shifts array from the doctor's document
+        List<Long> currentShifts = (List<Long>) transaction.get(doctorRef).get("shifts");
+
+        // Add the new shift ID to the array
+        currentShifts.add(shiftID);
+
+        // Update the "shifts" field in the doctor's document
+        transaction.update(doctorRef, "shifts", currentShifts);
     }
 
 
@@ -466,7 +491,7 @@ public class Database {
             try {
                 doctor = await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
             } catch (ExecutionException | InterruptedException e) {
-                Log.e("Database", "Error fetching doctor from DB", e);
+                Log.d("Database", "Error fetching doctor from DB", e);
                 throw new IllegalArgumentException("Error fetching doctor from DB", e);
             }
             return doctor;
@@ -478,7 +503,7 @@ public class Database {
 
         if (documents.isEmpty()) {
             // Handle case where no doctor is found for the given email
-            Log.w("Database", "No doctor found for email: " + email);
+            Log.d("Database", "No doctor found for email: " + email);
             return null;
         }
 
