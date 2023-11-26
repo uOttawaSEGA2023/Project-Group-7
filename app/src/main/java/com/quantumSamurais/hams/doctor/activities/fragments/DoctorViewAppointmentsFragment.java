@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.Fragment;
@@ -29,6 +30,7 @@ public class DoctorViewAppointmentsFragment extends Fragment {
     private ViewPager viewPager;
     private Doctor myDoctor;
 
+    private TextView nameView;
     View view;
     ExtendedFloatingActionButton extendingFAB;
 
@@ -68,6 +70,9 @@ public class DoctorViewAppointmentsFragment extends Fragment {
         vpAdapter.addFragments(newInstance(PENDING_REQUESTS, myDoctor), "Pending");
         vpAdapter.addFragments(newInstance(REJECTED_REQUESTS, myDoctor), "Rejected");
         viewPager.setAdapter(vpAdapter);
+
+        nameView = view.findViewById(R.id.textView4);
+        nameView.setText(myDoctor.getFirstName());
     }
 
     @Override
