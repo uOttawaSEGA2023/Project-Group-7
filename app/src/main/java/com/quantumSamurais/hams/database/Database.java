@@ -17,7 +17,6 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
@@ -227,8 +226,25 @@ public class Database {
 
     // <editor-fold desc="Deliverable 3 & 4">
     public void addAppointmentRequest(Appointment appointment) {
-        new Thread(() -> db.collection("users").document("software")
-                .collection("appointments").add(appointment)).start();
+        new Thread(() -> {
+            DocumentSnapshot software = null;
+            try {
+                software = await(db.collection("users").document("software").get());
+                Long appointmentID = (Long) software.get("appointmentID");
+                if (appointmentID == null) {
+                    await(db.collection("users").document("software").update("appointmentID", 0));
+                    appointmentID = 0L;
+                }
+                //set the appointmentID to a server controlled one and then updates it.
+                appointment.setAppointmentID(appointmentID);
+                appointmentID++;
+                await(db.collection("users").document("software").update("appointmentID", appointmentID));
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            //add the appointment
+            db.collection("users").document("software").collection("appointments").add(appointment);}
+        ).start();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
