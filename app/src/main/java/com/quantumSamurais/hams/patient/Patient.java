@@ -18,7 +18,7 @@ public class Patient extends User {
     private String healthCardNumber;
     public HashMap<Long, Appointment> appointments= new HashMap<Long, Appointment>();
 
-    public HashMap<Long, Appointment> appointments= new HashMap<Long, Appointment>();
+//    public HashMap<Long, Appointment> appointments= new HashMap<Long, Appointment>();
 
     public Patient() {
 
