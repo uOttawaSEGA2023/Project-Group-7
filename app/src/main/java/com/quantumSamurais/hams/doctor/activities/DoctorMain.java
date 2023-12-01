@@ -155,7 +155,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             LocalDateTime endDateTime = LocalDateTime.of(selectedDate, LocalTime.of(endHour, endMinute));
 
             if (isValidNewShift(selectedDate, startDateTime, endDateTime)) {
-                Database.getInstance().addShift(new Shift(myDoctor.getEmployeeNumber(), startDateTime, endDateTime));
+                Database.getInstance().addShift(new Shift(myDoctor.getEmail(), startDateTime, endDateTime));
                 updateShiftsList();
                 Toast.makeText(this, "Shift added successfully", Toast.LENGTH_SHORT).show();
             } else {
