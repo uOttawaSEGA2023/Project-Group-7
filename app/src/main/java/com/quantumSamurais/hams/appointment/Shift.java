@@ -11,17 +11,22 @@ import com.quantumSamurais.hams.doctor.Doctor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Shift {
     Database db;
-    static long SHIFT_ID = 0;
+    private static long SHIFT_ID = 0;
     Map<Long, Appointment> appointments;
     Doctor aDoctor;
     LocalDateTime startTime, endTime;
     long shiftID;
     private boolean pastShiftFlag;
 
+    public Shift()
+    {
+
+    }
     @RequiresApi(api = Build.VERSION_CODES.O)
     public Shift(String emailAddress, LocalDateTime startTime, LocalDateTime endTime){
         //Basic sanity checks
@@ -33,6 +38,7 @@ public class Shift {
         //Check if this shift would overlap with other shifts.
 
         db = Database.getInstance();
+        appointments = new HashMap<>();
         aDoctor = db.getDoctor(emailAddress);
         this.startTime = startTime;
         this.endTime = endTime;
