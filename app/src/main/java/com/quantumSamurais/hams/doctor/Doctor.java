@@ -26,6 +26,8 @@ public class Doctor extends User implements Serializable {
 	private ArrayList<Shift> shifts;
 	//private Database db;
 
+	private HashMap<Patient,Integer> ratings;
+
 	public Doctor() {
 	}
 
@@ -58,6 +60,19 @@ public class Doctor extends User implements Serializable {
 		this.specialties = specialties;
 		this.shifts = shifts;
 		acceptsAppointmentsByDefault = acceptsByDefault;
+	}
+
+	public void setRate(Patient pat, int rating){
+		if(rating>5 || rating <0){
+			throw new Exception("Invalid rating");
+		}else{
+		this.ratings.put(pat, rating);
+		}
+
+	}
+
+	public HashMap<Patient, Integer> getratings(){
+		return this.ratings;
 	}
 
 	@Override

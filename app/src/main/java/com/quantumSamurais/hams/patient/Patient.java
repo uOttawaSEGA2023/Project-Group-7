@@ -16,6 +16,7 @@ import java.util.Objects;
 public class Patient extends User {
 
     private String healthCardNumber;
+    public HashMap<Long, Appointment> appointments= new HashMap<Long, Appointment>();
 
     public HashMap<Long, Appointment> appointments= new HashMap<Long, Appointment>();
 
@@ -51,6 +52,10 @@ public class Patient extends User {
     public Patient setHealthCardNumber(String healthCardNumber) {
         this.healthCardNumber = healthCardNumber;
         return this;
+    }
+    public boolean acceptAppointment(Appointment app){
+        //TODO: Implement this
+        return false;
     }
 
     public boolean acceptAppointment(Appointment app){
