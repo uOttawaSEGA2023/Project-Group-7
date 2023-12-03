@@ -3,13 +3,16 @@ package com.quantumSamurais.hams.doctor;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.view.SurfaceControl;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.google.firebase.firestore.Transaction;
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.doctor.activities.DoctorMain;
 import com.quantumSamurais.hams.user.User;
 
@@ -94,8 +97,12 @@ public class Doctor extends User implements Serializable {
 		return acceptsAppointmentsByDefault;
 	}
 
+
 	public void setAcceptsAppointmentsByDefault(boolean value){
 		acceptsAppointmentsByDefault = value;
+
+		Database db = Database.getInstance();
+		db.updateAcceptsByDefault(getEmail(), value); //errors running in with this method.
 	}
 
 	public ArrayList<Shift> getShifts() {

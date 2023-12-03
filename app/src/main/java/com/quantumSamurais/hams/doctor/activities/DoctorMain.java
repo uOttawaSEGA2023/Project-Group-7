@@ -289,16 +289,11 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         if (item.getItemId() == R.id.nav_settings) {
             fragment = new SettingFragment(myDoctor);
         } else if (item.getItemId() == R.id.nav_appointments) {
-            /*
-            Intent newIntent = new Intent(this, DoctorViewAppointments.class);
-            startActivity(newIntent);
-            */
             fragment = new DoctorViewAppointmentsFragment(myDoctor);
         } else if (item.getItemId() == R.id.nav_home) {
             if (fragment != null) {
                 transaction.remove(fragment).commit();
                 fragment = null;
-
             }
             if (addShiftFAB.getVisibility() != View.VISIBLE) {
                 addShiftFAB.setVisibility(View.VISIBLE);

@@ -340,6 +340,34 @@ public class Database {
         });
     }
 
+    public void updateAcceptsByDefault(String doctorEmail, boolean value) {
+            CollectionReference myDoctors = db.collection("users").document("software").collection("doctors");
+            myDoctors.whereEqualTo("email", doctorEmail).get().addOnCompleteListener(getDoctor -> {
+                if (getDoctor.isSuccessful()) {
+                    QuerySnapshot doctorSnap = getDoctor.getResult();
+                    for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
+                            String doctorId = singleDoctor.getId();
+                            DocumentReference docRef =  myDoctors.document(doctorId);
+                            updateAcceptsByDefault(docRef, value);
+                    }
+                } else {
+                    Log.d("Database", "Error getting documents: ", getDoctor.getException());
+                }
+            });
+    }
+    private void updateAcceptsByDefault(DocumentReference docRef, boolean value) {
+        db.runTransaction((Transaction.Function<Void>) transaction -> {
+            transaction.update(docRef, "acceptsAppointmentsByDefault", value);
+            return null;
+                }).addOnSuccessListener(aVoid -> {
+            Log.d("transaction success", "value successfully changed");
+            // Transaction success logic
+        }).addOnFailureListener(e -> {
+            Log.d("transaction failure", "value not changed");
+            // Transaction failure logic
+        });
+    }
+
     public Doctor getDoctorEmail(String doctorEmail) {
         for (Doctor doctor : doctors) {
             if (doctor.getEmail().equals(doctorEmail)) {
