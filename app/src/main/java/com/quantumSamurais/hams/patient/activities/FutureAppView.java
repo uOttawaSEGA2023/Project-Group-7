@@ -1,4 +1,8 @@
+/*
 package com.quantumSamurais.hams.patient;
+
+import com.quantumSamurais.hams.appointment.Appointment;
+import com.quantumSamurais.hams.doctor.Doctor;
 
 public class FutureAppView {
     public FutureAppView(){}
@@ -47,3 +51,4 @@ public class FutureAppView {
 
 
 }
+*/

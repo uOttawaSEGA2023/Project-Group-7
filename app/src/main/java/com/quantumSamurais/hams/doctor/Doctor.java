@@ -11,11 +11,13 @@ import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.activities.DoctorMain;
+import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -63,7 +65,7 @@ public class Doctor extends User implements Serializable {
 		acceptsAppointmentsByDefault = acceptsByDefault;
 	}
 
-	public void setRate(Patient pat, int rating){
+	public void setRate(Patient pat, int rating) throws Exception {
 		if(rating>5 || rating <0){
 			throw new Exception("Invalid rating");
 		}else{

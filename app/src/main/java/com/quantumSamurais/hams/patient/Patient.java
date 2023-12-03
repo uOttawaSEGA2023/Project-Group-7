@@ -53,7 +53,7 @@ public class Patient extends User {
         this.healthCardNumber = healthCardNumber;
         return this;
     }
-    public boolean acceptAppointment(Appointment app){
+    /*public boolean acceptAppointment(Appointment app){
         //TODO: Implement this
         return false;
     }
@@ -61,7 +61,7 @@ public class Patient extends User {
     public boolean acceptAppointment(Appointment app){
         //TODO: Implement this
         return false;
-    }
+    }*/
 
     @Override
     public boolean equals(Object o) {
