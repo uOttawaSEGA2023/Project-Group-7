@@ -306,6 +306,7 @@ public class Database {
 
 
     private void updateShift(Transaction transaction, long shiftID, Map<Long, Appointment> updatedAppointments) {
+        //TODO: DECOUPLE THE TRANSACTION & GET()
         CollectionReference myShifts = db.collection("users").document("software").collection("shifts");
         myShifts.whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(getShift -> {
             if (getShift.isSuccessful()) {
