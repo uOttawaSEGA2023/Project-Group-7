@@ -4,22 +4,28 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.quantumSamurais.hams.appointment.Appointment;
+import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.login.LoginInteractiveMessage;
+import com.quantumSamurais.hams.patient.activities.PatientMainActivity;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class Patient extends User {
 
     private String healthCardNumber;
-    public HashMap<Long, Appointment> appointments= new HashMap<Long, Appointment>();
 
-//    public HashMap<Long, Appointment> appointments= new HashMap<Long, Appointment>();
-
+    //TODO: UPDATE CACHE WHEN DOCTOR CANCELS APPOINTMENT
+    private List<Appointment> appointments;
+    private List<Doctor> currentDoctors;
     public Patient() {
 
     }
@@ -36,13 +42,33 @@ public class Patient extends User {
     public Patient(String firstName, String lastName, ArrayList<Integer> hashedPassword, ArrayList<Integer> salt, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
         super(firstName, lastName, hashedPassword, salt, emailAddress, phoneNumber, postalAddress);
         this.healthCardNumber = healthCardNumber;
+        Database db = Database.getInstance();
+        appointments = new ArrayList<>();
+//        this.appointments = db.getPatientAppointments();
     }
 
     @Override
     public void changeView(Context currentContext) {
-        Intent patientView = new Intent(currentContext, LoginInteractiveMessage.class);
-        patientView.putExtra("userType", UserType.PATIENT);
+        Intent patientView = new Intent(currentContext, PatientMainActivity.class);
+        patientView.putExtra("patient", this);
         currentContext.startActivity(patientView);
+    }
+    public void addAppointment() {
+
+    }
+
+    public boolean appointmentCancellable(Appointment appointment) {
+        return false;
+    }
+
+    public boolean cancelAppointment() {
+        return false;
+    }
+
+
+    public List<Appointment> getAppointments() {
+        appointments.add(new Appointment(LocalDateTime.of(2024,12,20,1,2,3),LocalDateTime.of(2024,12,23,2,2,3),new Shift(),this));
+        return appointments;
     }
 
     public String getHealthCardNumber() {
@@ -53,11 +79,6 @@ public class Patient extends User {
         this.healthCardNumber = healthCardNumber;
         return this;
     }
-    public boolean acceptAppointment(Appointment app){
-        //TODO: Implement this
-        return false;
-    }
-
     public boolean acceptAppointment(Appointment app){
         //TODO: Implement this
         return false;
