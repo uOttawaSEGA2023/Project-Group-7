@@ -15,7 +15,5 @@
     <fragment
         android:id="@+id/viewSettings"
         android:label="settings"
-        android:name="com.quantumSamurais.hams.ui.settings.SettingFragment"
-        android:layout="@layout/fragment_settingspage"
         />
 </navigation>

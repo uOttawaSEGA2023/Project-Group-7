@@ -17,7 +17,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
@@ -65,6 +65,8 @@ public class Database {
     private Database() {
         signUpLock = new ReentrantLock();
     }
+    private List<Doctor> doctors; 
+    private List<Shift> shifts;   
 
     public static Database getInstance() {
         if (instance == null) {
@@ -225,8 +227,25 @@ public class Database {
 
     // <editor-fold desc="Deliverable 3 & 4">
     public void addAppointmentRequest(Appointment appointment) {
-        new Thread(() -> db.collection("users").document("software")
-                .collection("appointments").add(appointment)).start();
+        new Thread(() -> {
+            DocumentSnapshot software = null;
+            try {
+                software = await(db.collection("users").document("software").get());
+                Long appointmentID = (Long) software.get("appointmentID");
+                if (appointmentID == null) {
+                    await(db.collection("users").document("software").update("appointmentID", 0));
+                    appointmentID = 0L;
+                }
+                //set the appointmentID to a server controlled one and then updates it.
+                appointment.setAppointmentID(appointmentID);
+                appointmentID++;
+                await(db.collection("users").document("software").update("appointmentID", appointmentID));
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            //add the appointment
+            db.collection("users").document("software").collection("appointments").add(appointment);}
+        ).start();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -287,12 +306,13 @@ public class Database {
 
 
     private void updateShift(Transaction transaction, long shiftID, Map<Long, Appointment> updatedAppointments) {
+        //TODO: DECOUPLE THE TRANSACTION & GET()
         CollectionReference myShifts = db.collection("users").document("software").collection("shifts");
-        Query query = myShifts.whereEqualTo("shiftID", shiftID);
-        query.get().addOnCompleteListener(getShift -> {
+        myShifts.whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(getShift -> {
             if (getShift.isSuccessful()) {
-                for (QueryDocumentSnapshot document : getShift.getResult()) {
-                    String documentId = document.getId();
+                QuerySnapshot shiftSnap = getShift.getResult();
+                for (QueryDocumentSnapshot singularShift: shiftSnap) {
+                    String documentId = singularShift.getId();
                     DocumentReference docRef = myShifts.document(documentId);
                     transaction.update(docRef, "appointments", updatedAppointments);
                 }
@@ -320,20 +340,91 @@ public class Database {
         });
     }
 
+    public void updateAcceptsByDefault(String doctorEmail, boolean value) {
+            CollectionReference myDoctors = db.collection("users").document("software").collection("doctors");
+            myDoctors.whereEqualTo("email", doctorEmail).get().addOnCompleteListener(getDoctor -> {
+                if (getDoctor.isSuccessful()) {
+                    QuerySnapshot doctorSnap = getDoctor.getResult();
+                    for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
+                            String doctorId = singleDoctor.getId();
+                            DocumentReference docRef =  myDoctors.document(doctorId);
+                            updateAcceptsByDefault(docRef, value);
+                    }
+                } else {
+                    Log.d("Database", "Error getting documents: ", getDoctor.getException());
+                }
+            });
+    }
+    private void updateAcceptsByDefault(DocumentReference docRef, boolean value) {
+        db.runTransaction((Transaction.Function<Void>) transaction -> {
+            transaction.update(docRef, "acceptsAppointmentsByDefault", value);
+            return null;
+                }).addOnSuccessListener(aVoid -> {
+            Log.d("transaction success", "value successfully changed");
+            // Transaction success logic
+        }).addOnFailureListener(e -> {
+            Log.d("transaction failure", "value not changed");
+            // Transaction failure logic
+        });
+    }
 
-
+    public Doctor getDoctorEmail(String doctorEmail) {
+        for (Doctor doctor : doctors) {
+            if (doctor.getEmail().equals(doctorEmail)) {
+                return doctor;
+            }
+        }
+        return null;  // Return null if the doctor is not found
+    }
 
 
 
     public void addShift(Shift shift) {
-            // Convert Shift object to Map to avoid serialization issues
-            Map<String, Object> shiftData = new HashMap<>();
-            shiftData.put("shiftID", shift.getShiftID());
-            // Add other shift properties to shiftData as needed
+        new Thread(() -> {
+            try {
+                // Convert Shift object to Map to avoid serialization issues
+                Map<String, Object> shiftData = new HashMap<>();
+                shiftData.put("shiftID", shift.getShiftID());
+                // Add other shift properties to shiftData as needed
 
-            // Add the shift data to the "shift" collection
-            new Thread(() -> {db.collection("users").document("software").collection("shifts").add(shiftData);}).run();
+                // Add the shift data to the "shifts" collection
+                db.collection("users")
+                        .document("software")
+                        .collection("shifts")
+                        .add(shiftData)
+                        .addOnSuccessListener(documentReference -> {
+                            Log.d("Database", "Shift added successfully with ID: " + documentReference.getId());
 
+                            // Update the doctor's shifts field in a transaction
+                            db.runTransaction((Transaction.Function<Void>) transaction -> {
+                                updateDoctorShifts(transaction, shift.getDoctor().getEmail(), shift.getShiftID());
+                                return null;
+                            });
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.d("Database", "Error adding shift", e);
+                        });
+            } catch (Exception e) {
+                Log.d("Database Access Thread Error:", "Cause: " + e.getCause() + " Stack Trace: " + Arrays.toString(e.getStackTrace()));
+            }
+        }).start();
+    }
+
+    private void updateDoctorShifts(Transaction transaction, String doctorEmail, long shiftID) throws FirebaseFirestoreException {
+        // Get the doctor's document in the "doctors" collection
+        DocumentReference doctorRef = db.collection("users")
+                .document("software")
+                .collection("doctors")
+                .document(doctorEmail);
+
+        // Get the current shifts array from the doctor's document
+        List<Long> currentShifts = (List<Long>) transaction.get(doctorRef).get("shifts");
+
+        // Add the new shift ID to the array
+        currentShifts.add(shiftID);
+
+        // Update the "shifts" field in the doctor's document
+        transaction.update(doctorRef, "shifts", currentShifts);
     }
 
 
@@ -443,17 +534,23 @@ public class Database {
             try {
                 doctor = await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
             } catch (ExecutionException | InterruptedException e) {
-                Log.d("Database", email + ": this email is likely invalid. Error while fetching doctor from DB");
-                throw new IllegalArgumentException("The email that was passed couldn't be found in db. (Or a problem occurred with the thread)");
+                Log.e("Database", "Error fetching doctor from DB", e);
+                throw new IllegalArgumentException("Error fetching doctor from DB", e);
             }
             return doctor;
         };
 
         CompletableFuture<QuerySnapshot> doctorSnapshot = supplyAsync(getMyDoctor);
 
-        Doctor doctor = doctorSnapshot.join().getDocuments().get(0).toObject(Doctor.class);
+        List<DocumentSnapshot> documents = doctorSnapshot.join().getDocuments();
 
-        return doctor;
+        if (documents.isEmpty()) {
+            // Handle case where no doctor is found for the given email
+            Log.d("Database", "No doctor found for email: " + email);
+            return null;
+        }
+
+        return documents.get(0).toObject(Doctor.class);
     }
 
     /**

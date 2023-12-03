@@ -21,6 +21,8 @@ public class Shift {
     LocalDateTime startTime, endTime;
     long shiftID;
     private boolean pastShiftFlag;
+    private String doctorEmail;
+    private String doctorEmployeeNumber;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public Shift(String emailAddress, LocalDateTime startTime, LocalDateTime endTime){
@@ -30,7 +32,6 @@ public class Shift {
         } else if (!isValidShiftTime(startTime, endTime)) {
             throw new IllegalArgumentException("The shift time must be in increments of 30 minutes");
         }
-        //Check if this shift would overlap with other shifts.
 
         db = Database.getInstance();
         aDoctor = db.getDoctor(emailAddress);
@@ -38,11 +39,11 @@ public class Shift {
         this.endTime = endTime;
         shiftID = SHIFT_ID;
         SHIFT_ID++;
-        //db.addShift(this, );
+        db.addShift(this);
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public boolean overlapsWith(Shift otherShift) {
-        return !this.endTime.isBefore(otherShift.startTime) && !this.startTime.isAfter(otherShift.endTime);
+    public boolean overlapsWith(LocalDateTime otherStartTime, LocalDateTime otherEndTime) {
+        return !this.endTime.isBefore(otherStartTime) && !this.startTime.isAfter(otherEndTime);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -81,8 +82,9 @@ public class Shift {
         return endTime;
     }
 
-    public long getShiftID() {
-        return shiftID;
+    public long getShiftID() { return shiftID; }
+    public Doctor getDoctor() {
+        return aDoctor;
     }
 
     public boolean isVacant(){

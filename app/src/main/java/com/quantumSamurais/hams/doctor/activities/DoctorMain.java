@@ -1,7 +1,6 @@
 package com.quantumSamurais.hams.doctor.activities;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -19,17 +19,27 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+
 import com.google.android.material.navigation.NavigationView;
 import com.quantumSamurais.hams.R;
+
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
+import com.quantumSamurais.hams.doctor.activities.fragments.DoctorViewAppointmentsFragment;
 import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
-import com.quantumSamurais.hams.ui.settings.SettingActivity;
+
+
+//<>
+
+import com.quantumSamurais.hams.ui.settings.SettingFragment;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,7 +47,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter.OnDeleteClickListener, NavigationView.OnNavigationItemSelectedListener{
+public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter.OnDeleteClickListener{
     private Doctor myDoctor;
     DoctorShiftsAdapter shiftsAdapter;
     RecyclerView shiftsStack;
@@ -45,16 +55,17 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     ArrayList<Shift> shifts;
     Handler refreshShifts;
 
-    DrawerLayout drawerLayout;
+    Fragment fragment;
+    private DrawerLayout drawerLayout;
     ExtendedFloatingActionButton addShiftFAB;
 
-    ActionBarDrawerToggle actionBarDrawerToggle;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
 
-    NavigationView navView;
+    private NavigationView navView;
 
 
+    private boolean acceptsAppointmentsByDefault;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,11 +75,18 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             finish();
         }
 
+
         db = Database.getInstance();
         myDoctor = db.getDoctor(getIntent().getStringExtra("doctorEmailAddress"));
         shifts = myDoctor.getShifts();
         setContentView(R.layout.main_doctor_view);
-
+        // imp
+        shiftsAdapter = new DoctorShiftsAdapter(shifts, this);
+        shiftsStack = findViewById(R.id.shiftsRecyclerView);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        shiftsStack.setLayoutManager(layoutManager);
+        shiftsStack.setAdapter(shiftsAdapter);
+        // imp
         addShiftFAB = findViewById(R.id.extended_fab);
         addShiftFAB.setOnClickListener(v -> showAddShiftDialog());
         setup();
@@ -80,29 +98,40 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         String doctorName = myDoctor.getFirstName() + " " + myDoctor.getLastName();
         String doctorEmail = myDoctor.getEmail();
 
-        // headerName = findViewById(R.id.header_name);
-        // headerEmail = findViewById(R.id.header_email);
+        acceptsAppointmentsByDefault = myDoctor.getAcceptsAppointmentsByDefault();
 
-        boolean acceptsAppointmentsByDefault = myDoctor.getAcceptsAppointmentsByDefault();
-
-
+        fragment = null;
         drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navView = findViewById(R.id.navigation_view);
+        Log.d("navView", "navView: " + navView);
+        View navHeader = navView.getHeaderView(0);
+        Log.d("navHeader", "navHeader: " + navHeader);
 
 
+
+        TextView headerName = navHeader.findViewById(R.id.header_name);
+        TextView headerEmail = navHeader.findViewById(R.id.header_email);
+        Log.d("doctor name", "doctor name: " + headerName);
+        Log.d("doctor email", "doctor email: " + headerEmail);
+        headerName.setText(doctorName);
+        headerEmail.setText(doctorEmail);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
-
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
 
-
         navView = findViewById(R.id.navigation_view);
-        navView.setNavigationItemSelectedListener(this);
-
+        setupDrawerContent(navView);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
 
-
-
+    private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(
+                menuItem -> {
+                    selectDrawerItem(menuItem);
+                    return true;
+                }
+        );
     }
 
 
@@ -130,7 +159,6 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         shiftsStack.setAdapter(shiftsAdapter);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void showAddShiftDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
@@ -155,9 +183,15 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             LocalDateTime endDateTime = LocalDateTime.of(selectedDate, LocalTime.of(endHour, endMinute));
 
             if (isValidNewShift(selectedDate, startDateTime, endDateTime)) {
-                Database.getInstance().addShift(new Shift(myDoctor.getEmployeeNumber(), startDateTime, endDateTime));
-                updateShiftsList();
-                Toast.makeText(this, "Shift added successfully", Toast.LENGTH_SHORT).show();
+                new Thread(() -> {
+                    // Use the getDoctor method to get the latest doctor information
+                    Doctor updatedDoctor = db.getDoctor(myDoctor.getEmail());
+                    Database.getInstance().addShift(new Shift(updatedDoctor.getEmail(), startDateTime, endDateTime));
+                    runOnUiThread(() -> {
+                        updateShiftsList();
+                        Toast.makeText(this, "Shift added successfully", Toast.LENGTH_SHORT).show();
+                    });
+                }).start();
             } else {
                 Toast.makeText(this, "Invalid shift. Please check the date and time.", Toast.LENGTH_SHORT).show();
             }
@@ -172,38 +206,20 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     @RequiresApi(api = Build.VERSION_CODES.O)
     private boolean isValidNewShift(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
         // Check if the date is not in the past
-        if (date.isBefore(LocalDate.now())) {
-            showWarningMessage("Selected date is in the past. Please choose a future date.");
-            return false;
-        }
-
-        // Check if start time is before end time
-        if (startTime.isEqual(endTime) || startTime.isAfter(endTime)) {
-            showWarningMessage("End time must be after start time. Please adjust the times.");
+        if (date.isBefore(LocalDate.now()) || startTime.getMinute() % 30 != 0 || endTime.getMinute() % 30 != 0 || endTime.isBefore(startTime)) {
             return false;
         }
 
         // Check for conflicts with existing shifts
         for (Shift existingShift : myDoctor.getShifts()) {
-            if (existingShift.overlapsWith(new Shift(myDoctor.getEmployeeNumber(), startTime, endTime))) {
-                showWarningMessage("Shift conflicts with an existing shift. Please choose different times.");
+            if (existingShift.overlapsWith(startTime, endTime)) {
                 return false;
             }
-        }
-
-        // Check if the start and end times are in increments of 30 minutes
-        long interval = startTime.until(endTime, java.time.temporal.ChronoUnit.MINUTES);
-        if (interval % 30 != 0) {
-            showWarningMessage("Shift times must be in increments of 30 minutes. Please adjust the times.");
-            return false;
         }
 
         return true;
     }
 
-    private void showWarningMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void onDeleteClick(int position) {
@@ -258,33 +274,36 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-     if(actionBarDrawerToggle.onOptionsItemSelected(item)) {
-         return true;
-     }
-     return super.onOptionsItemSelected(item);
+        if(actionBarDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        Intent newIntent;
 
-        if(item.getItemId() == R.id.nav_home) {
-            if (getWindow().getDecorView().findViewById(android.R.id.content).getId() !=
-            R.id.drawer_layout) {
-                newIntent = new Intent(this, DoctorMain.class);
-                startActivity(newIntent);
+    public void selectDrawerItem(MenuItem item) {
+        myDoctor = db.getDoctor(getIntent().getStringExtra("doctorEmailAddress"));
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        if (item.getItemId() == R.id.nav_settings) {
+            fragment = new SettingFragment(myDoctor);
+        } else if (item.getItemId() == R.id.nav_appointments) {
+            fragment = new DoctorViewAppointmentsFragment(myDoctor);
+        } else if (item.getItemId() == R.id.nav_home) {
+            if (fragment != null) {
+                transaction.remove(fragment).commit();
+                fragment = null;
             }
-        } else if (item.getItemId() == R.id.nav_settings) {
-            newIntent = new Intent(this, SettingActivity.class);
-            startActivity(newIntent);
-
-        } else if (item.getItemId() == R.id.nav_appointments ) {
-            newIntent = new Intent(this, DoctorViewAppointments.class);
-            newIntent.putExtra("doctor", myDoctor);
-            startActivity(newIntent);
+            if (addShiftFAB.getVisibility() != View.VISIBLE) {
+                addShiftFAB.setVisibility(View.VISIBLE);
+            }
         }
-
-        return true;
+        Log.d("DoctorMain: ", "FragmentIsNull: " + (fragment == null));
+        drawerLayout.closeDrawers();
+        if (fragment != null) {
+            transaction.replace(R.id.flContent, fragment).commit();
+        }
     }
 
 }

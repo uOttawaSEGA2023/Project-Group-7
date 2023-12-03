@@ -54,7 +54,7 @@ public class DoctorShiftsAdapter extends RecyclerView.Adapter<DoctorShiftsAdapte
     public void updateList(List<Shift> newShifts) {
         shifts.clear();
         shifts.addAll(newShifts);
-        notifyDataSetChanged();
+        // Remove notifyDataSetChanged here
     }
 
     public static class ShiftViewHolder extends RecyclerView.ViewHolder {

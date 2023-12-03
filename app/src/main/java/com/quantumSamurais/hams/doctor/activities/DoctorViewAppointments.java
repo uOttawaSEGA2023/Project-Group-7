@@ -21,6 +21,7 @@ public class DoctorViewAppointments extends AppCompatActivity {
     private ViewPager viewPager;
     private Doctor myDoctor;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
