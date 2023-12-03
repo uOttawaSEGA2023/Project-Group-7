@@ -9,23 +9,13 @@
     android:id="@+id/drawer_layout"
     tools:context=".doctor.activities.DoctorMain"
     android:fitsSystemWindows="true"
-    tools:openDrawer="start">
+    tools:openDrawer="end">
 
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true">
-
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/appBarLayout"
-            style="@style/Widget.MaterialComponents.AppBarLayout.PrimarySurface"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
-            android:layout="@layout/app_bar_main">
-
-        </com.google.android.material.appbar.AppBarLayout>
 
         <!-- Screen content -->
         <!-- Use app:layout_behavior="@string/appbar_scrolling_view_behavior" to fit below top app bar -->
@@ -40,18 +30,20 @@
 
     <TextView
         android:id="@+id/firstNameDoc"
-        android:layout_width="184dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="7dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginEnd="75dp"
         android:layout_marginTop="75dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginBottom="16dp"
         android:text="FirstName"
-        android:textSize="30sp"
+        android:textSize="28sp"
         app:layout_constraintBottom_toTopOf="@+id/upcomingShift"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.937"
         app:layout_constraintStart_toEndOf="@+id/textView3"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/textView3"
         app:layout_constraintVertical_bias="1.0" />
 
     <TextView
@@ -74,8 +66,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="refresh"
-        android:visibility="gone"
-        tools:ignore="MissingConstraints" />
+        android:visibility="visible"
+        tools:ignore="MissingConstraints"
+        />
 
     <TextView
         android:id="@+id/upcomingShift"
@@ -132,7 +125,11 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.922" />
 
-
+    <FrameLayout
+        android:id="@+id/flContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView

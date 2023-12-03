@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class Appointment {
     Database db;
     RequestStatus appointmentStatus;
-    static long APPOINTMENT_ID = 0;
+    long APPOINTMENT_ID;
     LocalDateTime startTime, endTime;
     long appointmentID;
     private boolean pastAppointmentFlag;
@@ -25,8 +25,6 @@ public class Appointment {
             this.startTime = startTime;
             this.endTime = endTime;
             this.shift = shift;
-            appointmentID = APPOINTMENT_ID;
-            APPOINTMENT_ID++;
             appointmentStatus = RequestStatus.PENDING;
         }
         db.addAppointmentRequest(this);
@@ -101,6 +99,9 @@ public class Appointment {
 
     public long getShiftID(){
         return shift.getShiftID();
+    }
+    public void setAppointmentID(long newID){
+        appointmentID = newID;
     }
 
     public boolean appointmentIsPassed(){

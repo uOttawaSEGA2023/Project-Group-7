@@ -11,7 +11,8 @@
     android:paddingBottom="16dp"
     android:background="@drawable/side_bar_nav"
     android:fitsSystemWindows="true"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:theme="@style/ThemeOverlay.AppCompat.Dark"
+    android:id="@+id/nav_header">
 
     <ImageView
         android:id="@+id/imageView"

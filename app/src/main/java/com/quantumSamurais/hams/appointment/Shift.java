@@ -6,27 +6,25 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
+import com.google.firebase.Timestamp;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Date;
+import java.util.List;
 
 public class Shift {
     Database db;
-    private static long SHIFT_ID = 0;
-    Map<Long, Appointment> appointments;
+    List<Appointment> appointments;
     Doctor aDoctor;
-    LocalDateTime startTime, endTime;
+    Timestamp startTimeStamp, endTimeStamp;
     long shiftID;
     private boolean pastShiftFlag;
 
-    public Shift()
-    {
-
-    }
+    public Shift(){}
     @RequiresApi(api = Build.VERSION_CODES.O)
     public Shift(String emailAddress, LocalDateTime startTime, LocalDateTime endTime){
         //Basic sanity checks
@@ -35,39 +33,58 @@ public class Shift {
         } else if (!isValidShiftTime(startTime, endTime)) {
             throw new IllegalArgumentException("The shift time must be in increments of 30 minutes");
         }
-        //Check if this shift would overlap with other shifts.
 
         db = Database.getInstance();
-        appointments = new HashMap<>();
         aDoctor = db.getDoctor(emailAddress);
-        this.startTime = startTime;
-        this.endTime = endTime;
-        shiftID = SHIFT_ID;
-        SHIFT_ID++;
-        //db.addShift(this, );
+        //Converts to timestamp for serialization and deserialization
+        Date date = Date.from(startTime.atZone(ZoneId.systemDefault()).toInstant());
+        this.startTimeStamp = new Timestamp(date);
+        date = Date.from(endTime.atZone(ZoneId.systemDefault()).toInstant());
+        this.endTimeStamp = new Timestamp(date);
+        appointments = new ArrayList<>();
+        db.addShift(this); //add shift will initialize the shift id.
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public boolean overlapsWith(Shift otherShift) {
-        return !this.endTime.isBefore(otherShift.startTime) && !this.startTime.isAfter(otherShift.endTime);
+    public boolean overlapsWith(LocalDateTime otherStartTime, LocalDateTime otherEndTime) {
+        LocalDateTime startTime = convertTimeStampToLocalDateTime(startTimeStamp);
+        LocalDateTime endTime = convertTimeStampToLocalDateTime(endTimeStamp);
+        return !endTime.isBefore(otherStartTime) && !startTime.isAfter(otherEndTime);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean takeAppointment(Appointment appointment){
+        LocalDateTime startTime = convertTimeStampToLocalDateTime(startTimeStamp);
+        LocalDateTime endTime = convertTimeStampToLocalDateTime(endTimeStamp);
         //If the appointment is compatible with the shift
         if (appointment.getStartTime().isBefore(startTime) || appointment.getEndTime().isAfter(endTime)){
             throw new IllegalArgumentException("The appointment passed is not compatible with this shift");
         }
-        for (Appointment acceptedAppointment: appointments.values()){
+        for (Appointment acceptedAppointment: appointments){
             if (acceptedAppointment.overlaps(appointment)){
                 return false;
             }
         }
-        appointments.put(appointment.getAppointmentID(), appointment);
+        appointments.add(appointment);
         return true;
+    }
+    public LocalDateTime convertTimeStampToLocalDateTime(Timestamp timestamp){
+        return timestamp.toDate().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+    public boolean containsKey(long appointmentID){
+        for (Appointment appointment: appointments){
+            if (appointment.getAppointmentID() == appointmentID){
+                return true;
+            }
+        }
+        return false;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean cancelAppointment(long appointmentID){
-        if(appointments.containsKey(appointmentID)){
+        LocalDateTime startTime = convertTimeStampToLocalDateTime(startTimeStamp);
+        LocalDateTime endTime = convertTimeStampToLocalDateTime(endTimeStamp);
+        if(containsKey(appointmentID)){
             //check to make
             boolean atLeast60HoursBefore = MINUTES.between(startTime, endTime) >= 60;
             if (atLeast60HoursBefore){
@@ -77,18 +94,27 @@ public class Shift {
         //in all other cases we couldn't return.
         return false;
     }
-    public Map<Long, Appointment> getAppointments() {
+    public List<Appointment> getAppointments() {
         return appointments;
     }
-    public LocalDateTime getStartTime(){
-        return startTime;
-    }
-    public LocalDateTime getEndTime(){
-        return endTime;
+
+    public Timestamp getStartTimeStamp(){
+        return startTimeStamp;
     }
 
-    public long getShiftID() {
-        return shiftID;
+    public Timestamp getEndTimeStamp(){
+        return endTimeStamp;
+    }
+    public LocalDateTime getStartTime(){
+        return convertTimeStampToLocalDateTime(startTimeStamp);
+    }
+    public LocalDateTime getEndTime(){
+        return convertTimeStampToLocalDateTime(endTimeStamp);
+    }
+
+    public long getShiftID() { return shiftID; }
+    public Doctor getDoctor() {
+        return aDoctor;
     }
 
     public boolean isVacant(){
@@ -102,15 +128,11 @@ public class Shift {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private boolean shiftIsPassed(){
-        pastShiftFlag = endTime.isBefore(LocalDateTime.now());
+        pastShiftFlag = convertTimeStampToLocalDateTime(endTimeStamp).isBefore(LocalDateTime.now());
         return pastShiftFlag;
     }
 
-    public ArrayList<Appointment> appointmentsAsList(){
-        ArrayList<Appointment> myAppointments = new ArrayList<>();
-        for (Appointment appointment: appointments.values()){
-            myAppointments.add(appointment);
-        }
-        return myAppointments;
+    public void setShiftID(long shiftID) {
+        this.shiftID = shiftID;
     }
 }
