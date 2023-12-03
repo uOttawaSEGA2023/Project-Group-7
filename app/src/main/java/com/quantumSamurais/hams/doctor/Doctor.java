@@ -3,22 +3,20 @@ package com.quantumSamurais.hams.doctor;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.view.SurfaceControl;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.google.firebase.firestore.Transaction;
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
-import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.doctor.activities.DoctorMain;
 import com.quantumSamurais.hams.user.User;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Doctor extends User implements Serializable {
@@ -203,9 +201,9 @@ public class Doctor extends User implements Serializable {
 
 	public ArrayList<Appointment> getAppointments(){
 		ArrayList<Appointment> appointments = new ArrayList<>();
-		ArrayList<Appointment> temp = new ArrayList<>();
+		List<Appointment> temp = new ArrayList<>();
 		for (Shift shift: shifts){
-			temp = shift.appointmentsAsList();
+			temp = shift.getAppointments();
 			for (Appointment appointment: temp){
 				appointments.add(appointment);
 			}
