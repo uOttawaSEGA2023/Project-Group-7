@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -26,21 +25,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-
 import com.google.android.material.navigation.NavigationView;
 import com.quantumSamurais.hams.R;
-
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.doctor.activities.fragments.DoctorViewAppointmentsFragment;
 import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
-
-
-//<>
-
 import com.quantumSamurais.hams.ui.settings.SettingFragment;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -75,9 +69,9 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             finish();
         }
 
-
         db = Database.getInstance();
         myDoctor = db.getDoctor(getIntent().getStringExtra("doctorEmailAddress"));
+        Log.d("email", getIntent().getStringExtra("doctorEmailAddress"));
         shifts = myDoctor.getShifts();
         setContentView(R.layout.main_doctor_view);
         // imp
@@ -137,8 +131,6 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
     private final Runnable refresh_runnable = new Runnable(){
         public void run(){
-            Log.d("Doctor", "My doctor to string: " + myDoctor.toString());
-            Log.d("Doctor", "My shifts: " + shifts);
             myDoctor = db.getDoctor(myDoctor.getEmail());
             shiftsAdapter.updateList(myDoctor.getShifts());
             shiftsAdapter.notifyDataSetChanged();
@@ -182,16 +174,13 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             LocalDateTime startDateTime = LocalDateTime.of(selectedDate, LocalTime.of(startHour, startMinute));
             LocalDateTime endDateTime = LocalDateTime.of(selectedDate, LocalTime.of(endHour, endMinute));
 
-            if (isValidNewShift(selectedDate, startDateTime, endDateTime)) {
-                new Thread(() -> {
+            if (isValidNewShift(startDateTime, endDateTime)) {
                     // Use the getDoctor method to get the latest doctor information
                     Doctor updatedDoctor = db.getDoctor(myDoctor.getEmail());
                     Database.getInstance().addShift(new Shift(updatedDoctor.getEmail(), startDateTime, endDateTime));
                     runOnUiThread(() -> {
                         updateShiftsList();
-                        Toast.makeText(this, "Shift added successfully", Toast.LENGTH_SHORT).show();
                     });
-                }).start();
             } else {
                 Toast.makeText(this, "Invalid shift. Please check the date and time.", Toast.LENGTH_SHORT).show();
             }
@@ -204,9 +193,19 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private boolean isValidNewShift(LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
-        // Check if the date is not in the past
-        if (date.isBefore(LocalDate.now()) || startTime.getMinute() % 30 != 0 || endTime.getMinute() % 30 != 0 || endTime.isBefore(startTime)) {
+    private boolean isValidNewShift(LocalDateTime startTime, LocalDateTime endTime) {
+        // Check if the time passed aren't properly set
+        if (endTime.isBefore(startTime) || endTime.isEqual(startTime)){
+            return false;
+        }
+        // Check if present time is after the start time
+        if (startTime.isBefore(LocalDateTime.now())){
+            return false;
+        }
+        //Right before checking for conflicts check for interval
+        Duration difference = Duration.between(startTime, endTime);
+        boolean isAMultipleOf30Minutes = difference.toMinutes() % 30 == 0;
+        if (!isAMultipleOf30Minutes) {
             return false;
         }
 
@@ -230,6 +229,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         confirmDialog.setMessage("Are you sure you want to delete this shift?");
         confirmDialog.setPositiveButton("Yes", (dialog, which) -> {
             Database.getInstance().deleteShift(shiftToDelete.getShiftID());
+            Log.d("ShiftIDToDelete", "The shift ID of the shift I want to delete is : " + shiftToDelete.getShiftID());
             updateShiftsList();
             Toast.makeText(this, "Shift deleted successfully", Toast.LENGTH_SHORT).show();
         });
