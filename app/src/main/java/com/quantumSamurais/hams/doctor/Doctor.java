@@ -130,7 +130,7 @@ public class Doctor extends User implements Serializable {
 	
 	@RequiresApi(api = Build.VERSION_CODES.O)
 	public boolean createShift(LocalDateTime startDate, LocalDateTime endDate){
-		Shift shiftToAdd = new Shift(this.getEmployeeNumber(), startDate, endDate);
+		Shift shiftToAdd = new Shift(this.getEmail(), startDate, endDate);
 		if (!shiftOverlap(shiftToAdd)){
 			shifts.add(shiftToAdd);
 			return true;
