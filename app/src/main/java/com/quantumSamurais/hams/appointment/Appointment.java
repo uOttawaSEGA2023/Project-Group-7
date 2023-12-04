@@ -2,54 +2,47 @@ package com.quantumSamurais.hams.appointment;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
-import com.quantumSamurais.hams.database.Database;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Exclude;
 import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.patient.Patient;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
-public class Appointment {
-    Database db;
+public class Appointment implements Serializable  {
     RequestStatus appointmentStatus;
-    long APPOINTMENT_ID;
     LocalDateTime startTime, endTime;
     long appointmentID;
+    long shiftID;
     private boolean pastAppointmentFlag;
 
-    Shift shift;
-    Patient myPatient;
+    Patient patient;
     public Appointment(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient){
-        db = Database.getInstance();
         if (inputsAreValid(startTime, endTime, shift, patient)){
             //Set the time
             this.startTime = startTime;
             this.endTime = endTime;
-            this.shift = shift;
+            this.shiftID = shift.getShiftID();
             appointmentStatus = RequestStatus.PENDING;
         }
-        db.addAppointmentRequest(this);
-
     }
 
     public Appointment(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient, RequestStatus requestStatus){
-        db = Database.getInstance();
         if (inputsAreValid(startTime, endTime, shift, patient)){
             //Set the time
             this.startTime = startTime;
             this.endTime = endTime;
-
-            appointmentID = APPOINTMENT_ID;
-            APPOINTMENT_ID++;
             this.appointmentStatus = requestStatus;
 
         }
-
-
     }
 
     public boolean inputsAreValid(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient){
         long interval = MINUTES.between(startTime, endTime);
-        boolean isIncrementOf30Minutes = interval % 30 == 0 ? true:false;
+        boolean isIncrementOf30Minutes = interval % 30 == 0;
         if (shift == null || patient == null){
             throw new NullPointerException("Please do not pass null objects.");
         }
@@ -63,13 +56,13 @@ public class Appointment {
     }
 
     public boolean overlaps(Appointment someAppointment){
-        if (startTime.isBefore(someAppointment.getEndTime()) && someAppointment.getStartTime().isBefore(endTime)){
+        if (startTime.isBefore(someAppointment.getEndTimeLocalDate()) && someAppointment.getStartTimeLocalDate().isBefore(endTime)){
             return true;
         } return false;
     }
 
-    public Patient getMyPatient(){
-        return myPatient;
+    public Patient getPatient(){
+        return patient;
     }
 
     public RequestStatus getAppointmentStatus(){
@@ -80,26 +73,46 @@ public class Appointment {
         return appointmentID;
     }
 
-//    public boolean tieAppointment(long shiftID, Doctor doctor, Patient patient){
-//        if (doctor.hasThisShift(shiftID)){
-//            myDoctor = doctor;
-//            myPatient = patient;
-//            return true;
-//        }
-//        return false;
-//    }
-
-    public LocalDateTime getStartTime(){
+    @Exclude
+    public LocalDateTime getStartTimeLocalDate(){
         return startTime;
     }
 
-    public LocalDateTime getEndTime(){
+    @Exclude
+    public LocalDateTime getEndTimeLocalDate(){
         return endTime;
     }
 
-    public long getShiftID(){
-        return shift.getShiftID();
+    public Timestamp getStartTime() {
+        //Converts to timestamp for serialization and deserialization
+        Date date = Date.from(startTime.atZone(ZoneId.systemDefault()).toInstant());
+        return new Timestamp(date);
     }
+
+    public Timestamp getEndTime() {
+        Date date = Date.from(endTime.atZone(ZoneId.systemDefault()).toInstant());
+        return new Timestamp(date);
+    }
+
+    public void setStartTime(Timestamp time) {
+        startTime = convertTimeStampToLocalDateTime(time);
+    }
+
+    public void setEndTime(Timestamp time) {
+        endTime = convertTimeStampToLocalDateTime(time);
+    }
+
+    @Exclude
+    public LocalDateTime convertTimeStampToLocalDateTime(Timestamp timestamp){
+        return timestamp.toDate().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
+    public long getShiftID(){
+        return shiftID;
+    }
+    @Exclude
     public void setAppointmentID(long newID){
         appointmentID = newID;
     }
