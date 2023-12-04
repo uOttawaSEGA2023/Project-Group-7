@@ -9,11 +9,8 @@ import android.widget.DatePicker;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
-import com.google.firebase.Timestamp;
-
 import java.time.LocalDate;
 import java.util.Calendar;
-import java.util.Date;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
     int year;
