@@ -4,8 +4,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
@@ -40,7 +40,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
     @Override
     public void onBindViewHolder(@NonNull AppointmentViewHolder holder, int position) {
         holder.setViewData(isPassed);
-        holder.setData(position);
+        holder.setData(appointments.get(position));
     }
 
     @Override
@@ -49,24 +49,30 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
     }
 
     public static class AppointmentViewHolder extends RecyclerView.ViewHolder {
-        ImageButton q;
+        ImageButton cancelBtn;
+        TextView docName, startTime, endTime;
         public AppointmentViewHolder(@NonNull View itemView) {
             super(itemView);
             bindViews(itemView);
         }
 
         public void bindViews(View v) {
-                q = v.findViewById(R.id.deny);
+                cancelBtn = v.findViewById(R.id.deny);
+                docName = v.findViewById(R.id.docNameAppointment);
+                startTime = v.findViewById(R.id.appointStartTime);
+                endTime = v.findViewById(R.id.appointEndTime);
         }
 
         public void setViewData(boolean isPassed) {
             if(isPassed) {
-                q.setVisibility(View.GONE);
+                cancelBtn.setVisibility(View.GONE);
             }
         }
 
-        public void setData(int position) {
-
+        public void setData(Appointment appointment) {
+//            docName.setText(appointment.getDoctor().getFirstName());
+            startTime.setText(appointment.getStartTime().toString());
+            endTime.setText(appointment.getEndTime().toString());
         }
     }
 }

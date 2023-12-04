@@ -61,6 +61,7 @@ public class PatientMainActivity extends AppCompatActivity {
 
     private void bookAppointmentClicked(View v) {
         Intent book = new Intent(this, PatientBookAppointmentActivity.class);
+        book.putExtra("patient",loggedIn);
         startActivity(book);
     }
 
