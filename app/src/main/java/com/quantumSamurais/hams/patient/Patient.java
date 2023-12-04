@@ -14,11 +14,11 @@ import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.activities.PatientMainActivity;
 import com.quantumSamurais.hams.user.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 
 public class Patient extends User implements ResponseListener<ArrayList<Doctor>> {
 
@@ -67,13 +67,13 @@ public class Patient extends User implements ResponseListener<ArrayList<Doctor>>
     @Override
     public void onSuccess(ArrayList<Doctor> data) {
         List<Appointment> apps = new ArrayList<>();
-        for(Doctor d: data) {
-            for(Shift s :  d.getShifts()) {
-                if(s.getStartTime().toLocalDate().equals(date)) {
-                    // TODO: Add apps for shift
-                };
-            }
-        }
+//        for(Doctor d: data) {
+//            for(Shift s : d.getShifts()) {
+//                if(s.getStartTime().toLocalDate().equals(date)) {
+//                    // TODO: Add apps for shift
+//                };
+//            }
+//        }
         this.availableAtDate = apps;
     }
     @Override
