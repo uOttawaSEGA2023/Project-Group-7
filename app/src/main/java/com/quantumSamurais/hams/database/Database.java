@@ -139,7 +139,7 @@ public class Database {
                 for (QueryDocumentSnapshot appointmentDocument : appointments) {
                     Appointment properAppointment = appointmentDocument.toObject(Appointment.class);
                     if (properAppointment.getAppointmentID() == appointmentID) {
-                        return properAppointment.getMyPatient();
+                        return properAppointment.getPatient();
                     }
                 }
             } catch (ExecutionException | InterruptedException e) {
@@ -530,8 +530,31 @@ public class Database {
     }
 
 
-    public void getPatientAppointments() {
+    public List<Appointment> getPatientAppointments(Patient patient) {
 
+        Supplier<List<Appointment>> query = () -> {
+            DocumentReference softwareRef = db.collection("users").document("software");
+            try {
+                QuerySnapshot snap = await(softwareRef.collection("appointments").whereEqualTo("myPatient",patient).get());
+                List<Appointment> apps = new ArrayList<>();
+                for (QueryDocumentSnapshot document : snap) {
+                    apps.add(document.toObject(Appointment.class));
+                }
+                return apps;
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        CompletableFuture<List<Appointment>> appList = supplyAsync(query);
+
+        try {
+            return appList.get();
+        } catch (ExecutionException | InterruptedException e) {
+            //TODO: Better Error handling
+           // throw new RuntimeException(e);
+        }
+        return null;
     }
 
     public CompletableFuture<Shift> getShift(long shiftID) {
