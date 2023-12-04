@@ -129,23 +129,6 @@ public class Database {
         }).start();
     }
 
-    public Shift getShiftFromReference(DocumentReference shiftDocReference){
-        CompletableFuture<Shift> shiftFuture = new CompletableFuture<>();
-        db.runTransaction(transaction -> transaction.get(shiftDocReference).toObject(Shift.class)).addOnCompleteListener( shift ->{
-                    if (shift != null){
-                        shiftFuture.complete(shift.getResult());
-                    }
-        });
-        try{
-            return shiftFuture.get();
-        }catch (Exception e){
-            Log.d("Frick", "print: " + e.getStackTrace());
-        }
-        finally {
-            return null;
-        }
-    }
-
     public Patient getPatientFromAppointmentID(long appointmentID) {
 
         Supplier<Patient> findPatientFromAppointmentID = () -> {
@@ -613,8 +596,19 @@ public class Database {
 
 
     public ArrayList<Appointment> getDoctorAppointments(String email) {
-        Doctor theDoctor = getDoctor(email);
-        return theDoctor.getAppointments();
+        db.collection("users").document("software").collection("shifts").
+                whereEqualTo("doctorEmailAddress", email).get().addOnSuccessListener(
+                        getShifts -> {
+                            if (!getShifts.isEmpty()){
+                                for (DocumentSnapshot shiftDocument : getShifts.getDocuments()){
+                                    return;
+                                }
+                            }
+                        }
+                ).addOnFailureListener(e -> {
+                    return;
+                });
+        return null;
     }
 
     /**

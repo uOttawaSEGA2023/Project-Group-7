@@ -184,8 +184,8 @@ public class Doctor extends User implements Serializable {
 
 	@Exclude
 	public ArrayList<Appointment> getAppointments(){
-		//TODO: Implement in DB
 		return null;
+		//return Database.getInstance().getDoctorAppointments(getEmail());
 	}
 //</editor-fold>
 
