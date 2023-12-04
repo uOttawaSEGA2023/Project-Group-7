@@ -93,9 +93,9 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
         }
 
         private void setData(User user, long id) throws Exception {
-            name = itemView.findViewById(R.id.docNameAppointment);
-            emailAddress = itemView.findViewById(R.id.appointEndTime);
-            userType = itemView.findViewById(R.id.appointStartTime);
+            name = itemView.findViewById(R.id.nameRequest);
+            emailAddress = itemView.findViewById(R.id.emailAddressRequest);
+            userType = itemView.findViewById(R.id.userTypeRequest);
             requestId = itemView.findViewById(R.id.idRequest);
 
             //

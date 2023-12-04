@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="7dp">
-
     <androidx.cardview.widget.CardView
         android:layout_width="414dp"
         android:layout_height="92dp"
@@ -13,11 +12,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
             <ImageButton
                 android:id="@+id/accept"
                 android:layout_width="wrap_content"
@@ -29,7 +26,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/idRequest"
                 app:layout_constraintVertical_bias="0.09" />
-
             <ImageButton
                 android:id="@+id/deny"
                 android:layout_width="wrap_content"
@@ -42,7 +38,6 @@
                 app:layout_constraintStart_toEndOf="@+id/accept"
                 app:layout_constraintTop_toTopOf="@+id/accept"
                 app:layout_constraintVertical_bias="0.0" />
-
             <TextView
                 android:id="@+id/idRequest"
                 android:layout_width="wrap_content"
@@ -54,7 +49,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
-
             <ImageButton
                 android:id="@+id/showMore"
                 android:layout_width="wrap_content"
@@ -66,7 +60,7 @@
                 app:layout_constraintVertical_bias="0.0" />
 
             <TextView
-                android:id="@+id/docNameAppointment"
+                android:id="@+id/nameRequest"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Name"
@@ -77,7 +71,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/idRequest" />
 
             <TextView
-                android:id="@+id/appointEndTime"
+                android:id="@+id/emailAddressRequest"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
@@ -85,7 +79,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/showMore"
                 app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="@+id/docNameAppointment" />
+                app:layout_constraintStart_toStartOf="@+id/nameRequest" />
+            app:layout_constraintStart_toStartOf="@+id/docNameAppointment" />
 
             <TextView
                 android:id="@+id/dateOfRequest"
@@ -93,11 +88,11 @@
                 android:layout_height="wrap_content"
                 android:text="date"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="@+id/appointEndTime"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="@+id/appointEndTime"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.06"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.684" />
+                app:layout_constraintVertical_bias="0.68" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
