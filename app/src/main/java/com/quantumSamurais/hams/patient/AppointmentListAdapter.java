@@ -70,7 +70,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         }
 
         public void setData(Appointment appointment) {
-//            docName.setText(appointment.getDoctor().getFirstName());
+            docName.setText(appointment.getDocName());
             startTime.setText(appointment.getStartTimeLocalDate().toString());
             endTime.setText(appointment.getEndTimeLocalDate().toString());
         }

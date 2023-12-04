@@ -553,7 +553,7 @@ public class Database {
         Supplier<List<Appointment>> query = () -> {
             DocumentReference softwareRef = db.collection("users").document("software");
             try {
-                QuerySnapshot snap = await(softwareRef.collection("appointments").whereEqualTo("myPatient",patient).get());
+                QuerySnapshot snap = await(softwareRef.collection("appointments").whereEqualTo("patient",patient).get());
                 List<Appointment> apps = new ArrayList<>();
                 for (QueryDocumentSnapshot document : snap) {
                     apps.add(document.toObject(Appointment.class));
@@ -570,9 +570,8 @@ public class Database {
             return appList.get();
         } catch (ExecutionException | InterruptedException e) {
             //TODO: Better Error handling
-           // throw new RuntimeException(e);
+           throw new RuntimeException(e);
         }
-        return null;
     }
 
     public CompletableFuture<Shift> getShift(long shiftID) {

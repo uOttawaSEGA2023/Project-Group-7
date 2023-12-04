@@ -3,12 +3,14 @@ package com.quantumSamurais.hams.appointment;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
 import com.quantumSamurais.hams.database.RequestStatus;
+import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.patient.Patient;
 
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Appointment implements Serializable  {
@@ -20,6 +22,9 @@ public class Appointment implements Serializable  {
 
     private Patient patient;
 
+    private String docName;
+    private ArrayList<Specialties> specs;
+
     public Appointment(){
     }
 
@@ -30,6 +35,8 @@ public class Appointment implements Serializable  {
             this.endTime = endTime;
             this.patient = patient;
             this.shiftID = shift.getShiftID();
+            this.specs = shift.getDoctor().getSpecialties();
+            this.docName = shift.getDoctor().getFirstName();
             this.appointmentStatus = requestStatus;
             return;
         }
@@ -103,6 +110,14 @@ public class Appointment implements Serializable  {
         return timestamp.toDate().toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
+    }
+
+    public ArrayList<Specialties> getSpecs() {
+        return specs;
+    }
+
+    public String getDocName() {
+        return docName;
     }
 
     public long getShiftID(){
