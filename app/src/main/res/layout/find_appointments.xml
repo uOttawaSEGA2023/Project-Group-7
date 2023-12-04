@@ -30,14 +30,38 @@
         app:layout_constraintTop_toBottomOf="@+id/selectSpeciality"
         app:layout_constraintVertical_bias="0.050000012" />
 
+    <Button
+        android:id="@+id/datePickBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Date"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.862"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/selectDoctor"
+        app:layout_constraintVertical_bias="0.047" />
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/selectAppointments"
+        android:id="@+id/availAppointments"
         android:layout_width="match_parent"
         android:layout_height="509dp"
+        android:layout_marginTop="39dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/selectDoctor" />
+        app:layout_constraintTop_toBottomOf="@+id/calendar" />
+
+    <EditText
+        android:id="@+id/dateTextbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="date"
+        app:layout_constraintBottom_toBottomOf="@+id/datePickBtn"
+        app:layout_constraintEnd_toStartOf="@+id/datePickBtn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/datePickBtn" />
 
     <!--    <CalendarView-->
 <!--        android:id="@+id/calendarView2"-->
