@@ -16,6 +16,7 @@ import java.util.Date;
 public class Appointment implements Serializable  {
     private RequestStatus appointmentStatus;
 
+    @Exclude
     private LocalDateTime startTime, endTime;
     private long appointmentID, shiftID;
     private boolean pastAppointmentFlag;

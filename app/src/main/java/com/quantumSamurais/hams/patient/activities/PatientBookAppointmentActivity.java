@@ -1,6 +1,7 @@
 package com.quantumSamurais.hams.patient.activities;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.appointment.Shift;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.patient.AppointmentListAdapter;
 import com.quantumSamurais.hams.patient.Patient;
@@ -29,6 +31,7 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
     Button changeDate;
     Spinner selectSpec;
 
+    AppointmentListAdapter availAdapter;
     RecyclerView toBook;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,22 +49,20 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
         changeDate = findViewById(R.id.datePickBtn);
         toBook = findViewById(R.id.availAppointments);
 
-        List<Appointment> apps = new ArrayList<>();
-//        if(p.getShifts() != null) {
-//            for(Shift s: p.getShifts()) {
-//                apps.addAll(s.getAppointments());
-//            }
-//        }
+        Database.getInstance().getAllBookable(p,this::bookableAppsCB);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
-        AppointmentListAdapter availAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, apps,false);
+        availAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, new ArrayList<>(),false);
         toBook.setLayoutManager(layoutManager);
         toBook.setAdapter(availAdapter);
 
     }
 
-    private void generateAppointments() {
-
+    public void bookableAppsCB(ArrayList<Appointment> apps) {
+        ArrayList<Appointment> test = apps;
+        Log.d("Apps", apps.toString());
+        availAdapter.updateData(apps);
+        availAdapter.notifyDataSetChanged();
     }
 
     private void initSelectSpec() {

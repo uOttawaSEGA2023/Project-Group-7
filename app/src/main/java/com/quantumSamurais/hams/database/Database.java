@@ -33,6 +33,10 @@ import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationType;
 
+import org.checkerframework.checker.units.qual.A;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -254,21 +258,20 @@ public class Database {
                     public void onSuccess(Long result) {
                         Log.d("DatabaseAppointmentAdding", "Appointment #" + result + " was successfully added.");
                         // Tie the Appointment to a Shift
-                        //We can only add a shift to a doctor, if the doctor was properly added to DB in the first place
                         CollectionReference shifts = db.collection("users").document("software").collection("shifts");
-                        shifts.whereEqualTo("shiftID", appointment.getShiftID()).get().addOnCompleteListener(getDoctor -> {
-                            if (getDoctor.isSuccessful()) {
-                                QuerySnapshot doctorSnap = getDoctor.getResult();
-                                for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
-                                    String appointmentIDFirebase = singleDoctor.getId();
-                                    DocumentReference docRef = shifts.document(appointmentIDFirebase);
-                                    db.runTransaction(addAShift -> {
-                                        addAShift.update(docRef, "appointments", FieldValue.arrayUnion(appointment));
+                        shifts.whereEqualTo("shiftID", appointment.getShiftID()).get().addOnCompleteListener(shift -> {
+                            if (shift.isSuccessful()) {
+                                QuerySnapshot shiftSnap = shift.getResult();
+                                for (QueryDocumentSnapshot singleShift : shiftSnap) {
+                                    String shiftIDFirebase = singleShift.getId();
+                                    DocumentReference docRef = shifts.document(shiftIDFirebase);
+                                    db.runTransaction(addAppointment -> {
+                                        addAppointment.update(docRef, "appointments", FieldValue.arrayUnion(appointment));
                                         return null;
                                     });
                                 }
                             } else {
-                                Log.d("DatabaseAppointmentAddingFailure", "Error getting documents: ", getDoctor.getException());
+                                Log.d("DatabaseAppointmentAddingFailure", "Error getting documents: ", shift.getException());
                             }
                         });
                     }
@@ -545,6 +548,36 @@ public class Database {
         }).addOnFailureListener(e -> {
             Log.d("transaction failure", "Failed to delete shift from doctor", e);
         });
+    }
+
+    public void getAllBookable(Patient p, AllBookableCallback callback) {
+        db.collection("users").document("software").collection("shifts").get().addOnSuccessListener(value -> {
+           ArrayList<Appointment> appointments = new ArrayList<>();
+           for(Shift shift: value.toObjects(Shift.class)) {
+              db.collection("users").document("software").collection("doctors").whereEqualTo("email",shift.getDoctorEmailAddress()).get()
+                      .addOnSuccessListener(doc -> {
+                            Doctor doctor = doc.toObjects(Doctor.class).get(0);
+                            LocalDateTime startTime = shift.getStartTime();
+                            LocalDateTime endTime = shift.getEndTime();
+                            LocalDateTime currTime = startTime;
+
+                            while(!currTime.isEqual(endTime)) {
+                                Appointment next = new Appointment(currTime,currTime.plusMinutes(30),shift,doctor.getFirstName(),doctor.getSpecialties(),p,RequestStatus.PENDING);
+                                //if(shift.takeAppointment(next)) {
+                                    appointments.add(next);
+                                //}
+                                currTime = currTime.plusMinutes(30);
+                            }
+                      }
+              ).addOnCompleteListener(ignored -> {
+                  callback.callback(appointments);
+              });
+           }
+        });
+    }
+
+    public interface AllBookableCallback {
+        void callback(ArrayList<Appointment> apps);
     }
 
 
