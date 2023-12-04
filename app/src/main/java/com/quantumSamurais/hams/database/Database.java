@@ -36,6 +36,7 @@ import com.quantumSamurais.hams.utils.ValidationType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -384,15 +385,6 @@ public class Database {
         });
     }
 
-    public Doctor getDoctorEmail(String doctorEmail) {
-        for (Doctor doctor : doctors) {
-            if (doctor.getEmail().equals(doctorEmail)) {
-                return doctor;
-            }
-        }
-        return null;  // Return null if the doctor is not found
-    }
-
 
     public void addShift(Shift shift) {
         DocumentReference softwareDocRef = db.collection("users").document("software");
@@ -415,12 +407,26 @@ public class Database {
             DocumentReference newShiftRef = softwareDocRef.collection("shifts").document();
             transaction.set(newShiftRef, shift);
 
-            return shiftID-1; // Return the shiftID that the shift was set as.
+            return shiftID; // Return the shiftID that the shift was set as.
         }).addOnSuccessListener(new OnSuccessListener<Long>() {
                     @Override
                     public void onSuccess(Long result) {
-
                         Log.d("DatabaseShiftAdding", "Shift #" + result + " was successfully added.");
+                        // Tie the Shift to a Doctor
+                        //We can only add a shift to a doctor, if the doctor was properly added to DB in the first place
+                        CollectionReference myDoctors = db.collection("users").document("software").collection("doctors");
+                        myDoctors.whereEqualTo("email", shift.getDoctorEmailAddress()).get().addOnCompleteListener(getDoctor -> {
+                            if (getDoctor.isSuccessful()) {
+                                QuerySnapshot doctorSnap = getDoctor.getResult();
+                                for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
+                                    String doctorId = singleDoctor.getId();
+                                    DocumentReference docRef = myDoctors.document(doctorId);
+                                    updateDoctorShifts(docRef, shift);
+                                }
+                            } else {
+                                Log.d("Database", "Error getting documents: ", getDoctor.getException());
+                            }
+                        });
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -429,22 +435,6 @@ public class Database {
                         Log.w("DatabaseShiftAdding", "Adding shift to DB failed.", e);
                     }
                 });
-
-        // Tie the Shift to a Doctor
-        //We can only add a shift to a doctor, if the doctor was properly added to DB in the first place
-        CollectionReference myDoctors = db.collection("users").document("software").collection("doctors");
-        myDoctors.whereEqualTo("email", shift.getDoctor().getEmail()).get().addOnCompleteListener(getDoctor -> {
-            if (getDoctor.isSuccessful()) {
-                QuerySnapshot doctorSnap = getDoctor.getResult();
-                for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
-                    String doctorId = singleDoctor.getId();
-                    DocumentReference docRef = myDoctors.document(doctorId);
-                    updateDoctorShifts(docRef, shift);
-                }
-            } else {
-                Log.d("Database", "Error getting documents: ", getDoctor.getException());
-            }
-        });
     }
 
 
@@ -472,12 +462,13 @@ public class Database {
         //Delete From Doctor first, to the shift can be purged gracefully.
         getShift(shiftID).thenAccept(shift -> {
             if (shift != null) {
-                String doctorEmail =  shift.getDoctor().getEmail();
+                Log.d("ShiftSave", "print: " + shift.getDoctorEmailAddress());
+                String doctorEmail =  shift.getDoctorEmailAddress();
                 doctors.whereEqualTo("email", doctorEmail).get().addOnSuccessListener(getDoctor -> {
                     for (QueryDocumentSnapshot singularDoctor : getDoctor){
                         String doctorDocumentID = singularDoctor.getId();
                         DocumentReference doctorToUntie = doctors.document(doctorDocumentID);
-                        deleteShiftFromDoctor(doctorToUntie, shift);
+                        deleteShiftFromDoctor(doctorToUntie, shift.getShiftID());
                     }
                 });
             } else {
@@ -515,18 +506,29 @@ public class Database {
         });
     }
 
-    public void deleteShiftFromDoctor(DocumentReference doctor, Shift shiftToDelete){
+    public void deleteShiftFromDoctor(DocumentReference doctorRef, long shiftIDToDelete) {
         db.runTransaction(transaction -> {
-            transaction.update(doctor, "shifts", FieldValue.arrayRemove(shiftToDelete));
+            // Read the current state of the doctor document
+            DocumentSnapshot doctorSnapshot = transaction.get(doctorRef);
+            if (doctorSnapshot.exists()) {
+                Log.d("This", "field exists");
+                List<Map<String, Object>> shifts = (List<Map<String, Object>>) doctorSnapshot.get("shifts");
+                if (shifts != null) {
+                    // Remove the shift with the given shiftID
+                    shifts.removeIf(shift -> shiftIDToDelete == (((Number) shift.get("shiftID")).longValue()));
+
+                    // Update the doctor document with the modified shifts array
+                    transaction.update(doctorRef, "shifts", shifts);
+                }
+            }
             return null;
         }).addOnSuccessListener(aVoid -> {
-            Log.d("transaction success", "shift successfully delete from DB.");
-            // Transaction success logic
+            Log.d("transaction success", "Shift successfully deleted from doctor.");
         }).addOnFailureListener(e -> {
-            Log.d("transaction failure", "value not changed");
-            // Transaction failure logic
+            Log.d("transaction failure", "Failed to delete shift from doctor", e);
         });
     }
+
 
     public void getPatientAppointments() {
 
@@ -541,6 +543,7 @@ public class Database {
                 // Assuming shiftID is unique and only one document is expected
                 DocumentSnapshot singularShift = getShift.getResult().getDocuments().get(0);
                 Shift shift = singularShift.toObject(Shift.class);
+                Log.d("what is the dang shift", shift.toString());
                 shiftFromDB.complete(shift); // Set the result for the CompletableFuture
             } else {
                 shiftFromDB.complete(null); // Complete with null if no document is found or query is not successful
