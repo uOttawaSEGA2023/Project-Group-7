@@ -7,6 +7,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,7 +28,7 @@ import java.util.List;
 public class PatientBookAppointmentActivity extends AppCompatActivity {
 
 
-    EditText dateText;
+    TextView dateText;
     Button changeDate;
     Spinner selectSpec;
 
@@ -50,6 +51,8 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
         toBook = findViewById(R.id.availAppointments);
 
         Database.getInstance().getAllBookable(p,this::bookableAppsCB);
+        dateSet(p.getDate().toString());
+        changeDate.setOnClickListener(this::pickDateClicked);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
         availAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, new ArrayList<>(),false);
@@ -59,8 +62,7 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
     }
 
     public void bookableAppsCB(ArrayList<Appointment> apps) {
-        ArrayList<Appointment> test = apps;
-        Log.d("Apps", apps.toString());
+        Log.d("Apps Bookable from DB", apps.toString());
         availAdapter.updateData(apps);
         availAdapter.notifyDataSetChanged();
     }
@@ -96,7 +98,7 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
     }
 
     private void pickDateClicked(View v) {
-       DatePickerFragment picker = new DatePickerFragment(this::dateSet);
+       DatePickerFragment picker = new DatePickerFragment(this::dateSet, dateText.getText().toString());
        picker.show(getSupportFragmentManager(),"datePicker");
     }
 
