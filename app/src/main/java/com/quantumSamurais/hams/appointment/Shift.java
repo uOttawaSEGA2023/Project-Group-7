@@ -7,6 +7,8 @@ import android.os.Build;
 import androidx.annotation.RequiresApi;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
 
@@ -16,10 +18,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@IgnoreExtraProperties
 public class Shift {
     Database db;
     List<Appointment> appointments;
-    Doctor aDoctor;
+    String doctorEmailAddress;
     Timestamp startTimeStamp, endTimeStamp;
     long shiftID;
     private boolean pastShiftFlag;
@@ -35,14 +38,14 @@ public class Shift {
         }
 
         db = Database.getInstance();
-        aDoctor = db.getDoctor(emailAddress);
+        doctorEmailAddress = emailAddress;
         //Converts to timestamp for serialization and deserialization
         Date date = Date.from(startTime.atZone(ZoneId.systemDefault()).toInstant());
         this.startTimeStamp = new Timestamp(date);
         date = Date.from(endTime.atZone(ZoneId.systemDefault()).toInstant());
         this.endTimeStamp = new Timestamp(date);
         appointments = new ArrayList<>();
-        db.addShift(this); //add shift will initialize the shift id.
+        shiftID = -1;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean overlapsWith(LocalDateTime otherStartTime, LocalDateTime otherEndTime) {
@@ -113,8 +116,19 @@ public class Shift {
     }
 
     public long getShiftID() { return shiftID; }
+
+    @Exclude
     public Doctor getDoctor() {
-        return aDoctor;
+        return Database.getInstance().getDoctor(doctorEmailAddress);
+    }
+
+    public void setDoctorEmailAddress(String emailAddress){
+        doctorEmailAddress = emailAddress;
+    }
+
+
+    public String getDoctorEmailAddress(){
+        return doctorEmailAddress;
     }
 
     public boolean isVacant(){
