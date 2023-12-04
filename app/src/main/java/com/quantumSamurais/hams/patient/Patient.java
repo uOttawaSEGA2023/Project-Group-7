@@ -51,6 +51,8 @@ public class Patient extends User {
         super(firstName, lastName, hashedPassword, salt, emailAddress, phoneNumber, postalAddress);
         this.healthCardNumber = healthCardNumber;
         this.appointments = new ArrayList<>();
+        date = LocalDate.now();
+
     }
     @Override
     public void changeView(Context currentContext) {
