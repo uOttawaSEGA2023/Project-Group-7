@@ -27,8 +27,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.787"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/idRequest"
-                app:layout_constraintVertical_bias="0.09" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <ImageButton
                 android:id="@+id/deny"
@@ -41,18 +40,6 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toEndOf="@+id/accept"
                 app:layout_constraintTop_toTopOf="@+id/accept"
-                app:layout_constraintVertical_bias="0.0" />
-
-            <TextView
-                android:id="@+id/idRequest"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="id"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.501"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
 
             <ImageButton
@@ -74,24 +61,24 @@
                 app:layout_constraintEnd_toStartOf="@+id/accept"
                 app:layout_constraintHorizontal_bias="0.101"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/idRequest" />
+                tools:layout_editor_absoluteY="19dp" />
 
             <TextView
                 android:id="@+id/appointEndTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="emailAddress"
+                android:text="endTime"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/showMore"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/docNameAppointment" />
 
             <TextView
-                android:id="@+id/dateOfRequest"
+                android:id="@+id/appointStartTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="date"
+                android:text="startTime"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/appointEndTime"
                 app:layout_constraintHorizontal_bias="0.0"
