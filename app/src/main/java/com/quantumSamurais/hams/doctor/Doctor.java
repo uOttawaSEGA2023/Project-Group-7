@@ -7,6 +7,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.google.firebase.firestore.Exclude;
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
@@ -15,10 +16,8 @@ import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 
 public class Doctor extends User implements Serializable {
@@ -26,6 +25,7 @@ public class Doctor extends User implements Serializable {
 	private String employeeNumber;
 	private ArrayList<Specialties> specialties;
 	private boolean acceptsAppointmentsByDefault = false;
+	private ArrayList<Long> shiftIDs;
 	private ArrayList<Shift> shifts;
 	//private Database db;
 
@@ -40,7 +40,7 @@ public class Doctor extends User implements Serializable {
 		this.employeeNumber = employeeNumber;
 		this.specialties = specialties;
 		acceptsAppointmentsByDefault = acceptsByDefault;
-		shifts = new ArrayList<>(); //In the empty case
+		shiftIDs = new ArrayList<>(); //In the empty case
 		Database db = Database.getInstance();
 		db.addSignUpRequest(this);
 	}
@@ -51,17 +51,17 @@ public class Doctor extends User implements Serializable {
 		super(firstName, lastName, hashedPassword, salt, email, phone, address);
 		this.employeeNumber = employeeNumber;
 		this.specialties = specialties;
-		shifts = new ArrayList<>();
+		shiftIDs = new ArrayList<>();
 		acceptsAppointmentsByDefault = acceptsByDefault;
 	}
 
 	//When we read from DB
 	public Doctor(String firstName, String lastName, ArrayList<Integer> hashedPassword, ArrayList<Integer> salt, String email,
-				  String phone, String address, String employeeNumber,ArrayList<Specialties> specialties, boolean acceptsByDefault, ArrayList<Shift> shifts) {
+				  String phone, String address, String employeeNumber,ArrayList<Specialties> specialties, boolean acceptsByDefault, ArrayList<Long> shiftIDs) {
 		super(firstName, lastName, hashedPassword, salt, email, phone, address);
 		this.employeeNumber = employeeNumber;
 		this.specialties = specialties;
-		this.shifts = shifts;
+		this.shiftIDs = shiftIDs;
 		acceptsAppointmentsByDefault = acceptsByDefault;
 	}
 
@@ -120,46 +120,17 @@ public class Doctor extends User implements Serializable {
 		db.updateAcceptsByDefault(getEmail(), value); //errors running in with this method.
 	}
 
-	public ArrayList<Shift> getShifts() {
-		return shifts;
+	public ArrayList<Long> getShiftIDs(){
+		return shiftIDs;
 	}
 
-	public void setShifts(ArrayList<Shift> shifts){
-		this.shifts = shifts;
+
+	public void setShiftIDs(ArrayList<Long> shiftIDs){
+		this.shiftIDs = shiftIDs;
 	}
 	
-	@RequiresApi(api = Build.VERSION_CODES.O)
-	public boolean createShift(LocalDateTime startDate, LocalDateTime endDate){
-		Shift shiftToAdd = new Shift(this.getEmail(), startDate, endDate);
-		if (!shiftOverlap(shiftToAdd)){
-			shifts.add(shiftToAdd);
-			return true;
-		}
-		return false;
-	}
 
-	@RequiresApi(api = Build.VERSION_CODES.O)
-	private boolean shiftOverlap(Shift someShift){
-		for (Shift shift: shifts){
-			if (!someShift.getStartTime().isAfter(shift.getEndTime()) && !shift.getStartTime().isAfter(someShift.getEndTime())){
-				return true;
-			}
-		}
-		return false;
-	}
-	public void cancelShift(long shiftID) throws IllegalStateException{
-		// sadly, O(n), but shouldn't be an issue.
-		for (Shift shift: shifts){
-			if (shift.getShiftID() == shiftID){
-				if (shift.isVacant()){
-					shifts.remove(shift);
-				}
-				else {
-					throw new IllegalStateException("Attempt at deleting a shift which contained appointments.");
-				}
-			}
-		}
-	}
+
 
 	@RequiresApi(api = Build.VERSION_CODES.O)
 	public void acceptAppointment(Appointment appointment){
@@ -190,12 +161,7 @@ public class Doctor extends User implements Serializable {
 	}
 
 	public boolean hasThisShift(long shiftID){
-		for (Shift shift: shifts){
-			if (shift.getShiftID() == shiftID){
-				return true;
-			}
-		}
-		return false;
+		return shiftIDs.contains(shiftID);
 	}
 
 
@@ -216,16 +182,10 @@ public class Doctor extends User implements Serializable {
 		return this;
 	}
 
+	@Exclude
 	public ArrayList<Appointment> getAppointments(){
-		ArrayList<Appointment> appointments = new ArrayList<>();
-		List<Appointment> temp = new ArrayList<>();
-		for (Shift shift: shifts){
-			temp = shift.getAppointments();
-			for (Appointment appointment: temp){
-				appointments.add(appointment);
-			}
-		}
-		return appointments;
+		//TODO: Implement in DB
+		return null;
 	}
 //</editor-fold>
 
