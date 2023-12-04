@@ -59,7 +59,7 @@ public class Shift {
         LocalDateTime startTime = convertTimeStampToLocalDateTime(startTimeStamp);
         LocalDateTime endTime = convertTimeStampToLocalDateTime(endTimeStamp);
         //If the appointment is compatible with the shift
-        if (appointment.getStartTime().isBefore(startTime) || appointment.getEndTime().isAfter(endTime)){
+        if (appointment.getStartTimeLocalDate().isBefore(startTime) || appointment.getEndTimeLocalDate().isAfter(endTime)){
             throw new IllegalArgumentException("The appointment passed is not compatible with this shift");
         }
         for (Appointment acceptedAppointment: appointments){
@@ -108,9 +108,11 @@ public class Shift {
     public Timestamp getEndTimeStamp(){
         return endTimeStamp;
     }
+    @Exclude
     public LocalDateTime getStartTime(){
         return convertTimeStampToLocalDateTime(startTimeStamp);
     }
+    @Exclude
     public LocalDateTime getEndTime(){
         return convertTimeStampToLocalDateTime(endTimeStamp);
     }
