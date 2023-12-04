@@ -36,7 +36,6 @@ import com.quantumSamurais.hams.utils.ValidationType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -130,6 +129,23 @@ public class Database {
         }).start();
     }
 
+    public Shift getShiftFromReference(DocumentReference shiftDocReference){
+        CompletableFuture<Shift> shiftFuture = new CompletableFuture<>();
+        db.runTransaction(transaction -> transaction.get(shiftDocReference).toObject(Shift.class)).addOnCompleteListener( shift ->{
+                    if (shift != null){
+                        shiftFuture.complete(shift.getResult());
+                    }
+        });
+        try{
+            return shiftFuture.get();
+        }catch (Exception e){
+            Log.d("Frick", "print: " + e.getStackTrace());
+        }
+        finally {
+            return null;
+        }
+    }
+
     public Patient getPatientFromAppointmentID(long appointmentID) {
 
         Supplier<Patient> findPatientFromAppointmentID = () -> {
@@ -139,7 +155,7 @@ public class Database {
                 for (QueryDocumentSnapshot appointmentDocument : appointments) {
                     Appointment properAppointment = appointmentDocument.toObject(Appointment.class);
                     if (properAppointment.getAppointmentID() == appointmentID) {
-                        return properAppointment.getMyPatient();
+                        return properAppointment.getPatient();
                     }
                 }
             } catch (ExecutionException | InterruptedException e) {
@@ -229,26 +245,57 @@ public class Database {
 
     // <editor-fold desc="Deliverable 3 & 4">
     public void addAppointmentRequest(Appointment appointment) {
-        new Thread(() -> {
-            DocumentSnapshot software = null;
-            try {
-                software = await(db.collection("users").document("software").get());
-                Long appointmentID = (Long) software.get("appointmentID");
-                if (appointmentID == null) {
-                    await(db.collection("users").document("software").update("appointmentID", 0));
-                    appointmentID = 0L;
-                }
-                //set the appointmentID to a server controlled one and then updates it.
-                appointment.setAppointmentID(appointmentID);
-                appointmentID++;
-                await(db.collection("users").document("software").update("appointmentID", appointmentID));
-            } catch (ExecutionException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            //add the appointment
-            db.collection("users").document("software").collection("appointments").add(appointment);
-        }
-        ).start();
+        DocumentReference softwareDocRef = db.collection("users").document("software");
+
+        db.runTransaction((Transaction.Function<Long>) transaction ->{
+                    // Get the current shiftID
+                    DocumentSnapshot softwareSnapshot = transaction.get(softwareDocRef);
+                    Long appointmentID = softwareSnapshot.getLong("appointmentID");
+                    if (appointmentID == null) {
+                        appointmentID = 0L;
+                    }
+
+                    // Initialize the shift ID
+                    appointment.setAppointmentID(appointmentID);
+
+                    // Increment the shiftID in the "software" document
+                    transaction.update(softwareDocRef, "appointmentID", appointmentID + 1);
+
+                    // Add the new shift to the "shifts" collection
+                    DocumentReference newAppointmentRef = softwareDocRef.collection("appointments").document();
+                    transaction.set(newAppointmentRef, appointment);
+
+                    return appointmentID;
+                }).addOnSuccessListener(new OnSuccessListener<Long>() {
+                    @Override
+                    public void onSuccess(Long result) {
+                        Log.d("DatabaseAppointmentAdding", "Appointment #" + result + " was successfully added.");
+                        // Tie the Appointment to a Shift
+                        //We can only add a shift to a doctor, if the doctor was properly added to DB in the first place
+                        CollectionReference shifts = db.collection("users").document("software").collection("shifts");
+                        shifts.whereEqualTo("shiftID", appointment.getShiftID()).get().addOnCompleteListener(getDoctor -> {
+                            if (getDoctor.isSuccessful()) {
+                                QuerySnapshot doctorSnap = getDoctor.getResult();
+                                for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
+                                    String appointmentIDFirebase = singleDoctor.getId();
+                                    DocumentReference docRef = shifts.document(appointmentIDFirebase);
+                                    db.runTransaction(addAShift -> {
+                                        addAShift.update(docRef, "appointments", FieldValue.arrayUnion(appointment));
+                                        return null;
+                                    });
+                                }
+                            } else {
+                                Log.d("DatabaseAppointmentAddingFailure", "Error getting documents: ", getDoctor.getException());
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("DatabaseAppointmentAddingFailure", "Adding appointments to DB failed.", e);
+                    }
+                });
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -410,8 +457,7 @@ public class Database {
             return shiftID; // Return the shiftID that the shift was set as.
         }).addOnSuccessListener(new OnSuccessListener<Long>() {
                     @Override
-                    public void onSuccess(Long result) {
-                        Log.d("DatabaseShiftAdding", "Shift #" + result + " was successfully added.");
+                    public void onSuccess(Long idLong) {
                         // Tie the Shift to a Doctor
                         //We can only add a shift to a doctor, if the doctor was properly added to DB in the first place
                         CollectionReference myDoctors = db.collection("users").document("software").collection("doctors");
@@ -421,7 +467,7 @@ public class Database {
                                 for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
                                     String doctorId = singleDoctor.getId();
                                     DocumentReference docRef = myDoctors.document(doctorId);
-                                    updateDoctorShifts(docRef, shift);
+                                    updateDoctorShifts(docRef, idLong);
                                 }
                             } else {
                                 Log.d("Database", "Error getting documents: ", getDoctor.getException());
@@ -438,9 +484,9 @@ public class Database {
     }
 
 
-    private void updateDoctorShifts(DocumentReference docRef, Shift shift) {
+    private void updateDoctorShifts(DocumentReference docRef, Long idLong) {
         db.runTransaction((Transaction.Function<Void>) transaction -> {
-            transaction.update(docRef, "shifts", FieldValue.arrayUnion(shift));
+            transaction.update(docRef, "shiftIDs", FieldValue.arrayUnion(idLong));
             return null;
         }).addOnSuccessListener(aVoid -> {
             Log.d("transaction success", "value successfully changed");
@@ -509,18 +555,7 @@ public class Database {
     public void deleteShiftFromDoctor(DocumentReference doctorRef, long shiftIDToDelete) {
         db.runTransaction(transaction -> {
             // Read the current state of the doctor document
-            DocumentSnapshot doctorSnapshot = transaction.get(doctorRef);
-            if (doctorSnapshot.exists()) {
-                Log.d("This", "field exists");
-                List<Map<String, Object>> shifts = (List<Map<String, Object>>) doctorSnapshot.get("shifts");
-                if (shifts != null) {
-                    // Remove the shift with the given shiftID
-                    shifts.removeIf(shift -> shiftIDToDelete == (((Number) shift.get("shiftID")).longValue()));
-
-                    // Update the doctor document with the modified shifts array
-                    transaction.update(doctorRef, "shifts", shifts);
-                }
-            }
+            transaction.update(doctorRef, "shiftIDs", FieldValue.arrayRemove(shiftIDToDelete));
             return null;
         }).addOnSuccessListener(aVoid -> {
             Log.d("transaction success", "Shift successfully deleted from doctor.");
@@ -554,8 +589,8 @@ public class Database {
     }
 
 
-    public ArrayList<Appointment> getDoctorAppointments(Doctor doctor) {
-        Doctor theDoctor = getDoctor(doctor.getEmail());
+    public ArrayList<Appointment> getDoctorAppointments(String email) {
+        Doctor theDoctor = getDoctor(email);
         return theDoctor.getAppointments();
     }
 
@@ -565,9 +600,31 @@ public class Database {
      *
      * @param email : the email address of the doctor we're trying to access.
      **/
-    public ArrayList<Shift> getShifts(String email) {
-        Doctor doctor = getDoctor(email);
-        return doctor.getShifts();
+    public void getShifts(ArrayList<Long> shiftIDs, ShiftsCallback callback) {
+        if (shiftIDs.isEmpty()){
+            callback.onReceiveShifts(new ArrayList<>());
+        }
+        else{
+            Database.getInstance().db.collection("users").document("software").
+                    collection("shifts").
+                    whereIn("shiftID", shiftIDs).get().addOnCompleteListener(getShifts -> {
+
+                        if (getShifts.isSuccessful()){
+                            ArrayList<Shift> shiftsDup = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot shiftDocument : getShifts.getResult()){
+                                shiftsDup.add(shiftDocument.toObject(Shift.class));
+                            }
+                            callback.onReceiveShifts(shiftsDup);
+                        }
+                    });
+
+        }
+
+    }
+
+    public interface ShiftsCallback{
+        void onReceiveShifts(ArrayList<Shift> shifts);
     }
     // </editor-fold>
 
@@ -619,7 +676,7 @@ public class Database {
             try {
                 doctor = await(db.collection("users").document("software").collection("doctors").whereEqualTo("email", email).get());
             } catch (ExecutionException | InterruptedException e) {
-                Log.e("Database", "Error fetching doctor from DB", e);
+                Log.d("Database", "Error fetching doctor from DB", e);
                 throw new IllegalArgumentException("Error fetching doctor from DB", e);
             }
             return doctor;

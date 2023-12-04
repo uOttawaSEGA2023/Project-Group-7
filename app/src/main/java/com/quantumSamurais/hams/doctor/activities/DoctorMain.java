@@ -39,9 +39,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.List;
 
-public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter.OnDeleteClickListener{
+public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter.OnDeleteClickListener {
     private Doctor myDoctor;
     DoctorShiftsAdapter shiftsAdapter;
     RecyclerView shiftsStack;
@@ -72,11 +71,12 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         db = Database.getInstance();
         myDoctor = db.getDoctor(getIntent().getStringExtra("doctorEmailAddress"));
         Log.d("email", getIntent().getStringExtra("doctorEmailAddress"));
-        shifts = myDoctor.getShifts();
+        shifts =  new ArrayList<>();
         setContentView(R.layout.main_doctor_view);
         // imp
         shiftsAdapter = new DoctorShiftsAdapter(shifts, this);
         shiftsStack = findViewById(R.id.shiftsRecyclerView);
+        db.getShifts(myDoctor.getShiftIDs(), this::updateShifts);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         shiftsStack.setLayoutManager(layoutManager);
         shiftsStack.setAdapter(shiftsAdapter);
@@ -131,9 +131,8 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
     private final Runnable refresh_runnable = new Runnable(){
         public void run(){
-            myDoctor = db.getDoctor(myDoctor.getEmail());
-            shiftsAdapter.updateList(myDoctor.getShifts());
-            shiftsAdapter.notifyDataSetChanged();
+            myDoctor = Database.getInstance().getDoctor(myDoctor.getEmail());
+            Database.getInstance().getShifts(myDoctor.getShiftIDs(), DoctorMain.this::updateShifts);
             refreshShifts.postDelayed(refresh_runnable, 5000);
         }
     };
@@ -179,7 +178,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
                     Doctor updatedDoctor = db.getDoctor(myDoctor.getEmail());
                     Database.getInstance().addShift(new Shift(updatedDoctor.getEmail(), startDateTime, endDateTime));
                     runOnUiThread(() -> {
-                        updateShiftsList();
+                        refreshShifts.post(refresh_runnable);
                     });
             } else {
                 Toast.makeText(this, "Invalid shift. Please check the date and time.", Toast.LENGTH_SHORT).show();
@@ -210,7 +209,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         }
 
         // Check for conflicts with existing shifts
-        for (Shift existingShift : myDoctor.getShifts()) {
+        for (Shift existingShift : shifts) {
             if (existingShift.overlapsWith(startTime, endTime)) {
                 return false;
             }
@@ -230,7 +229,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         confirmDialog.setPositiveButton("Yes", (dialog, which) -> {
             Database.getInstance().deleteShift(shiftToDelete.getShiftID());
             Log.d("ShiftIDToDelete", "The shift ID of the shift I want to delete is : " + shiftToDelete.getShiftID());
-            updateShiftsList();
+            refreshShifts.post(refresh_runnable);
             Toast.makeText(this, "Shift deleted successfully", Toast.LENGTH_SHORT).show();
         });
         confirmDialog.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
@@ -238,10 +237,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         confirmDialog.show();
     }
 
-    private void updateShiftsList() {
-        List<Shift> updatedShifts = Database.getInstance().getDoctor(myDoctor.getEmail()).getShifts();
-        shiftsAdapter.updateList(updatedShifts);
-    }
+
 
     /*@Override
     public void onDeleteClick(int position) {
@@ -304,6 +300,12 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         if (fragment != null) {
             transaction.replace(R.id.flContent, fragment).commit();
         }
+    }
+
+    public void updateShifts(ArrayList<Shift> shifts){
+        this.shifts = shifts;
+        shiftsAdapter.updateList(shifts);
+        shiftsAdapter.notifyDataSetChanged();
     }
 
 }
