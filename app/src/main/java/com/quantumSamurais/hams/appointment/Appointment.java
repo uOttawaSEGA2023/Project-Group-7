@@ -28,15 +28,15 @@ public class Appointment implements Serializable  {
     public Appointment(){
     }
 
-    public Appointment(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient, RequestStatus requestStatus){
+    public Appointment(LocalDateTime startTime, LocalDateTime endTime, Shift shift, String docName, ArrayList<Specialties> specs, Patient patient, RequestStatus requestStatus){
         if (inputsAreValid(startTime, endTime, shift, patient)){
             //Set the time
             this.startTime = startTime;
             this.endTime = endTime;
             this.patient = patient;
             this.shiftID = shift.getShiftID();
-            this.specs = shift.getDoctor().getSpecialties();
-            this.docName = shift.getDoctor().getFirstName();
+            this.specs = specs;
+            this.docName = docName;
             this.appointmentStatus = requestStatus;
             return;
         }
@@ -114,6 +114,14 @@ public class Appointment implements Serializable  {
 
     public ArrayList<Specialties> getSpecs() {
         return specs;
+    }
+
+    public void setSpecs(ArrayList<Specialties> specs) {
+        this.specs = specs;
+    }
+
+    public void setDocName(String docName) {
+        this.docName = docName;
     }
 
     public String getDocName() {
