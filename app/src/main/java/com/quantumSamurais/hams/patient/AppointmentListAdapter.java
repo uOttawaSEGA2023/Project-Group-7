@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Appointment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentListAdapter.AppointmentViewHolder> {
@@ -41,6 +42,10 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
     public void onBindViewHolder(@NonNull AppointmentViewHolder holder, int position) {
         holder.setViewData(isPassed);
         holder.setData(appointments.get(position));
+    }
+
+    public void updateData(List<Appointment> apps) {
+        this.appointments = apps;
     }
 
     @Override
