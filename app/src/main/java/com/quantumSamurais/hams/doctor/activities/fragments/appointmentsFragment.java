@@ -96,7 +96,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     public void setMyDoctor(Doctor someDoctor){myDoctor = someDoctor;}
 
     public void viewAppointments() {
-        db.getDoctorAppointments(myDoctor);
+        db.getDoctorAppointments(myDoctor.getEmail());
     }
 
 

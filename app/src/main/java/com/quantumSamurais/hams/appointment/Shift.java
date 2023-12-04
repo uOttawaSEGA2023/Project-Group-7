@@ -20,7 +20,6 @@ import java.util.List;
 
 @IgnoreExtraProperties
 public class Shift {
-    Database db;
     List<Appointment> appointments;
     String doctorEmailAddress;
     Timestamp startTimeStamp, endTimeStamp;
@@ -37,7 +36,6 @@ public class Shift {
             throw new IllegalArgumentException("The shift time must be in increments of 30 minutes");
         }
 
-        db = Database.getInstance();
         doctorEmailAddress = emailAddress;
         //Converts to timestamp for serialization and deserialization
         Date date = Date.from(startTime.atZone(ZoneId.systemDefault()).toInstant());
@@ -59,7 +57,7 @@ public class Shift {
         LocalDateTime startTime = convertTimeStampToLocalDateTime(startTimeStamp);
         LocalDateTime endTime = convertTimeStampToLocalDateTime(endTimeStamp);
         //If the appointment is compatible with the shift
-        if (appointment.getStartTime().isBefore(startTime) || appointment.getEndTime().isAfter(endTime)){
+        if (appointment.getStartTimeLocalDate().isBefore(startTime) || appointment.getEndTimeLocalDate().isAfter(endTime)){
             throw new IllegalArgumentException("The appointment passed is not compatible with this shift");
         }
         for (Appointment acceptedAppointment: appointments){
@@ -108,9 +106,11 @@ public class Shift {
     public Timestamp getEndTimeStamp(){
         return endTimeStamp;
     }
+    @Exclude
     public LocalDateTime getStartTime(){
         return convertTimeStampToLocalDateTime(startTimeStamp);
     }
+    @Exclude
     public LocalDateTime getEndTime(){
         return convertTimeStampToLocalDateTime(endTimeStamp);
     }

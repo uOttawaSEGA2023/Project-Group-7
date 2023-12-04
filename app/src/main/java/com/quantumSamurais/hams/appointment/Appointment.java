@@ -1,33 +1,26 @@
 package com.quantumSamurais.hams.appointment;
 
-import static java.time.temporal.ChronoUnit.MINUTES;
-
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
 import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.patient.Patient;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
 public class Appointment implements Serializable  {
-    RequestStatus appointmentStatus;
-    LocalDateTime startTime, endTime;
-    long appointmentID;
-    long shiftID;
+    private RequestStatus appointmentStatus;
+
+    private LocalDateTime startTime, endTime;
+    private long appointmentID, shiftID;
     private boolean pastAppointmentFlag;
 
-    Patient patient;
-    public Appointment(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient){
-        if (inputsAreValid(startTime, endTime, shift, patient)){
-            //Set the time
-            this.startTime = startTime;
-            this.endTime = endTime;
-            this.shiftID = shift.getShiftID();
-            appointmentStatus = RequestStatus.PENDING;
-        }
+    private Patient patient;
+
+    public Appointment(){
     }
 
     public Appointment(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient, RequestStatus requestStatus){
@@ -35,14 +28,17 @@ public class Appointment implements Serializable  {
             //Set the time
             this.startTime = startTime;
             this.endTime = endTime;
+            this.patient = patient;
+            this.shiftID = shift.getShiftID();
             this.appointmentStatus = requestStatus;
-
+            return;
         }
+        throw new IllegalArgumentException("Something happened");
     }
 
     public boolean inputsAreValid(LocalDateTime startTime, LocalDateTime endTime, Shift shift, Patient patient){
-        long interval = MINUTES.between(startTime, endTime);
-        boolean isIncrementOf30Minutes = interval % 30 == 0;
+        Duration interval = Duration.between(startTime, endTime);
+        boolean isIncrementOf30Minutes = interval.toMinutes() % 30 == 0;
         if (shift == null || patient == null){
             throw new NullPointerException("Please do not pass null objects.");
         }
@@ -112,7 +108,7 @@ public class Appointment implements Serializable  {
     public long getShiftID(){
         return shiftID;
     }
-    @Exclude
+
     public void setAppointmentID(long newID){
         appointmentID = newID;
     }
