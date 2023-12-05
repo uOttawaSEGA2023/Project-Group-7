@@ -50,7 +50,10 @@ public class Patient extends User {
     public Patient(String firstName, String lastName, ArrayList<Integer> hashedPassword, ArrayList<Integer> salt, String emailAddress, String phoneNumber, String postalAddress, String healthCardNumber){
         super(firstName, lastName, hashedPassword, salt, emailAddress, phoneNumber, postalAddress);
         this.healthCardNumber = healthCardNumber;
-        this.appointments = new ArrayList<>();
+        Database db = Database.getInstance();
+        this.appointments = db.getPatientAppointments(this);
+        date = LocalDate.now();
+
     }
     @Override
     public void changeView(Context currentContext) {

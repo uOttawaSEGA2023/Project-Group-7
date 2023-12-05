@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.patient.activities;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,6 +22,7 @@ import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.patient.AppointmentListAdapter;
 import com.quantumSamurais.hams.patient.Patient;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -27,9 +30,10 @@ import java.util.List;
 public class PatientBookAppointmentActivity extends AppCompatActivity {
 
 
-    EditText dateText;
+    TextView dateText;
     Button changeDate;
     Spinner selectSpec;
+    Patient patient;
 
     AppointmentListAdapter availAdapter;
     RecyclerView toBook;
@@ -43,24 +47,27 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
     private void setup() {
         Patient p = (Patient) getIntent().getSerializableExtra("patient");
         assert p != null;
+        this.patient = p;
         selectSpec = findViewById(R.id.selectSpeciality);
         initSelectSpec();
         dateText = findViewById(R.id.dateTextbox);
         changeDate = findViewById(R.id.datePickBtn);
         toBook = findViewById(R.id.availAppointments);
 
-        Database.getInstance().getAllBookable(p,this::bookableAppsCB);
+        Database.getInstance().getAllBookable(patient,Specialties.FAMILY_MEDICINE,patient.getDate(),this::bookableAppsCB);
+        dateSet(p.getDate().toString());
+        changeDate.setOnClickListener(this::pickDateClicked);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
-        availAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, new ArrayList<>(),false);
+        availAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, new ArrayList<>(),false, true);
         toBook.setLayoutManager(layoutManager);
         toBook.setAdapter(availAdapter);
 
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void bookableAppsCB(ArrayList<Appointment> apps) {
-        ArrayList<Appointment> test = apps;
-        Log.d("Apps", apps.toString());
+        Log.d("Apps Bookable from DB", apps.toString());
         availAdapter.updateData(apps);
         availAdapter.notifyDataSetChanged();
     }
@@ -96,12 +103,13 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
     }
 
     private void pickDateClicked(View v) {
-       DatePickerFragment picker = new DatePickerFragment(this::dateSet);
+       DatePickerFragment picker = new DatePickerFragment(this::dateSet, dateText.getText().toString());
        picker.show(getSupportFragmentManager(),"datePicker");
     }
 
     private void dateSet(String date) {
         dateText.setText(date);
+        Database.getInstance().getAllBookable(patient,Specialties.FAMILY_MEDICINE, LocalDate.parse(dateText.getText()),this::bookableAppsCB);
     }
 
 }

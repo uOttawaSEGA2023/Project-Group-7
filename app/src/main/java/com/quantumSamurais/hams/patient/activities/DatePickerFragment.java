@@ -19,18 +19,18 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
     DateCallback toCall;
 
-    public DatePickerFragment(DateCallback callback) {
+    public DatePickerFragment(DateCallback callback, String date) {
         this.toCall = callback;
+        LocalDate currentDate = LocalDate.parse(date);
+        currentDate = currentDate.minusMonths(1);
+        year = currentDate.getYear();
+        month = currentDate.getMonthValue();
+        day = currentDate.getDayOfMonth();
     }
 
     @Override
     @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceSate) {
-        final Calendar c = Calendar.getInstance();
-        year = c.get(Calendar.YEAR);
-        month = c.get(Calendar.MONTH);
-        day = c.get(Calendar.DAY_OF_MONTH);
-
         return new DatePickerDialog(requireContext(), this, year, month, day);
     }
     @Override
