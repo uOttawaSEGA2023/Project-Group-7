@@ -235,7 +235,7 @@ public class Database {
         }).start();
     }
 
-    public void rateDoctorDB(long shiftId, int rating) {
+    public void rateDoctorDB(long appointmentID, long shiftId, int rating) {
         DocumentReference softwareDocRef = db.collection("users").document("software");
         db.runTransaction(transaction -> {
             CollectionReference myShifts = db.collection("users").document("software").collection("shifts");

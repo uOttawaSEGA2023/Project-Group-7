@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
@@ -85,7 +86,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
 
     @Override
     public void onBindViewHolder(@NonNull AppointmentViewHolder holder, int position) {
-        holder.setViewData(isPast, isBooking, this.man);
+        holder.setViewData(isPast, isBooking, this.man, context);
         holder.setData(appointments.get(position));
     }
 
@@ -115,6 +116,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         TextView docName, startTime, endTime, status, id;
 
         Appointment thisApp;
+        Context context;
 
         FragmentManager man;
         boolean isPast, isBooking;
@@ -135,9 +137,10 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
                 id = v.findViewById(R.id.id);
         }
 
-        public void setViewData(boolean isPassed, boolean isBooking, FragmentManager man) {
+        public void setViewData(boolean isPassed, boolean isBooking, FragmentManager man, Context context) {
             this.isPast = isPassed;
             this.isBooking = isBooking;
+            this.context = context;
             showMoreBtn.setVisibility(View.GONE);
             this.man =man;
 
@@ -158,13 +161,18 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         }
 
         private void rateDoctor(View view) {
+            if(thisApp.wasRated()) {
+                Toast.makeText(context,"You have already rated this doctor for this appointment.", Toast.LENGTH_SHORT).show();
+                return;
+            }
             RateDoctorFragment fragment = new RateDoctorFragment(this::rateCb);
                     fragment.show(man, "TAG");
         }
 
         public void rateCb(float rating) {
             Log.d("Rating Callback (AppointmentListAdapter:165)", "Rating was: " + rating);
-            Database.getInstance().rateDoctorDB(thisApp.getShiftID(),(int) Math.floor(rating));
+          //  Database.getInstance().rateDoctorDB(thisApp.getShiftID(),(int) Math.floor(rating));
+            thisApp.setRated(true);
         }
 
         public void bookAppointment(View v) {
