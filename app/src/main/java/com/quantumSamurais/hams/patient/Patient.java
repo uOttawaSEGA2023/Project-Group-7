@@ -27,8 +27,6 @@ public class Patient extends User {
     //TODO: UPDATE CACHE WHEN DOCTOR CANCELS APPOINTMENT
     private List<Appointment> appointments;
 
-    @Exclude
-    private LocalDate date;
 
     public Patient() {
        Database db = Database.getInstance();
@@ -42,7 +40,6 @@ public class Patient extends User {
         this.appointments = new ArrayList<>();
         Database db = Database.getInstance();
         db.addSignUpRequest(this);
-        date = LocalDate.now();
     }
 
     //Used for DEBUGGING
@@ -51,7 +48,6 @@ public class Patient extends User {
         this.healthCardNumber = healthCardNumber;
         Database db = Database.getInstance();
         this.appointments = new ArrayList<>();
-        date = LocalDate.now();
     }
 
     @Override
@@ -61,10 +57,6 @@ public class Patient extends User {
         currentContext.startActivity(patientView);
     }
 
-    @Exclude
-    public LocalDate getDate() {
-        return date;
-    }
     @Exclude
     public List<Appointment> getAppointments() {
         return appointments;
