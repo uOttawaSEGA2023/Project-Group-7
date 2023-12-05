@@ -92,18 +92,23 @@ class Shift {
     +getAppointments(): Map<long, Appointment>
     +getShiftID(): long
     +isVacant(): boolean
+    +getStartTime(): LocalDateTime
+    +getEndTime(): LocalDateTime
+    +getDoctorEmailAddress() string
     -shiftIsPassed(): boolean
 }
 class Appointment {
-    db: Database
-    requestStatus: RequestStatus
-    {static}APPOINTMENT_ID: long
-    startTime: DateTime
-    endTime: DateTime
-    appointmentID: long
-    pastAppointmentFlag: boolean
-    shift: Shift
-    myPatient: Patient
+    -requestStatus: RequestStatus
+    -startTime: DateTime
+    -endTime: DateTime
+    -appointmentID: long
+    -shiftID: long
+    -pastAppointmentFlag: boolean
+    -shift: Shift
+    -myPatient: Patient
+    -docName: String
+    -
+
     Appointment(startTime: DateTime, endTime: DateTime, shift: Shift, patient: Patient)
     Appointment(startTime: DateTime, endTime: DateTime, shift: Shift, patient: Patient, requestStatus: RequestStatus)
     --
