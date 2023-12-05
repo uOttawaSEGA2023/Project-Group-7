@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.patient;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,7 +86,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
 
     public static class AppointmentViewHolder extends RecyclerView.ViewHolder {
         ImageButton cancelBtn, showMoreBtn, rateBtn;
-        TextView docName, startTime, endTime;
+        TextView docName, startTime, endTime, status, id;
 
         Appointment thisApp;
 
@@ -103,12 +104,15 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
                 docName = v.findViewById(R.id.docNameAppointment);
                 startTime = v.findViewById(R.id.appointStartTime);
                 endTime = v.findViewById(R.id.appointEndTime);
+                status = v.findViewById(R.id.appointStatus);
+                id = v.findViewById(R.id.id);
         }
 
         public void setViewData(boolean isPassed, boolean isBooking) {
             this.isPast = isPassed;
             this.isBooking = isBooking;
             showMoreBtn.setVisibility(View.GONE);
+
 
             if(isPassed) {
                 cancelBtn.setVisibility(View.GONE);
@@ -124,24 +128,27 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
             }
         }
 
+        private void rateDoctor(View view) {
+            Database.getInstance().rateDoctorDB(thisApp.getShiftID(),5);
+        }
+
         public void bookAppointment(View v) {
             Database.getInstance().addAppointmentRequest(thisApp,listener);
         }
-        public void rateDoctor(View v) {
-          //  Database.getInstance().rateDoctor(docName, rating);
-        }
-
         public void cancelAppointment(View v) {
             //TODO: Check not before 60 min
             Database.getInstance().cancelAppointment(thisApp.getAppointmentID());
 
         }
 
+        @SuppressLint("SetTextI18n")
         public void setData(Appointment appointment) {
             thisApp = appointment;
             docName.setText(appointment.getDocName());
             startTime.setText(appointment.getStartTimeLocalDate().toString());
             endTime.setText(appointment.getEndTimeLocalDate().toString());
+            status.setText(thisApp.getAppointmentStatus().toString());
+            id.setText(Long.valueOf(appointment.getAppointmentID()).toString());
         }
     }
 }

@@ -75,7 +75,6 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
 
     @SuppressLint("NotifyDataSetChanged")
     public void bookableAppsCB(ArrayList<Appointment> apps) {
-        Log.d("Apps Bookable from DB", apps.toString());
         availAdapter.updateData(apps);
         availAdapter.notifyDataSetChanged();
     }

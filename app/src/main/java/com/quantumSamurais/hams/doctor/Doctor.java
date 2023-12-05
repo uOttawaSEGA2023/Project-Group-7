@@ -18,6 +18,7 @@ import com.quantumSamurais.hams.user.User;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class Doctor extends User implements Serializable {
@@ -27,9 +28,9 @@ public class Doctor extends User implements Serializable {
 	private boolean acceptsAppointmentsByDefault = false;
 	private ArrayList<Long> shiftIDs;
 	private ArrayList<Shift> shifts;
-	//private Database db;
 
-	private HashMap<Patient,Integer> ratings;
+	private List<Integer> ratings;
+
 
 	public Doctor() {
 	}
@@ -63,19 +64,6 @@ public class Doctor extends User implements Serializable {
 		this.specialties = specialties;
 		this.shiftIDs = shiftIDs;
 		acceptsAppointmentsByDefault = acceptsByDefault;
-	}
-
-	public void setRate(Patient pat, int rating) throws Exception {
-		if(rating>5 || rating <0){
-			throw new Exception("Invalid rating");
-		}else{
-		this.ratings.put(pat, rating);
-		}
-
-	}
-
-	public HashMap<Patient, Integer> getratings(){
-		return this.ratings;
 	}
 
 	@Override

@@ -232,6 +232,39 @@ public class Database {
         }).start();
     }
 
+    public void rateDoctorDB(long shiftId, int rating) {
+        DocumentReference softwareDocRef = db.collection("users").document("software");
+        db.runTransaction(transaction -> {
+            CollectionReference myShifts = db.collection("users").document("software").collection("shifts");
+            myShifts.whereEqualTo("shiftID", shiftId).get().addOnCompleteListener(shift -> {
+                if (shift.isSuccessful()) {
+                    QuerySnapshot shiftSnap = shift.getResult();
+                    Shift current = shiftSnap.toObjects(Shift.class).get(0);
+                    CollectionReference myDoctors = db.collection("users").document("software").collection("doctors");
+                    myDoctors.whereEqualTo("email", current.getDoctorEmailAddress()).get().addOnCompleteListener(getDoctor -> {
+                        if (getDoctor.isSuccessful()) {
+                            QuerySnapshot doctorSnap = getDoctor.getResult();
+                            for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
+                                String doctorId = singleDoctor.getId();
+                                DocumentReference docRef = myDoctors.document(doctorId);
+                                db.runTransaction(transaction1 -> {
+                                    transaction1.get(docRef);
+                                    transaction1.update(docRef,"ratings",FieldValue.arrayUnion(rating));
+                                    return null;
+                                });
+                            }
+                        } else {
+                            Log.d("Database", "Error getting documents: ", getDoctor.getException());
+                        }
+                    });
+                } else {
+                    Log.d("Database", "Error getting documents: ", shift.getException());
+                }
+            });
+            return null;
+        });
+    }
+
     // <editor-fold desc="Deliverable 3 & 4">
     public void addAppointmentRequest(Appointment appointment, UpdateAfterBook callback) {
         DocumentReference softwareDocRef = db.collection("users").document("software");

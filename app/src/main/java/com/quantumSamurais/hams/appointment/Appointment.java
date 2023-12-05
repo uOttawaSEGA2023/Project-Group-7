@@ -25,6 +25,7 @@ public class Appointment implements Serializable  {
 
     private String docName;
     private ArrayList<Specialties> specs;
+    private boolean rated;
 
     public Appointment(){
     }
@@ -68,6 +69,14 @@ public class Appointment implements Serializable  {
 
     public Patient getPatient(){
         return patient;
+    }
+
+    public boolean wasRated() {
+        return rated;
+    }
+
+    public void setRated(boolean rated) {
+        this.rated = rated;
     }
 
     public RequestStatus getAppointmentStatus(){

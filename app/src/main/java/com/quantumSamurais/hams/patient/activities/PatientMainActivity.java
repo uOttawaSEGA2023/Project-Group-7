@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.patient.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -40,6 +41,7 @@ public class PatientMainActivity extends AppCompatActivity {
         addListeners();
     }
 
+    @SuppressLint("SetTextI18n")
     private void setup() {
         // Retrieve Patient Object
         loggedIn = (Patient) getIntent().getSerializableExtra("patient");
@@ -65,7 +67,6 @@ public class PatientMainActivity extends AppCompatActivity {
         currentApps.setAdapter(currentAp);
         pastApps.setLayoutManager(layoutManager2);
         pastApps.setAdapter(pastAp);
-        //TODO: Display Appointment status
     }
     private void addListeners() {
         bookAppointmentBtn.setOnClickListener(this::bookAppointmentClicked);

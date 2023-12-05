@@ -85,6 +85,28 @@
                 app:layout_constraintStart_toStartOf="@+id/appointEndTime"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.684" />
+
+            <TextView
+                android:id="@+id/appointStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="startTime"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.4"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:layout_editor_absoluteY="2dp" />
+
+            <TextView
+                android:id="@+id/id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Id"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/showMore"
+                app:layout_constraintStart_toEndOf="@+id/appointStartTime"
+                app:layout_constraintTop_toBottomOf="@+id/appointStatus" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
