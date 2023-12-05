@@ -324,6 +324,23 @@ public class Database {
                 });
     }
 
+    public void listForShiftsChange(UpdateAfterBook shiftChangedCB) {
+        db.collection("users").document("software").collection("shifts")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("Listening Pat Apps", "Listen failed.", e);
+                            return;
+                        }
+                        assert value != null;
+
+                        shiftChangedCB.update();
+                    }
+                });
+    }
+
     public interface UpdateAfterBook {
         void update();
     }

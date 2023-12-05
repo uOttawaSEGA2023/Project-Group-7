@@ -125,6 +125,8 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
     }
 
     private void addListeners() {
+        //TODO: Set Update Listener of
+        Database.getInstance().listForShiftsChange(this::shiftChangedCB);
         changeDate.setOnClickListener(this::pickDateClicked);
     }
 
@@ -138,6 +140,9 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
         Database.getInstance().getAllBookable(patient,getCurrentSpec(), LocalDate.parse(dateText.getText()),this::bookableAppsCB);
     }
 
+    public void shiftChangedCB() {
+        Database.getInstance().getAllBookable(patient,getCurrentSpec(), LocalDate.parse(dateText.getText()),this::bookableAppsCB);
+    }
 
 
 
