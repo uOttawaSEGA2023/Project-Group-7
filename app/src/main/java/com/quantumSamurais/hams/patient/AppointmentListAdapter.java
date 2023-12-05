@@ -117,6 +117,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
             if(isPassed) {
                 cancelBtn.setVisibility(View.GONE);
                 rateBtn.setOnClickListener(this::rateDoctor);
+                status.setVisibility(View.GONE);
             } else {
                 rateBtn.setVisibility(View.GONE);
                 cancelBtn.setOnClickListener(this::cancelAppointment);
