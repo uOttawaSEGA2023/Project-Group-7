@@ -10,12 +10,14 @@ import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.patient.activities.PatientBookAppointmentActivity;
+import com.quantumSamurais.hams.patient.activities.RateDoctorFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,8 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
 
     boolean isPast;
     boolean isBooking;
+
+    FragmentManager man;
 
     static Database.UpdateAfterBook listener;
     List<Appointment> appointments;
@@ -50,6 +54,27 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         this.isPast = isPast;
         this.isBooking = isBooking;
     }
+    public AppointmentListAdapter(Context context, @LayoutRes int layout, List<Appointment> apps, boolean isPast, boolean isBooking, Database.UpdateAfterBook listener, FragmentManager manager) {
+        this.context = context;
+        this.layout = layout;
+        ArrayList<Appointment> newApps = new ArrayList<>();
+        for(Appointment app: apps) {
+            if(app.appointmentIsPassed()) {
+                if(isPast) {
+                    newApps.add(app);
+                }
+            } else {
+                if(!isPast) {
+                    newApps.add(app);
+                }
+            }
+        }
+        AppointmentListAdapter.listener = listener;
+        this.appointments = newApps;
+        this.isPast = isPast;
+        this.isBooking = isBooking;
+        this.man = manager;
+    }
     @NonNull
     @Override
     public AppointmentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -59,7 +84,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
 
     @Override
     public void onBindViewHolder(@NonNull AppointmentViewHolder holder, int position) {
-        holder.setViewData(isPast, isBooking);
+        holder.setViewData(isPast, isBooking, this.man);
         holder.setData(appointments.get(position));
     }
 
@@ -90,6 +115,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
 
         Appointment thisApp;
 
+        FragmentManager man;
         boolean isPast, isBooking;
         public AppointmentViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -108,10 +134,11 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
                 id = v.findViewById(R.id.id);
         }
 
-        public void setViewData(boolean isPassed, boolean isBooking) {
+        public void setViewData(boolean isPassed, boolean isBooking, FragmentManager man) {
             this.isPast = isPassed;
             this.isBooking = isBooking;
             showMoreBtn.setVisibility(View.GONE);
+            this.man =man;
 
 
             if(isPassed) {
@@ -130,7 +157,9 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         }
 
         private void rateDoctor(View view) {
-            Database.getInstance().rateDoctorDB(thisApp.getShiftID(),5);
+            RateDoctorFragment fragment = new RateDoctorFragment();
+                    fragment.show(man, "TAG");
+         //   Database.getInstance().rateDoctorDB(thisApp.getShiftID(),5);
         }
 
         public void bookAppointment(View v) {

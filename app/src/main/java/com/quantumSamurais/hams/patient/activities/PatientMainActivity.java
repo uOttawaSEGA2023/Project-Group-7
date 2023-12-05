@@ -60,8 +60,8 @@ public class PatientMainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager2 = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
 
 
-        currentAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),false, false,null);
-        pastAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),true, false,null);
+        currentAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),false, false,null, getSupportFragmentManager());
+        pastAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),true, false,null, getSupportFragmentManager());
 
         currentApps.setLayoutManager(layoutManager);
         currentApps.setAdapter(currentAp);
