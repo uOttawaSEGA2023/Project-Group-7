@@ -473,7 +473,11 @@ public class Database {
                         appointments.whereEqualTo("appointmentID", appointmentID).get()
                                 .addOnSuccessListener(shiftTask -> {
                                     DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
-                                    editAppointmentStatus(appointmentReference, RequestStatus.APPROVED);
+                                    db.runTransaction(transaction -> {
+                                        transaction.get(appointmentReference);
+                                        transaction.delete(appointmentReference);
+                                        return null;
+                                    });
                                 }).addOnFailureListener(e -> {
                                     // Handle transaction failure
                                     Log.e("cancelAppointment", "Transaction failed: ", e);
