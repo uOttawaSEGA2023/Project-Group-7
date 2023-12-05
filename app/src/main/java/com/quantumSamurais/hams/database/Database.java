@@ -28,6 +28,7 @@ import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
+import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
@@ -567,7 +568,7 @@ public class Database {
         });
     }
 
-    public void getAllBookable(Patient p, AllBookableCallback callback) {
+    public void getAllBookable(Patient p, Specialties spec, LocalDate date, AllBookableCallback callback) {
         db.collection("users").document("software").collection("shifts").get().addOnSuccessListener(value -> {
            ArrayList<Appointment> appointments = new ArrayList<>();
            for(Shift shift: value.toObjects(Shift.class)) {
@@ -577,12 +578,15 @@ public class Database {
                             LocalDateTime startTime = shift.getStartTime();
                             LocalDateTime endTime = shift.getEndTime();
                             LocalDateTime currTime = startTime;
+                            LocalDate shiftDate = shift.getStartTime().toLocalDate();
 
                             while(!currTime.isEqual(endTime)) {
                                 Appointment next = new Appointment(currTime,currTime.plusMinutes(30),shift,doctor.getFirstName(),doctor.getSpecialties(),p,RequestStatus.PENDING);
-                                //if(shift.takeAppointment(next)) {
+                                if(doctor.getSpecialties().contains(spec) && shiftDate.isEqual(date)) {
+                                    //if(shift.takeAppointment(next)) {
                                     appointments.add(next);
-                                //}
+                                    //}
+                                }
                                 currTime = currTime.plusMinutes(30);
                             }
                       }
