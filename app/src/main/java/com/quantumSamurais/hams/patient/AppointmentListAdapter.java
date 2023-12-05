@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.patient.activities.PatientBookAppointmentActivity;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentListAdapter.AppointmentViewHolder> {
@@ -26,8 +26,10 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
 
     boolean isPast;
     boolean isBooking;
+
+    static Database.UpdateAfterBook listener;
     List<Appointment> appointments;
-    public AppointmentListAdapter(Context context, @LayoutRes int layout, List<Appointment> apps, boolean isPast, boolean isBooking) {
+    public AppointmentListAdapter(Context context, @LayoutRes int layout, List<Appointment> apps, boolean isPast, boolean isBooking, Database.UpdateAfterBook listener) {
         this.context = context;
         this.layout = layout;
         ArrayList<Appointment> newApps = new ArrayList<>();
@@ -42,6 +44,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
                 }
             }
         }
+        AppointmentListAdapter.listener = listener;
         this.appointments = newApps;
         this.isPast = isPast;
         this.isBooking = isBooking;
@@ -115,12 +118,14 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
                 cancelBtn.setOnClickListener(this::cancelAppointment);
             }
             if(isBooking) {
+                rateBtn.setVisibility(View.VISIBLE);
+                cancelBtn.setVisibility(View.GONE);
                 rateBtn.setOnClickListener(this::bookAppointment);
             }
         }
 
         public void bookAppointment(View v) {
-            Database.getInstance().addAppointmentRequest(thisApp);
+            Database.getInstance().addAppointmentRequest(thisApp,listener);
         }
         public void rateDoctor(View v) {
           //  Database.getInstance().rateDoctor(docName, rating);

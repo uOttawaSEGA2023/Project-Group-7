@@ -63,10 +63,14 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
         changeDate.setOnClickListener(this::pickDateClicked);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
-        availAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, new ArrayList<>(),true, true);
+        availAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, new ArrayList<>(),false, true,this::updateApps);
         toBook.setLayoutManager(layoutManager);
         toBook.setAdapter(availAdapter);
 
+    }
+
+    public void updateApps() {
+        Database.getInstance().getAllBookable(patient,getCurrentSpec(),patient.getDate(),this::bookableAppsCB);
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -134,6 +138,10 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
         dateText.setText(date);
         Database.getInstance().getAllBookable(patient,getCurrentSpec(), LocalDate.parse(dateText.getText()),this::bookableAppsCB);
     }
+
+
+
+
 
     private Specialties getCurrentSpec() {
         return  selected;

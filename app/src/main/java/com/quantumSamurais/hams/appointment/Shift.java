@@ -14,6 +14,7 @@ import com.quantumSamurais.hams.doctor.Doctor;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -54,8 +55,8 @@ public class Shift {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean takeAppointment(Appointment appointment){
-        LocalDateTime startTime = convertTimeStampToLocalDateTime(startTimeStamp);
-        LocalDateTime endTime = convertTimeStampToLocalDateTime(endTimeStamp);
+        LocalDateTime startTime = convertTimeStampToLocalDateTime(startTimeStamp).truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime endTime = convertTimeStampToLocalDateTime(endTimeStamp).truncatedTo(ChronoUnit.SECONDS);
         //If the appointment is compatible with the shift
         if (appointment.getStartTimeLocalDate().isBefore(startTime) || appointment.getEndTimeLocalDate().isAfter(endTime)){
             throw new IllegalArgumentException("The appointment passed is not compatible with this shift");

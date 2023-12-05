@@ -58,13 +58,14 @@ public class PatientMainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager2 = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
 
 
-        currentAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),false, false);
-        pastAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),true, false);
+        currentAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),false, false,null);
+        pastAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),true, false,null);
 
         currentApps.setLayoutManager(layoutManager);
         currentApps.setAdapter(currentAp);
         pastApps.setLayoutManager(layoutManager2);
         pastApps.setAdapter(pastAp);
+        //TODO: Display Appointment status
     }
     private void addListeners() {
         bookAppointmentBtn.setOnClickListener(this::bookAppointmentClicked);

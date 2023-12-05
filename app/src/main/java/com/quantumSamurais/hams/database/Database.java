@@ -233,7 +233,7 @@ public class Database {
     }
 
     // <editor-fold desc="Deliverable 3 & 4">
-    public void addAppointmentRequest(Appointment appointment) {
+    public void addAppointmentRequest(Appointment appointment, UpdateAfterBook callback) {
         DocumentReference softwareDocRef = db.collection("users").document("software");
 
         db.runTransaction((Transaction.Function<Long>) transaction ->{
@@ -270,6 +270,8 @@ public class Database {
                                     db.runTransaction(addAppointment -> {
                                         addAppointment.update(docRef, "appointments", FieldValue.arrayUnion(appointment));
                                         return null;
+                                    }).addOnCompleteListener(ignored -> {
+                                        callback.update();
                                     });
                                 }
                             } else {
@@ -284,6 +286,10 @@ public class Database {
                         Log.d("DatabaseAppointmentAddingFailure", "Adding appointments to DB failed.", e);
                     }
                 });
+    }
+
+    public interface UpdateAfterBook {
+        void update();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -606,9 +612,9 @@ public class Database {
                                 Appointment next = new Appointment(currTime,currTime.plusMinutes(30),shift,doctor.getFirstName(),doctor.getSpecialties(),p,RequestStatus.PENDING);
                                 if(doctor.getSpecialties().contains(spec) && (date.isEqual(startDate) || date.isEqual(endDate) || (date.isAfter(startDate) && date.isBefore(endDate)))) {
                                     //TODO: Uncomment this check
-                                    //if(shift.takeAppointment(next)) {
-                                    appointments.add(next);
-                                    //}
+                                    if(shift.takeAppointment(next)) {
+                                        appointments.add(next);
+                                    }
                                 }
                                 currTime = currTime.plusMinutes(30).truncatedTo(ChronoUnit.SECONDS);
                             }
