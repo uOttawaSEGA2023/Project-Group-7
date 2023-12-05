@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.Exclude;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.activities.ShowMoreActivity;
 import com.quantumSamurais.hams.appointment.Appointment;
@@ -23,20 +24,30 @@ import com.quantumSamurais.hams.core.adapters.AppointmentItemAdapter;
 import com.quantumSamurais.hams.core.enums.FragmentTab;
 import com.quantumSamurais.hams.core.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Database;
-import com.quantumSamurais.hams.database.callbacks.ResponseListener;
 import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
 
 import java.util.ArrayList;
 
 
-public class appointmentsFragment extends Fragment implements RequestsActivityListener, ResponseListener<ArrayList<Appointment>> {
+public class appointmentsFragment extends Fragment implements RequestsActivityListener {
     FragmentTab activeTab;
     AppointmentItemAdapter requestsAdapter;
     RecyclerView requestsStack;
     Database db;
     ArrayList<Appointment> appointments;
     Doctor myDoctor;
+
+    @Exclude
+    public void getAppointments(){
+        Database.getInstance().getDoctorAppointments(myDoctor.getEmail(), this::onReceivedAppointments);
+    }
+
+    public void onReceivedAppointments(ArrayList<Appointment> appointments){
+        this.appointments = appointments;
+        requestsAdapter.setAppointments(appointments);
+        requestsAdapter.notifyDataSetChanged();
+    }
 
     public appointmentsFragment() {
         // Required empty public constructor
@@ -62,14 +73,13 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         Bundle args = getArguments();
         if (args != null) {
             activeTab = (FragmentTab) args.getSerializable("activeTab");
-            refreshHandler.post(refreshRunnable);
-            Log.d("requests Fragment", "Instance requests size after refreshRunnable : " + appointments.size());
             requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
             requestsStack.setLayoutManager(layoutManager);
             requestsStack.setAdapter(requestsAdapter);
 
-            Log.d("requests Fragment", "We called from onCreateView");
+            refreshHandler.post(refreshRunnable);
+
             return view;
         }
         throw new IllegalStateException("This fragment was generated without using the newInstance method and hence has no FragmentTab.");
@@ -84,7 +94,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     @Override
     public void onResume() {
         super.onResume();
-        viewAppointments();
+        getAppointments();
     }
 
     @Override
@@ -95,9 +105,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
 
     public void setMyDoctor(Doctor someDoctor){myDoctor = someDoctor;}
 
-    public void viewAppointments() {
-        db.getDoctorAppointments(myDoctor.getEmail());
-    }
+
 
 
     // This handler is needed to allow automatic refresh of the screen
@@ -106,35 +114,15 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     private final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
-            viewAppointments();
+            getAppointments();
         }
     };
 
-    @Override
-    public void onSuccess(ArrayList<Appointment> appointmentsFromDatabase) {
-        Log.d("RequestFragment", "Number of items in requests prechange: " + appointments.size());
-        appointments = appointmentsFromDatabase;
-        Log.d("RequestFragmentX", "Number of items in requests after change: " + appointments.size());
-
-        getActivity().runOnUiThread(() -> {
-            requestsAdapter.setAppointments(appointments);
-        });
-        //Clear the Handler Queue
-        stopDataRefresh();
-        //
-        refreshHandler.postDelayed(refreshRunnable, 5000);
-
-    }
 
     private void stopDataRefresh() {
         refreshHandler.removeCallbacks(refreshRunnable);
     }
 
-    @Override
-    public void onFailure(Exception error) {
-        Log.d("admin view", "Something went off when trying to access the DB." + error.getStackTrace());
-
-    }
 
     @Override
     public void onAcceptClick(int position) {
