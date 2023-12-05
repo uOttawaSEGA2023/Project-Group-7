@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.core.adapters;
 
+import static com.quantumSamurais.hams.database.RequestStatus.APPROVED;
 import static com.quantumSamurais.hams.database.RequestStatus.PENDING;
 import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
 
@@ -16,14 +17,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
-import com.quantumSamurais.hams.admin.Administrator;
 import com.quantumSamurais.hams.appointment.Appointment;
+import com.quantumSamurais.hams.core.enums.FragmentTab;
 import com.quantumSamurais.hams.core.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Database;
-import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.patient.Patient;
-import com.quantumSamurais.hams.user.User;
-import com.quantumSamurais.hams.core.enums.FragmentTab;
 
 import java.util.ArrayList;
 
@@ -39,47 +37,46 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
 
 
     public AppointmentItemAdapter(Context context, FragmentTab activeTab, ArrayList<Appointment> appointmentsFromDatabase, RequestsActivityListener listener) {
-        Log.d("AppointmentItemAdapter", "Number of items in appointments: " + appointmentsFromDatabase.size());
         this.activeTab = activeTab;
         setAppointments(appointmentsFromDatabase);
         currentContext = context;
         requestClickListener = listener;
-        Log.d("AppointmentItemAdapter", "Number of items in appointments: " + appointments.size());
     }
 
 
-    public void setAppointments(ArrayList<Appointment> appointmentsFromDatabase){
-        // Filters the passed list, and makes it so it contains only the required info
-        ArrayList<Appointment> tempAppointments = appointmentsFromDatabase;
-        switch(activeTab){
-            case ALL_REQUESTS:
-                break;
-            case PENDING_REQUESTS:
-                ArrayList<Appointment> pendingAppointments = new ArrayList<>();
-                for (Appointment appointment : appointmentsFromDatabase){
+    public void setAppointments(ArrayList<Appointment> appointmentsFromDatabase) {
+        ArrayList<Appointment> filteredAppointments = new ArrayList<>();
+        for (Appointment appointment : appointmentsFromDatabase){
+            switch(activeTab){
+                case ALL_REQUESTS:
+                    //This really means all upcoming, too lazy to change it
+                    if (appointment.getAppointmentStatus() == APPROVED){
+                        filteredAppointments.add(appointment);
+                    }
+                    break;
+                case PENDING_REQUESTS:
                     if (appointment.getAppointmentStatus() == PENDING){
-                        pendingAppointments.add(appointment);
+                        filteredAppointments.add(appointment);
                     }
-                }
-                tempAppointments = pendingAppointments;
-                break;
-
-            case REJECTED_REQUESTS:
-                ArrayList<Appointment> rejectedAppointments = new ArrayList<>();
-                for (Appointment appointment : appointmentsFromDatabase){
+                    break;
+                case REJECTED_REQUESTS:
                     if (appointment.getAppointmentStatus() == REJECTED){
-                        rejectedAppointments.add(appointment);
+                        filteredAppointments.add(appointment);
                     }
-                }
-                tempAppointments  = rejectedAppointments;
-                break;
+                    break;
+                default:
+                    Log.d("AppointmentFragmentError", "The current fragment was initialized with a wrong tab.");
+            }
+
         }
-        appointments = tempAppointments ;
+
+        appointments = filteredAppointments;
         notifyDataSetChanged();
     }
 
+
     public static class RequestViewHolder extends RecyclerView.ViewHolder{
-        TextView name, emailAddress, userType, requestId;
+        TextView name, emailAddress, date;
         ImageButton accept, reject, moreInfo;
         Appointment appointment;
         RequestsActivityListener requestsActivityListener;
@@ -92,30 +89,21 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             moreInfo = itemView.findViewById(R.id.showMore);
         }
 
-        private void setData(User user, long id) throws Exception {
+        private void setData(Appointment appointment) throws Exception {
             name = itemView.findViewById(R.id.nameRequest);
             emailAddress = itemView.findViewById(R.id.emailAddressRequest);
-            userType = itemView.findViewById(R.id.userTypeRequest);
-            requestId = itemView.findViewById(R.id.idRequest);
+            date = itemView.findViewById(R.id.dateOfRequest);
+            Patient patient = appointment.getPatient();
+
+
 
             //
-            name.setText(user.getFirstName() + " " + user.getLastName());
-            emailAddress.setText(user.getEmail());
-            requestId.setText(Long.toString(id));
+            name.setText(patient.getFirstName() + " " + patient.getLastName());
+            emailAddress.setText(patient.getEmail());
 
-            //Since it's an ENUM, default is unneeded.
-            if (user instanceof Doctor) {
-                userType.setText(R.string.doctor);
-            } else if (user instanceof Patient) {
-                userType.setText(R.string.patient);
-            } else if (user instanceof Administrator) {
-                Log.d("Request Screen", "Someone managed to create an account as ADMIN... how?");
-            }
+
+
             setOnClickListeners(appointment);
-
-
-
-
         }
 
         public void setAppointment(Appointment appointment) {
@@ -187,8 +175,16 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
     public void onBindViewHolder(@NonNull AppointmentItemAdapter.RequestViewHolder holder, int position) {
         try {
             long appointmentID = appointments.get(position).getAppointmentID();
-            holder.setAppointment(appointments.get(position));
-            holder.setData(db.getPatientFromAppointmentID(appointmentID), appointmentID);
+            db.getAppointment(appointmentID).thenAccept(appointment ->
+            {
+                holder.setAppointment(appointments.get(position));
+                try {
+                    holder.setData(appointment);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            );
         } catch (Exception e) {
             Log.d("Requests Screen", e.getMessage() + " " + e.getCause());
         }

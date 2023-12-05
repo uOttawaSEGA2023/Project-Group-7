@@ -138,6 +138,7 @@ public class Appointment implements Serializable  {
         appointmentID = newID;
     }
 
+    @Exclude
     public boolean appointmentIsPassed(){
         pastAppointmentFlag = endTime.isBefore(LocalDateTime.now());
         return  pastAppointmentFlag;
