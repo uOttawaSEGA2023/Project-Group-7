@@ -2,6 +2,7 @@ package com.quantumSamurais.hams.patient;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -157,9 +158,13 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         }
 
         private void rateDoctor(View view) {
-            RateDoctorFragment fragment = new RateDoctorFragment();
+            RateDoctorFragment fragment = new RateDoctorFragment(this::rateCb);
                     fragment.show(man, "TAG");
-         //   Database.getInstance().rateDoctorDB(thisApp.getShiftID(),5);
+        }
+
+        public void rateCb(float rating) {
+            Log.d("Rating Callback (AppointmentListAdapter:165)", "Rating was: " + rating);
+            Database.getInstance().rateDoctorDB(thisApp.getShiftID(),(int) Math.floor(rating));
         }
 
         public void bookAppointment(View v) {
