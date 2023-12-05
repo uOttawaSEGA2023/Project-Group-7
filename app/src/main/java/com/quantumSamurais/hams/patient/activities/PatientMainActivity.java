@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,6 +21,7 @@ import java.util.EnumSet;
 public class PatientMainActivity extends AppCompatActivity {
 
 
+    TextView topText;
     RecyclerView currentApps, pastApps;
     Patient loggedIn;
 
@@ -36,6 +38,10 @@ public class PatientMainActivity extends AppCompatActivity {
     private void setup() {
         // Retrieve Patient Object
         loggedIn = (Patient) getIntent().getSerializableExtra("patient");
+
+        topText = findViewById(R.id.welcomeMessage);
+        topText.setText("Welcome, " + loggedIn.getFirstName());
+
         // Get Views
         currentApps = findViewById(R.id.upcomingAppointmentsRecyclerView);
         pastApps = findViewById(R.id.pastAppointmentsRecyclerView);
@@ -47,8 +53,8 @@ public class PatientMainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager2 = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
 
 
-        AppointmentListAdapter currentAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),false);
-        AppointmentListAdapter pastAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),true);
+        AppointmentListAdapter currentAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),false, false);
+        AppointmentListAdapter pastAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),true, false);
 
         currentApps.setLayoutManager(layoutManager);
         currentApps.setAdapter(currentAdapter);
