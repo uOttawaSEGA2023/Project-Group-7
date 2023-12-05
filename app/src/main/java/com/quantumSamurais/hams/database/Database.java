@@ -391,7 +391,7 @@ public class Database {
                 }
             }
 
-
+            return null;
         });
     }
 
@@ -470,7 +470,7 @@ public class Database {
                                 });
                         //Then modify the related appointment
                         CollectionReference appointments = db.collection("users").document("software").collection("appointments");
-                        shifts.whereEqualTo("appointmentID", appointmentID).get()
+                        appointments.whereEqualTo("appointmentID", appointmentID).get()
                                 .addOnSuccessListener(shiftTask -> {
                                     DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
                                     editAppointmentStatus(appointmentReference, RequestStatus.APPROVED);
