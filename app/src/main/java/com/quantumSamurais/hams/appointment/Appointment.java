@@ -59,6 +59,7 @@ public class Appointment implements Serializable  {
         return true;
     }
 
+    //TODO: POTENTIALLY ADD RATING HERE
     public boolean overlaps(Appointment someAppointment){
         if (startTime.isBefore(someAppointment.getEndTimeLocalDate()) && someAppointment.getStartTimeLocalDate().isBefore(endTime)){
             return true;

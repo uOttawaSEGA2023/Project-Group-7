@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,6 +36,8 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
     Spinner selectSpec;
     Patient patient;
 
+    Specialties selected;
+
     AppointmentListAdapter availAdapter;
     RecyclerView toBook;
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,16 +53,17 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
         this.patient = p;
         selectSpec = findViewById(R.id.selectSpeciality);
         initSelectSpec();
+        selected = Specialties.FAMILY_MEDICINE;
         dateText = findViewById(R.id.dateTextbox);
         changeDate = findViewById(R.id.datePickBtn);
         toBook = findViewById(R.id.availAppointments);
 
-        Database.getInstance().getAllBookable(patient,Specialties.FAMILY_MEDICINE,patient.getDate(),this::bookableAppsCB);
+        Database.getInstance().getAllBookable(patient,getCurrentSpec(),patient.getDate(),this::bookableAppsCB);
         dateSet(p.getDate().toString());
         changeDate.setOnClickListener(this::pickDateClicked);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
-        availAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, new ArrayList<>(),false, true);
+        availAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, new ArrayList<>(),true, true);
         toBook.setLayoutManager(layoutManager);
         toBook.setAdapter(availAdapter);
 
@@ -96,6 +100,25 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         //set the spinners adapter to the previously created one.
         selectSpec.setAdapter(adapter);
+        selectSpec.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                EnumSet<Specialties> s = EnumSet.allOf(Specialties.class);
+                int k = 0;
+                for (Specialties specialties : s) {
+                    if(k == position) {
+                        selected = specialties;
+                        dateSet(dateText.getText().toString());
+                        break;
+                    }
+                    k++;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+            }
+        });
     }
 
     private void addListeners() {
@@ -109,7 +132,11 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
 
     private void dateSet(String date) {
         dateText.setText(date);
-        Database.getInstance().getAllBookable(patient,Specialties.FAMILY_MEDICINE, LocalDate.parse(dateText.getText()),this::bookableAppsCB);
+        Database.getInstance().getAllBookable(patient,getCurrentSpec(), LocalDate.parse(dateText.getText()),this::bookableAppsCB);
+    }
+
+    private Specialties getCurrentSpec() {
+        return  selected;
     }
 
 }

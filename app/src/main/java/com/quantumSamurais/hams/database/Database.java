@@ -12,6 +12,7 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -19,8 +20,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
@@ -34,10 +37,9 @@ import com.quantumSamurais.hams.user.User;
 import com.quantumSamurais.hams.user.UserType;
 import com.quantumSamurais.hams.utils.ValidationType;
 
-import org.checkerframework.checker.units.qual.A;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -230,7 +232,6 @@ public class Database {
      * @param id Id of the request to reject
      */
     public void rejectSignUpRequest(long id) {
-        //TODO: Send email
         new Thread(() -> {
             try {
                 QuerySnapshot requests = await(db.collection("users").document("software").collection("requests").get());
@@ -568,26 +569,29 @@ public class Database {
         });
     }
 
-    public void getAllBookable(Patient p, Specialties spec, LocalDate date, AllBookableCallback callback) {
+    public void getAllBookable(Patient p, Specialties spec, LocalDate date, AppointmentCallback callback) {
+
         db.collection("users").document("software").collection("shifts").get().addOnSuccessListener(value -> {
            ArrayList<Appointment> appointments = new ArrayList<>();
            for(Shift shift: value.toObjects(Shift.class)) {
               db.collection("users").document("software").collection("doctors").whereEqualTo("email",shift.getDoctorEmailAddress()).get()
                       .addOnSuccessListener(doc -> {
                             Doctor doctor = doc.toObjects(Doctor.class).get(0);
-                            LocalDateTime startTime = shift.getStartTime();
-                            LocalDateTime endTime = shift.getEndTime();
+                            LocalDateTime startTime = shift.getStartTime().truncatedTo(ChronoUnit.SECONDS);
+                            LocalDateTime endTime = shift.getEndTime().truncatedTo(ChronoUnit.SECONDS);
                             LocalDateTime currTime = startTime;
-                            LocalDate shiftDate = shift.getStartTime().toLocalDate();
+                            LocalDate startDate = shift.getStartTime().toLocalDate();
+                            LocalDate endDate = shift.getEndTime().toLocalDate();
 
                             while(!currTime.isEqual(endTime)) {
                                 Appointment next = new Appointment(currTime,currTime.plusMinutes(30),shift,doctor.getFirstName(),doctor.getSpecialties(),p,RequestStatus.PENDING);
-                                if(doctor.getSpecialties().contains(spec) && shiftDate.isEqual(date)) {
+                                if(doctor.getSpecialties().contains(spec) && (date.isEqual(startDate) || date.isEqual(endDate) || (date.isAfter(startDate) && date.isBefore(endDate)))) {
+                                    //TODO: Uncomment this check
                                     //if(shift.takeAppointment(next)) {
                                     appointments.add(next);
                                     //}
                                 }
-                                currTime = currTime.plusMinutes(30);
+                                currTime = currTime.plusMinutes(30).truncatedTo(ChronoUnit.SECONDS);
                             }
                       }
               ).addOnCompleteListener(ignored -> {
@@ -597,35 +601,38 @@ public class Database {
         });
     }
 
-    public interface AllBookableCallback {
+    public interface testCb {
+        void test(ArrayList<Appointment> apps);
+    }
+
+    public void listenForAppointmentCancelPatient(Patient patient, AppointmentCallback cb) {
+        db.collection("users").document("software").collection("appointments")
+                .whereEqualTo("patient", patient)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("Listening Pat Apps", "Listen failed.", e);
+                            return;
+                        }
+                        assert value != null;
+
+                        cb.callback((ArrayList<Appointment>) value.toObjects(Appointment.class));
+                    }
+                });
+    }
+
+    public interface AppointmentCallback {
         void callback(ArrayList<Appointment> apps);
     }
 
 
-    public List<Appointment> getPatientAppointments(Patient patient) {
-
-        Supplier<List<Appointment>> query = () -> {
-            DocumentReference softwareRef = db.collection("users").document("software");
-            try {
-                QuerySnapshot snap = await(softwareRef.collection("appointments").whereEqualTo("patient",patient).get());
-                List<Appointment> apps = new ArrayList<>();
-                for (QueryDocumentSnapshot document : snap) {
-                    apps.add(document.toObject(Appointment.class));
-                }
-                return apps;
-            } catch (ExecutionException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
-
-        CompletableFuture<List<Appointment>> appList = supplyAsync(query);
-
-        try {
-            return appList.get();
-        } catch (ExecutionException | InterruptedException e) {
-            //TODO: Better Error handling
-           throw new RuntimeException(e);
-        }
+    public void getPatientAppointments(Patient patient, AppointmentCallback callback) {
+        DocumentReference softwareRef = db.collection("users").document("software");
+        softwareRef.collection("appointments").whereEqualTo("patient",patient).get().addOnSuccessListener(result -> {
+            callback.callback((ArrayList<Appointment>) result.toObjects(Appointment.class));
+        });
     }
 
     public CompletableFuture<Shift> getShift(long shiftID) {

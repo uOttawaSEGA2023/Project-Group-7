@@ -26,14 +26,13 @@ public class Patient extends User {
 
     //TODO: UPDATE CACHE WHEN DOCTOR CANCELS APPOINTMENT
     private List<Appointment> appointments;
-    private List<Appointment> availableAtDate;
 
     @Exclude
     private LocalDate date;
 
     public Patient() {
-        Database db = Database.getInstance();
-        this.appointments = db.getPatientAppointments(this);
+       Database db = Database.getInstance();
+       this.appointments = new ArrayList<>();
     }
 
     //Used during account creation
@@ -51,35 +50,20 @@ public class Patient extends User {
         super(firstName, lastName, hashedPassword, salt, emailAddress, phoneNumber, postalAddress);
         this.healthCardNumber = healthCardNumber;
         Database db = Database.getInstance();
-        this.appointments = db.getPatientAppointments(this);
+        this.appointments = new ArrayList<>();
         date = LocalDate.now();
-
     }
+
     @Override
     public void changeView(Context currentContext) {
         Intent patientView = new Intent(currentContext, PatientMainActivity.class);
         patientView.putExtra("patient", this);
         currentContext.startActivity(patientView);
     }
-    public void addAppointment() {
-
-    }
-
-    public boolean appointmentCancellable(Appointment appointment) {
-        return false;
-    }
-
-    public boolean cancelAppointment() {
-        return false;
-    }
 
     @Exclude
     public LocalDate getDate() {
         return date;
-    }
-
-    public void setAppointmentDate(LocalDate date) {
-
     }
     @Exclude
     public List<Appointment> getAppointments() {

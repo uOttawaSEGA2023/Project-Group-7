@@ -11,11 +11,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.quantumSamurais.hams.R;
+import com.quantumSamurais.hams.appointment.Appointment;
+import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Specialties;
 import com.quantumSamurais.hams.doctor.adapters.CheckableItemAdapter;
 import com.quantumSamurais.hams.patient.AppointmentListAdapter;
 import com.quantumSamurais.hams.patient.Patient;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 
 public class PatientMainActivity extends AppCompatActivity {
@@ -23,6 +26,8 @@ public class PatientMainActivity extends AppCompatActivity {
 
     TextView topText;
     RecyclerView currentApps, pastApps;
+
+    AppointmentListAdapter currentAp, pastAp;
     Patient loggedIn;
 
     Button bookAppointmentBtn;
@@ -53,16 +58,26 @@ public class PatientMainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager2 = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
 
 
-        AppointmentListAdapter currentAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),false, false);
-        AppointmentListAdapter pastAdapter = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),true, false);
+        currentAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),false, false);
+        pastAp = new AppointmentListAdapter(this, R.layout.appoinment_item, loggedIn.getAppointments(),true, false);
 
         currentApps.setLayoutManager(layoutManager);
-        currentApps.setAdapter(currentAdapter);
+        currentApps.setAdapter(currentAp);
         pastApps.setLayoutManager(layoutManager2);
-        pastApps.setAdapter(pastAdapter);
+        pastApps.setAdapter(pastAp);
     }
     private void addListeners() {
         bookAppointmentBtn.setOnClickListener(this::bookAppointmentClicked);
+        Database.getInstance().getPatientAppointments(loggedIn,this::updateAppointments);
+        Database.getInstance().listenForAppointmentCancelPatient(loggedIn,this::updateAppointments);
+    }
+
+
+    private void updateAppointments(ArrayList<Appointment> apps) {
+        currentAp.updateData(apps);
+        pastAp.updateData(apps);
+        currentAp.notifyDataSetChanged();
+        pastAp.notifyDataSetChanged();
     }
 
     private void bookAppointmentClicked(View v) {
