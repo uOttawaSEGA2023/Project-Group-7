@@ -5,8 +5,6 @@ import static com.quantumSamurais.hams.user.UserType.PATIENT;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +14,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.Exclude;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.activities.ShowMoreActivity;
 import com.quantumSamurais.hams.appointment.Appointment;
@@ -38,10 +35,6 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     ArrayList<Appointment> appointments;
     Doctor myDoctor;
 
-    @Exclude
-    public void getAppointments(){
-        Database.getInstance().getDoctorAppointments(myDoctor.getEmail(), this::onReceivedAppointments);
-    }
 
     public void onReceivedAppointments(ArrayList<Appointment> appointments){
         this.appointments = appointments;
@@ -78,7 +71,11 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
             requestsStack.setLayoutManager(layoutManager);
             requestsStack.setAdapter(requestsAdapter);
 
-            refreshHandler.post(refreshRunnable);
+
+            //Add event listeners to this
+            for (long shiftID : myDoctor.getShiftIDs()){
+                Database.getInstance().listenForAppointmentChangeOfStatus(shiftID, this::onReceivedAppointments);
+            }
 
             return view;
         }
@@ -91,61 +88,35 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         super.onAttach(context);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        getAppointments();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        stopDataRefresh();
-    }
 
     public void setMyDoctor(Doctor someDoctor){myDoctor = someDoctor;}
 
 
 
 
-    // This handler is needed to allow automatic refresh of the screen
-    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
-
-    private final Runnable refreshRunnable = new Runnable() {
-        @Override
-        public void run() {
-            getAppointments();
-        }
-    };
 
 
-    private void stopDataRefresh() {
-        refreshHandler.removeCallbacks(refreshRunnable);
-    }
+
 
 
     @Override
     public void onAcceptClick(int position) {
-        stopDataRefresh(); //I do not want the requests to be updated as I am accessing it.
         Log.d("requests Fragment", "accept click was pressed");
         long idToAccept = appointments.get(position).getAppointmentID();
+        Log.d("requests Fragment", "The id is : " + idToAccept);
         db.approveAppointment(idToAccept);
-        refreshHandler.post(refreshRunnable);
     }
 
     @Override
     public void onRejectClick(int position) {
-        stopDataRefresh();
         Log.d("requests Fragment", "reject click was pressed");
         long idToReject = appointments.get(position).getAppointmentID();
         db.rejectAppointment(idToReject);
-        refreshHandler.post(refreshRunnable);
     }
 
 
     @Override
     public void onShowMoreClick(int position) {
-        stopDataRefresh();
         //Get the selected request from the list
         Appointment selectedAppointment = appointments.get(position);
         Intent showMoreIntent = new Intent(getActivity(), ShowMoreActivity.class);

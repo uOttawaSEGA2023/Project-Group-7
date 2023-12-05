@@ -83,8 +83,8 @@ public class Appointment implements Serializable  {
         return appointmentStatus;
     }
 
-    public long getAppointmentID(){
-        return appointmentID;
+    public Long getAppointmentID(){
+        return Long.valueOf(appointmentID);
     }
 
     @Exclude
@@ -107,6 +107,8 @@ public class Appointment implements Serializable  {
         Date date = Date.from(endTime.atZone(ZoneId.systemDefault()).toInstant());
         return new Timestamp(date);
     }
+
+
 
     public void setStartTime(Timestamp time) {
         startTime = convertTimeStampToLocalDateTime(time);
@@ -139,9 +141,10 @@ public class Appointment implements Serializable  {
         return docName;
     }
 
-    public long getShiftID(){
-        return shiftID;
+    public Long getShiftID(){
+        return Long.valueOf(shiftID);
     }
+
 
     public void setAppointmentID(long newID){
         appointmentID = newID;

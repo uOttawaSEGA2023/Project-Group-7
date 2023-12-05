@@ -45,38 +45,47 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
 
 
     public void setAppointments(ArrayList<Appointment> appointmentsFromDatabase) {
-        ArrayList<Appointment> filteredAppointments = new ArrayList<>();
-        for (Appointment appointment : appointmentsFromDatabase){
-            switch(activeTab){
-                case ALL_REQUESTS:
-                    //This really means all upcoming, too lazy to change it
+        ArrayList<Appointment> tempAppointments = appointmentsFromDatabase;
+        switch(activeTab){
+            case ALL_REQUESTS:
+                ArrayList<Appointment> approvedAppointments = new ArrayList<>();
+                for (Appointment appointment : appointmentsFromDatabase){
                     if (appointment.getAppointmentStatus() == APPROVED){
-                        filteredAppointments.add(appointment);
+                        approvedAppointments.add(appointment);
                     }
-                    break;
-                case PENDING_REQUESTS:
+                }
+                tempAppointments = approvedAppointments;
+                break;
+            case PENDING_REQUESTS:
+                ArrayList<Appointment> pendingAppointments = new ArrayList<>();
+                for (Appointment appointment : appointmentsFromDatabase){
                     if (appointment.getAppointmentStatus() == PENDING){
-                        filteredAppointments.add(appointment);
+                        pendingAppointments.add(appointment);
                     }
-                    break;
-                case REJECTED_REQUESTS:
+                }
+                tempAppointments = pendingAppointments;
+                break;
+
+            case REJECTED_REQUESTS:
+                ArrayList<Appointment> rejectedAppointments = new ArrayList<>();
+                for (Appointment appointment : appointmentsFromDatabase){
                     if (appointment.getAppointmentStatus() == REJECTED){
-                        filteredAppointments.add(appointment);
+                        rejectedAppointments.add(appointment);
                     }
-                    break;
-                default:
-                    Log.d("AppointmentFragmentError", "The current fragment was initialized with a wrong tab.");
-            }
+                }
+                tempAppointments = rejectedAppointments;
+                break;
+        }
+        appointments = tempAppointments;
+        notifyDataSetChanged();
 
         }
 
-        appointments = filteredAppointments;
-        notifyDataSetChanged();
-    }
 
 
-    public static class RequestViewHolder extends RecyclerView.ViewHolder{
-        TextView name, emailAddress, date;
+
+    public static class RequestViewHolder extends RecyclerView.ViewHolder {
+        TextView name, emailAddress, id, date;
         ImageButton accept, reject, moreInfo;
         Appointment appointment;
         RequestsActivityListener requestsActivityListener;
@@ -93,14 +102,16 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             name = itemView.findViewById(R.id.nameRequest);
             emailAddress = itemView.findViewById(R.id.emailAddressRequest);
             date = itemView.findViewById(R.id.dateOfRequest);
+            id = itemView.findViewById(R.id.idRequest);
             Patient patient = appointment.getPatient();
-
 
 
             //
             name.setText(patient.getFirstName() + " " + patient.getLastName());
             emailAddress.setText(patient.getEmail());
-
+            date.setText(appointment.getStartTime().toDate().toString() + "\n" +
+                    appointment.getEndTime().toDate().toString());
+            id.setText(appointment.getAppointmentID().toString());
 
 
             setOnClickListeners(appointment);
@@ -109,7 +120,8 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
         public void setAppointment(Appointment appointment) {
             this.appointment = appointment;
         }
-        private void setOnClickListeners(Appointment appointment){
+
+        private void setOnClickListeners(Appointment appointment) {
             View.OnClickListener acceptListener = view -> {
                 if (requestsActivityListener != null) {
                     int position = getAdapterPosition();
@@ -144,7 +156,6 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             //Always there.
             accept.setOnClickListener(acceptListener);
             moreInfo.setOnClickListener(showMoreListener);
-
 
 
             //It only makes sense to have X button for requests that are pending.

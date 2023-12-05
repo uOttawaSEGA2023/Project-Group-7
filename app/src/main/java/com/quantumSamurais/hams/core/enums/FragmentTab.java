@@ -4,5 +4,4 @@ public enum FragmentTab {
         ALL_REQUESTS,
         PENDING_REQUESTS,
         REJECTED_REQUESTS,
-        VIEW_SETTINGS, VIEW_APPOINTMENTS
 }

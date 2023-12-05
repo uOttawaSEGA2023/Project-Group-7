@@ -76,7 +76,6 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         // imp
         shiftsAdapter = new DoctorShiftsAdapter(shifts, this);
         shiftsStack = findViewById(R.id.shiftsRecyclerView);
-        db.getShifts(myDoctor.getShiftIDs(), this::updateShifts);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         shiftsStack.setLayoutManager(layoutManager);
         shiftsStack.setAdapter(shiftsAdapter);
@@ -84,8 +83,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         addShiftFAB = findViewById(R.id.extended_fab);
         addShiftFAB.setOnClickListener(v -> showAddShiftDialog());
         setup();
-        refreshShifts = new Handler();
-        refresh_runnable.run();
+
 
 
 
@@ -117,6 +115,10 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         setupDrawerContent(navView);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        //Listener
+        Database.getInstance().listenForShifts(doctorEmail, this::listenForUpdatesToShifts);
+
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -128,14 +130,6 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         );
     }
 
-
-    private final Runnable refresh_runnable = new Runnable(){
-        public void run(){
-            myDoctor = Database.getInstance().getDoctor(myDoctor.getEmail());
-            Database.getInstance().getShifts(myDoctor.getShiftIDs(), DoctorMain.this::updateShifts);
-            refreshShifts.postDelayed(refresh_runnable, 5000);
-        }
-    };
 
     private void setup(){
         //Sets the info for the Tab Layout
@@ -177,9 +171,9 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
                     // Use the getDoctor method to get the latest doctor information
                     Doctor updatedDoctor = db.getDoctor(myDoctor.getEmail());
                     Database.getInstance().addShift(new Shift(updatedDoctor.getEmail(), startDateTime, endDateTime));
-                    runOnUiThread(() -> {
-                        refreshShifts.post(refresh_runnable);
-                    });
+                    updatedDoctor =  db.getDoctor(myDoctor.getEmail());
+                    //Listener
+                    Database.getInstance().getShifts(updatedDoctor.getShiftIDs(), this::listenForUpdatesToShifts);
             } else {
                 Toast.makeText(this, "Invalid shift. Please check the date and time.", Toast.LENGTH_SHORT).show();
             }
@@ -227,10 +221,11 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         confirmDialog.setTitle("Confirm Deletion");
         confirmDialog.setMessage("Are you sure you want to delete this shift?");
         confirmDialog.setPositiveButton("Yes", (dialog, which) -> {
-            Database.getInstance().deleteShift(shiftToDelete.getShiftID());
+            Database.getInstance().deleteShift(shiftToDelete.getShiftID(), this);
             Log.d("ShiftIDToDelete", "The shift ID of the shift I want to delete is : " + shiftToDelete.getShiftID());
-            refreshShifts.post(refresh_runnable);
-            Toast.makeText(this, "Shift deleted successfully", Toast.LENGTH_SHORT).show();
+            Doctor updatedDoctor = db.getDoctor(myDoctor.getEmail());
+            //Listener
+            Database.getInstance().getShifts(updatedDoctor.getShiftIDs(), this::listenForUpdatesToShifts);
         });
         confirmDialog.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
 
@@ -239,28 +234,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
 
 
 
-    /*@Override
-    public void onDeleteClick(int position) {
-        long shiftID = shifts.get(position).getShiftID();
-        myDoctor.cancelShift(shiftID);
-        // Remove first to avoid, any potential slurry of callbacks problem
-        refreshShifts.removeCallbacks(refresh_runnable);
-        // Then we update
-        refreshShifts.post(refresh_runnable);
-    }*/
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        //Updates the doctor
-        refreshShifts.post(refresh_runnable);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        refreshShifts.removeCallbacks(refresh_runnable);
-    }
 
     @Override
     protected void onDestroy() {
@@ -302,10 +276,11 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         }
     }
 
-    public void updateShifts(ArrayList<Shift> shifts){
+    public void listenForUpdatesToShifts(ArrayList<Shift> shifts){
         this.shifts = shifts;
         shiftsAdapter.updateList(shifts);
         shiftsAdapter.notifyDataSetChanged();
+
     }
 
 }

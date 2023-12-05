@@ -100,6 +100,10 @@ public class Shift {
         return appointments;
     }
 
+    public void setAppointments(ArrayList<Appointment> updatedAppointment){
+        this.appointments = updatedAppointment;
+    }
+
     public Timestamp getStartTimeStamp(){
         return startTimeStamp;
     }

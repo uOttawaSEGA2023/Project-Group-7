@@ -8,8 +8,10 @@ import static com.quantumSamurais.hams.utils.ValidationType.EMPLOYEE_NUMBER;
 import static com.quantumSamurais.hams.utils.ValidationType.HEALTH_CARD_NUMBER;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+import android.content.Context;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,6 +44,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -332,6 +335,7 @@ public class Database {
                 if (shift != null) {
                     //Asynchronous Handling of Shift
                     if (shift.takeAppointment(appointment)) {
+                        Log.d("Do we even enter here", "bool: " + shift.takeAppointment(appointment));
                         //If we successfully added the appointment to the shift
                         CollectionReference shifts = db.collection("users").document("software").collection("shifts");
                         shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
@@ -373,7 +377,63 @@ public class Database {
         });
     }
 
+    private void editAppointmentStatusFromShiftReference(DocumentReference shiftReference, Appointment appointmentToRemove){
+        db.runTransaction(transaction ->  {
+            Shift shift  = transaction.get(shiftReference).toObject(Shift.class);
+            ArrayList<Appointment> appointments = (ArrayList<Appointment>) shift.getAppointments();
+            Iterator iterator = appointments.iterator();
+            while (iterator.hasNext()){
+
+            }
+            for (Appointment appoinment : appointments){
+                if (appoinment.getAppointmentID() == appointmentToRemove.getAppointmentID()){
+
+                }
+            }
+
+
+        });
+    }
+
     public void rejectAppointment(long appointmentID) {
+
+        getAppointment(appointmentID).thenAccept(appointment -> {
+            if (appointment != null) {
+                getShift(appointment.getShiftID()).thenAccept(shift -> {
+                    if (shift != null && shift.cancelAppointment(appointment.getAppointmentID())) {
+                        // If we would be able to successfully remove, then do so to reflect changes
+                        CollectionReference shifts = db.collection("users").document("software").collection("shifts");
+                        shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
+                                .addOnSuccessListener(shiftTask -> {
+                                    DocumentReference shiftReference = shifts.document(shiftTask.getDocuments().get(0).getId());
+                                    editAppointmentStatusFromShiftReference(shiftReference, appointment);
+                                }).addOnFailureListener(e -> {
+                                    // Handle transaction failure
+                                    Log.e("cancelAppointment", "Transaction failed: ", e);
+                                });
+                        //Then modify the related appointment
+                        CollectionReference appointments = db.collection("users").document("software").collection("appointments");
+                        shifts.whereEqualTo("appointmentID", appointmentID).get()
+                                .addOnSuccessListener(shiftTask -> {
+                                    DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
+                                    editAppointmentStatus(appointmentReference, RequestStatus.APPROVED);
+                                }).addOnFailureListener(e -> {
+                                    // Handle transaction failure
+                                    Log.e("cancelAppointment", "Transaction failed: ", e);
+                                });
+
+                    }
+                }).exceptionally(e -> {
+                    Log.e("cancelAppointment", "Error getting shift: ", e);
+                    return null;
+                });
+            }
+        }).exceptionally(e -> {
+            Log.e("cancelAppointment", "Error getting appointment: ", e);
+            return null;
+        });
+
+        /*
         CollectionReference myAppointments = db.collection("users").document("software").collection("appointments");
         myAppointments.whereEqualTo("appointmentID", appointmentID).get().addOnCompleteListener(getAppointment -> {
             if (getAppointment.isSuccessful()) {
@@ -383,11 +443,13 @@ public class Database {
                     DocumentReference docRef = myAppointments.document(documentId);
                     editAppointmentStatus(docRef, RequestStatus.REJECTED);
                 }
+
             } else {
                 Log.d("Database", "Error getting documents: ", getAppointment.getException());
             }
 
-        });
+        })*/
+        ;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -563,22 +625,43 @@ public class Database {
 
 
 
-    public void deleteShift(long shiftID) {
+    public void deleteShift(long shiftID, Context calledFrom) {
         CollectionReference shifts = db.collection("users").document("software").collection("shifts");
         CollectionReference doctors = db.collection("users").document("software").collection("doctors");
 
         //Delete From Doctor first, to the shift can be purged gracefully.
         getShift(shiftID).thenAccept(shift -> {
             if (shift != null) {
-                Log.d("ShiftSave", "print: " + shift.getDoctorEmailAddress());
-                String doctorEmail =  shift.getDoctorEmailAddress();
-                doctors.whereEqualTo("email", doctorEmail).get().addOnSuccessListener(getDoctor -> {
-                    for (QueryDocumentSnapshot singularDoctor : getDoctor){
-                        String doctorDocumentID = singularDoctor.getId();
-                        DocumentReference doctorToUntie = doctors.document(doctorDocumentID);
-                        deleteShiftFromDoctor(doctorToUntie, shift.getShiftID());
-                    }
-                });
+                //Only runs deletion if shift is empty
+                if (shift.getAppointments().isEmpty()){
+                    String doctorEmail =  shift.getDoctorEmailAddress();
+                    doctors.whereEqualTo("email", doctorEmail).get().addOnSuccessListener(getDoctor -> {
+                        for (QueryDocumentSnapshot singularDoctor : getDoctor){
+                            String doctorDocumentID = singularDoctor.getId();
+                            DocumentReference doctorToUntie = doctors.document(doctorDocumentID);
+                            deleteShiftFromDoctor(doctorToUntie, shift.getShiftID());
+                        }
+                    });
+
+                    //Delete DB
+                    shifts.whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(
+                            getShift -> {
+                                if(getShift.isSuccessful()){
+                                    for (QueryDocumentSnapshot document : getShift.getResult()){
+                                        String documentID = document.getId();
+                                        DocumentReference shiftToDelete = shifts.document(documentID);
+                                        deleteShiftFromDB(shiftToDelete);
+                                    }
+                                }
+                            }
+                    );
+
+                }
+                else{
+                    Toast.makeText(calledFrom, "Cannot delete this shift because it is tied to appointments.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
             } else {
                 Log.d("ShiftID", "Somehow user tried to delete a shift that does not exist");
             }
@@ -586,18 +669,7 @@ public class Database {
             e.printStackTrace();
             return null;
         });
-        //Delete DB
-        shifts.whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(
-                getShift -> {
-                    if(getShift.isSuccessful()){
-                        for (QueryDocumentSnapshot document : getShift.getResult()){
-                            String documentID = document.getId();
-                            DocumentReference shiftToDelete = shifts.document(documentID);
-                            deleteShiftFromDB(shiftToDelete);
-                        }
-                    }
-                }
-        );
+
 
     }
 
@@ -624,6 +696,45 @@ public class Database {
         }).addOnFailureListener(e -> {
             Log.d("transaction failure", "Failed to delete shift from doctor", e);
         });
+    }
+    public void listenForShifts(String email, ShiftCallback cb) {
+        db.collection("users").document("software").collection("shifts")
+                .whereEqualTo("doctorEmailAddress", email)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("Listening Pat Apps", "Listen failed.", e);
+                            return;
+                        }
+                        assert value != null;
+
+                        cb.callback((ArrayList<Shift>) value.toObjects(Shift.class));
+                    }
+                });
+    }
+
+    public interface ShiftCallback{
+        void callback(ArrayList<Shift> shifts);
+    }
+
+    public void listenForAppointmentChangeOfStatus(long shiftID, AppointmentCallback cb) {
+        db.collection("users").document("software").collection("appointments")
+                .whereEqualTo("shiftID", shiftID)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("Listening Pat Apps", "Listen failed.", e);
+                            return;
+                        }
+                        assert value != null;
+
+                        cb.callback((ArrayList<Appointment>) value.toObjects(Appointment.class));
+                    }
+                });
     }
 
     public void getAllBookable(Patient p, Specialties spec, LocalDate date, AppointmentCallback callback) {
@@ -656,10 +767,6 @@ public class Database {
               });
            }
         });
-    }
-
-    public interface testCb {
-        void test(ArrayList<Appointment> apps);
     }
 
     public void listenForAppointmentCancelPatient(Patient patient, AppointmentCallback cb) {
