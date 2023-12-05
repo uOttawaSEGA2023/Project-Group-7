@@ -70,7 +70,7 @@ public class PatientBookAppointmentActivity extends AppCompatActivity {
     }
 
     public void updateApps() {
-        Database.getInstance().getAllBookable(patient,getCurrentSpec(),LocalDate.parse(dateText.toString()),this::bookableAppsCB);
+        Database.getInstance().getAllBookable(patient,getCurrentSpec(),LocalDate.parse(dateText.getText().toString()),this::bookableAppsCB);
     }
 
     @SuppressLint("NotifyDataSetChanged")
