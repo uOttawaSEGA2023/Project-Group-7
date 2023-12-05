@@ -80,7 +80,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/showMore"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/nameRequest" />
-            app:layout_constraintStart_toStartOf="@+id/docNameAppointment" />
+
 
             <TextView
                 android:id="@+id/dateOfRequest"
