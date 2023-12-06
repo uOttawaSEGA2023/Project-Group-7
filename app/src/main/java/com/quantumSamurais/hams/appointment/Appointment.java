@@ -69,7 +69,7 @@ public class Appointment implements Serializable  {
         return patient;
     }
 
-    public boolean wasRated() {
+    public boolean getRated() {
         return rated;
     }
 

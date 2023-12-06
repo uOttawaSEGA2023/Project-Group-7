@@ -243,7 +243,7 @@ public class Database {
         appointments.whereEqualTo("appointmentID", appointmentID).get().addOnCompleteListener(appointmentList -> {
             DocumentReference appRef = appointments.document(appointmentList.getResult().getDocuments().get(0).getId());
             db.runTransaction(transaction -> {
-                transaction.update(appRef, "wasRated", true);
+                transaction.update(appRef, "rated", true);
                 return null;
             });
         });
@@ -262,7 +262,11 @@ public class Database {
                                 DocumentSnapshot docSnap = transaction.get(docRef);
                                 Doctor doc = docSnap.toObject(Doctor.class);
                                 HashMap<String, Float> rates =  doc.getRatings();
+                                if(rates == null) {
+                                    rates = new HashMap<>();
+                                }
                                 rates.put(Long.valueOf(appointmentID).toString(),rating);
+                                doc.setRatings(rates);
                                 transaction.set(docRef, doc);
                                 return null;
                             });

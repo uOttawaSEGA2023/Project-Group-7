@@ -33,6 +33,7 @@ public class Doctor extends User implements Serializable {
 
 
 	public Doctor() {
+		this.ratings = new HashMap<>();
 	}
 
 	public Doctor(String firstName, String lastName, char[] hashedPassword, String email,
@@ -40,10 +41,12 @@ public class Doctor extends User implements Serializable {
 		super(firstName, lastName, hashedPassword, email, phone, address);
 		this.employeeNumber = employeeNumber;
 		this.specialties = specialties;
+		this.ratings = new HashMap<>();
 		acceptsAppointmentsByDefault = acceptsByDefault;
 		shiftIDs = new ArrayList<>(); //In the empty case
 		Database db = Database.getInstance();
 		db.addSignUpRequest(this);
+
 	}
 
 
@@ -52,6 +55,7 @@ public class Doctor extends User implements Serializable {
 		super(firstName, lastName, hashedPassword, salt, email, phone, address);
 		this.employeeNumber = employeeNumber;
 		this.specialties = specialties;
+		this.ratings = new HashMap<>();
 		shiftIDs = new ArrayList<>();
 		acceptsAppointmentsByDefault = acceptsByDefault;
 	}
@@ -63,6 +67,7 @@ public class Doctor extends User implements Serializable {
 		this.employeeNumber = employeeNumber;
 		this.specialties = specialties;
 		this.shiftIDs = shiftIDs;
+		this.ratings = new HashMap<>();
 		acceptsAppointmentsByDefault = acceptsByDefault;
 	}
 

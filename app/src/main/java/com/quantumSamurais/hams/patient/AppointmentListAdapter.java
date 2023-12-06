@@ -161,7 +161,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         }
 
         private void rateDoctor(View view) {
-            if(thisApp.wasRated()) {
+            if(thisApp.getRated()) {
                 Toast.makeText(context,"You have already rated this doctor for this appointment.", Toast.LENGTH_SHORT).show();
                 return;
             }
