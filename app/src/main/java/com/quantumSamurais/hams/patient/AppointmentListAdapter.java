@@ -179,6 +179,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         }
 
         public void bookAppointment(View v) {
+            rateBtn.setVisibility(View.GONE);
             Database.getInstance().addAppointmentRequest(thisApp,listener);
         }
         public void cancelAppointment(View v) {

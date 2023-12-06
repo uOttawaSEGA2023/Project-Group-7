@@ -378,7 +378,7 @@ public class Database {
             getShift(appointment.getShiftID()).thenAccept(shift -> {
                 if (shift != null) {
                     //Asynchronous Handling of Shift
-                    if (shift.takeAppointment(appointment)) {
+//                    if (shift.takeAppointment(appointment)) {
                         Log.d("Do we even enter here", "bool: " + shift.takeAppointment(appointment));
                         //If we successfully added the appointment to the shift
                         CollectionReference shifts = db.collection("users").document("software").collection("shifts");
@@ -402,9 +402,9 @@ public class Database {
                                     Log.e("approveAppointment", "Transaction failed: ", e);
                                 });
                     }
-                } else {
-                    // Currently if no shift is found, do nothing.
-                }
+//                } else {
+//                    // Currently if no shift is found, do nothing.
+//                }
             }).exceptionally(e -> {
                 e.printStackTrace();
                 return null;
@@ -504,12 +504,11 @@ public class Database {
         ;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void cancelAppointment(long appointmentID) {
         getAppointment(appointmentID).thenAccept(appointment -> {
             if (appointment != null) {
                 getShift(appointment.getShiftID()).thenAccept(shift -> {
-                    if (shift != null && shift.cancelAppointment(appointment)){
+                    if (shift != null){
                         // If we would be able to successfully remove, then do so to reflect changes
                         CollectionReference shifts = db.collection("users").document("software").collection("shifts");
                         shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
