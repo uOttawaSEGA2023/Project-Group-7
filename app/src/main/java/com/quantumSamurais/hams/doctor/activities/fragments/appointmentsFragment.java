@@ -22,7 +22,6 @@ import com.quantumSamurais.hams.core.enums.FragmentTab;
 import com.quantumSamurais.hams.core.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
-import com.quantumSamurais.hams.patient.Patient;
 
 import java.util.ArrayList;
 
@@ -37,10 +36,18 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
 
 
     public void onReceivedAppointments(ArrayList<Appointment> appointments){
+        if (myDoctor.getAcceptsAppointmentsByDefault()){
+            for (Appointment appointment: appointments){
+                Database.getInstance().approveAppointment(appointment.getAppointmentID());
+
+            }
+        }
         this.appointments = appointments;
         requestsAdapter.setAppointments(appointments);
         requestsAdapter.notifyDataSetChanged();
     }
+
+
 
     public appointmentsFragment() {
         // Required empty public constructor
@@ -76,6 +83,8 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
             for (long shiftID : myDoctor.getShiftIDs()){
                 Database.getInstance().listenForAppointmentChangeOfStatus(shiftID, this::onReceivedAppointments);
             }
+
+
 
             return view;
         }
@@ -120,16 +129,18 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         //Get the selected request from the list
         Appointment selectedAppointment = appointments.get(position);
         Intent showMoreIntent = new Intent(getActivity(), ShowMoreActivity.class);
-
-        Patient somePatient = db.getPatientFromAppointmentID(selectedAppointment.getAppointmentID());
         showMoreIntent.putExtra("userType", PATIENT);
-        showMoreIntent.putExtra("firstName", somePatient.getFirstName());
-        showMoreIntent.putExtra("lastName", somePatient.getLastName());
-        showMoreIntent.putExtra("email", somePatient.getEmail());
-        showMoreIntent.putExtra("phoneNumber", somePatient.getPhone());
-        showMoreIntent.putExtra("address", somePatient.getAddress());
-        showMoreIntent.putExtra("healthCardNumber", somePatient.getHealthCardNumber());
+        db.getPatientFromAppointmentID(selectedAppointment.getAppointmentID()).thenAccept(patient ->
+        {
+            if (patient != null){
+                showMoreIntent.putExtra("patient", patient);
+                startActivity(showMoreIntent);
 
-        startActivity(showMoreIntent);
+            }
+        });
+
+
+
+
     }
 }
