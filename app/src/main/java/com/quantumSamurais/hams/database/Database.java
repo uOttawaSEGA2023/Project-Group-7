@@ -44,6 +44,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -235,36 +236,45 @@ public class Database {
         }).start();
     }
 
-    public void rateDoctorDB(long appointmentID, long shiftId, int rating) {
-        DocumentReference softwareDocRef = db.collection("users").document("software");
-        db.runTransaction(transaction -> {
-            CollectionReference myShifts = db.collection("users").document("software").collection("shifts");
-            myShifts.whereEqualTo("shiftID", shiftId).get().addOnCompleteListener(shift -> {
-                if (shift.isSuccessful()) {
-                    QuerySnapshot shiftSnap = shift.getResult();
-                    Shift current = shiftSnap.toObjects(Shift.class).get(0);
-                    CollectionReference myDoctors = db.collection("users").document("software").collection("doctors");
-                    myDoctors.whereEqualTo("email", current.getDoctorEmailAddress()).get().addOnCompleteListener(getDoctor -> {
-                        if (getDoctor.isSuccessful()) {
-                            QuerySnapshot doctorSnap = getDoctor.getResult();
-                            for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
-                                String doctorId = singleDoctor.getId();
-                                DocumentReference docRef = myDoctors.document(doctorId);
-                                db.runTransaction(transaction1 -> {
-                                    transaction1.get(docRef);
-                                    transaction1.update(docRef,"ratings",FieldValue.arrayUnion(rating));
-                                    return null;
-                                });
-                            }
-                        } else {
-                            Log.d("Database", "Error getting documents: ", getDoctor.getException());
-                        }
-                    });
-                } else {
-                    Log.d("Database", "Error getting documents: ", shift.getException());
-                }
+    public void rateDoctorDB(long appointmentID, long shiftId, float rating) {
+        CollectionReference myShifts = db.collection("users").document("software").collection("shifts");
+        CollectionReference appointments = db.collection("users").document("software").collection("appointments");
+        CollectionReference myDoctors = db.collection("users").document("software").collection("doctors");
+        appointments.whereEqualTo("appointmentID", appointmentID).get().addOnCompleteListener(appointmentList -> {
+            DocumentReference appRef = appointments.document(appointmentList.getResult().getDocuments().get(0).getId());
+            db.runTransaction(transaction -> {
+                transaction.update(appRef, "wasRated", true);
+                return null;
             });
-            return null;
+        });
+        myShifts.whereEqualTo("shiftID", shiftId).get().addOnCompleteListener(shift -> {
+            if (shift.isSuccessful()) {
+                QuerySnapshot shiftSnap = shift.getResult();
+                Shift current = shiftSnap.toObjects(Shift.class).get(0);
+                myDoctors.whereEqualTo("email", current.getDoctorEmailAddress()).get().addOnCompleteListener(getDoctor -> {
+                    if (getDoctor.isSuccessful()) {
+                        QuerySnapshot doctorSnap = getDoctor.getResult();
+                        for (QueryDocumentSnapshot singleDoctor : doctorSnap) {
+                            String doctorId = singleDoctor.getId();
+                            DocumentReference docRef = myDoctors.document(doctorId);
+
+                            db.runTransaction(transaction -> {
+                                DocumentSnapshot docSnap = transaction.get(docRef);
+                                Doctor doc = docSnap.toObject(Doctor.class);
+                                HashMap<String, Float> rates =  doc.getRatings();
+                                rates.put(Long.valueOf(appointmentID).toString(),rating);
+                                transaction.set(docRef, doc);
+                                return null;
+                            });
+                        }
+                    } else {
+                        Log.d("Database", "Error getting documents: ", getDoctor.getException());
+                    }
+                });
+            } else {
+                Log.e("Database: RateDoctor", "Getting shift was not successful");
+            }
+
         });
     }
 
@@ -776,7 +786,6 @@ public class Database {
                             while(!currTime.isEqual(endTime)) {
                                 Appointment next = new Appointment(currTime,currTime.plusMinutes(30),shift,doctor.getFirstName(),doctor.getSpecialties(),p,RequestStatus.PENDING);
                                 if(doctor.getSpecialties().contains(spec) && (date.isEqual(startDate) || date.isEqual(endDate) || (date.isAfter(startDate) && date.isBefore(endDate)))) {
-                                    //TODO: Uncomment this check
                                     if(shift.takeAppointment(next)) {
                                         appointments.add(next);
                                     }

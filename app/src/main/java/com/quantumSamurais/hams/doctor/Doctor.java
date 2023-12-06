@@ -29,7 +29,7 @@ public class Doctor extends User implements Serializable {
 	private ArrayList<Long> shiftIDs;
 	private ArrayList<Shift> shifts;
 
-	private List<Integer> ratings;
+	private HashMap<String, Float> ratings;
 
 
 	public Doctor() {
@@ -106,6 +106,10 @@ public class Doctor extends User implements Serializable {
 
 		Database db = Database.getInstance();
 		db.updateAcceptsByDefault(getEmail(), value); //errors running in with this method.
+	}
+
+	public HashMap<String, Float> getRatings() {
+		return this.ratings;
 	}
 
 	public ArrayList<Long> getShiftIDs(){
