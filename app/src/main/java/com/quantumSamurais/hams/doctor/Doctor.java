@@ -112,6 +112,10 @@ public class Doctor extends User implements Serializable {
 		return this.ratings;
 	}
 
+	public void setRatings(HashMap<String, Float> ratings) {
+		this.ratings = ratings;
+	}
+
 	public ArrayList<Long> getShiftIDs(){
 		return shiftIDs;
 	}
