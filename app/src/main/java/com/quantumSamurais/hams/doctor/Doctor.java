@@ -129,37 +129,6 @@ public class Doctor extends User implements Serializable {
 	public void setShiftIDs(ArrayList<Long> shiftIDs){
 		this.shiftIDs = shiftIDs;
 	}
-	
-
-
-
-	@RequiresApi(api = Build.VERSION_CODES.O)
-	public void acceptAppointment(Appointment appointment){
-		Database db = Database.getInstance();
-		db.approveAppointment(appointment.getAppointmentID());
-		/*long appointmentShiftID = appointment.getShiftID();
-		for (Shift shift: shifts){
-			if (shift.getShiftID() == appointmentShiftID){
-				boolean appointmentWasAdded = shift.takeAppointment(appointment);
-				if (!appointmentWasAdded){
-					throw new IllegalStateException("The appointment passed overlaps with other appointments in the shift");
-				}
-			}
-		}
-		throw new IllegalArgumentException("This shift ID does not belong to any shifts of this doctor.");*/
-
-	}
-
-
-	public void cancelAppointment(long appointmentID){
-		Database db = Database.getInstance();
-		db.cancelAppointment(appointmentID);
-		/*for (Shift shift:shifts){
-			//this is fine, since it does nothing if the id does not exist.
-			shift.cancelAppointment(appointmentID);
-		}*/
-
-	}
 
 	public boolean hasThisShift(long shiftID){
 		return shiftIDs.contains(shiftID);
