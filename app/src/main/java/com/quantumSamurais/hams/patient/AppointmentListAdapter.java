@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Appointment;
 import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.database.RequestStatus;
 import com.quantumSamurais.hams.patient.activities.PatientBookAppointmentActivity;
 import com.quantumSamurais.hams.patient.activities.RateDoctorFragment;
 
@@ -96,7 +97,9 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         for(Appointment app: apps) {
             if(app.appointmentIsPassed()) {
                 if(isPast) {
-                    newApps.add(app);
+                    if(app.getAppointmentStatus() == RequestStatus.APPROVED) {
+                        newApps.add(app);
+                    }
                 }
             } else {
                 if(!isPast) {
