@@ -24,7 +24,6 @@ public class Patient extends User {
 
     private String healthCardNumber;
 
-    //TODO: UPDATE CACHE WHEN DOCTOR CANCELS APPOINTMENT
     private List<Appointment> appointments;
 
 
