@@ -41,6 +41,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter.OnDeleteClickListener {
     private Doctor myDoctor;
@@ -333,9 +334,9 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
     }
 
     public void listenForUpdatesToShifts(ArrayList<Shift> shifts){
-        this.shifts = shifts;
-        shiftsAdapter.updateList(shifts);
-        shiftsAdapter.notifyDataSetChanged();
+        this.shifts = (ArrayList<Shift>) shifts.stream().filter(shift -> {return shift.getEndTime().isAfter(LocalDateTime.now());}).collect(Collectors.toList());
+        shiftsAdapter.updateList(this.shifts);
+
 
     }
 

@@ -14,7 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Shift;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DoctorShiftsAdapter extends RecyclerView.Adapter<DoctorShiftsAdapter.ShiftViewHolder> {
 
@@ -30,7 +33,8 @@ public class DoctorShiftsAdapter extends RecyclerView.Adapter<DoctorShiftsAdapte
         void onDeleteClick(int position);
     }
     public DoctorShiftsAdapter(List<Shift> shifts, OnDeleteClickListener deleteClickListener, OnButtonClickedListener listener) {
-        this.shifts = shifts;
+        this.shifts = (ArrayList<Shift>) shifts.stream().filter(shift -> {return shift.getEndTime().isAfter(LocalDateTime.now());}).collect(Collectors.toList());
+
         this.deleteClickListener = deleteClickListener;
         this.listener = listener;
     }
@@ -63,9 +67,8 @@ public class DoctorShiftsAdapter extends RecyclerView.Adapter<DoctorShiftsAdapte
     }
 
     public void updateList(List<Shift> newShifts) {
-        shifts.clear();
-        shifts.addAll(newShifts);
-        // Remove notifyDataSetChanged here
+        shifts = newShifts;
+        notifyDataSetChanged();
     }
 
     public static class ShiftViewHolder extends RecyclerView.ViewHolder {

@@ -1,6 +1,7 @@
 package com.quantumSamurais.hams.database;
 
 import static com.google.android.gms.tasks.Tasks.await;
+import static com.quantumSamurais.hams.database.RequestStatus.APPROVED;
 import static com.quantumSamurais.hams.user.UserType.DOCTOR;
 import static com.quantumSamurais.hams.user.UserType.PATIENT;
 import static com.quantumSamurais.hams.utils.ValidationType.EMAIL_ADDRESS;
@@ -195,7 +196,7 @@ public class Database {
                 for (QueryDocumentSnapshot document : requests) {
                     Request current = document.toObject(Request.class);
                     db.collection("users").document("software")
-                            .collection("requests").document(document.getId()).update("status", RequestStatus.APPROVED);
+                            .collection("requests").document(document.getId()).update("status", APPROVED);
                     switch (current.getUserType()) {
                         case PATIENT:
                             db.collection("users").document("software")
@@ -399,7 +400,7 @@ public class Database {
                         shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
                                 .addOnSuccessListener(shiftTask -> {
                                     DocumentReference shiftReference = shifts.document(shiftTask.getDocuments().get(0).getId());
-                                    editAppointmentStatusFromShiftReference(shiftReference, appointment.getAppointmentID(), RequestStatus.APPROVED);
+                                    editAppointmentStatusFromShiftReference(shiftReference, appointment.getAppointmentID(), APPROVED);
 
                                 }).addOnFailureListener(e -> {
                                     // Handle transaction failure
@@ -410,7 +411,7 @@ public class Database {
                         appointments.whereEqualTo("appointmentID", appointmentID).get()
                                 .addOnSuccessListener(shiftTask -> {
                                     DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
-                                    editAppointmentStatus(appointmentReference, RequestStatus.APPROVED);
+                                    editAppointmentStatus(appointmentReference, APPROVED);
                                 }).addOnFailureListener(e -> {
                                     // Handle transaction failure
                                     Log.e("approveAppointment", "Transaction failed: ", e);
@@ -491,6 +492,21 @@ public class Database {
 
             return null;
         });
+    }
+
+    public void deleteAppointmentFromDB(long appointmentID){
+        CollectionReference appointments = db.collection("users").document("software").collection("appointments");
+        appointments.
+                whereEqualTo("appointmentID", appointmentID).get().addOnSuccessListener(getAppointment -> {
+                    DocumentReference appointmentReference = appointments.document(getAppointment.getDocuments().get(0).getId());
+                    db.runTransaction(deleteAppointment -> {
+                        deleteAppointment.delete(appointmentReference);
+                        return  null;
+                    });
+                }).addOnFailureListener(e -> {
+                    Log.e("deleteAppointmentAfterDeletingShift", "Yet another error: " + e.getStackTrace());
+                });
+
     }
 
     /*public void rejectAppointment(long appointmentID) {
@@ -737,7 +753,11 @@ public class Database {
         getShift(shiftID).thenAccept(shift -> {
             if (shift != null) {
                 //Only runs deletion if shift is empty
-                if (shift.getAppointments().isEmpty()) {
+                boolean noApprovedAppointments =  shift.getAppointments().stream()
+                        .reduce(true,
+                                (acc, appointment) -> acc && (appointment.getAppointmentStatus() != APPROVED),
+                                Boolean::logicalAnd);
+                if (noApprovedAppointments) {
                     String doctorEmail = shift.getDoctorEmailAddress();
                     doctors.whereEqualTo("email", doctorEmail).get().addOnSuccessListener(getDoctor -> {
                         for (QueryDocumentSnapshot singularDoctor : getDoctor) {
@@ -746,6 +766,9 @@ public class Database {
                             deleteShiftFromDoctor(doctorToUntie, shift.getShiftID());
                         }
                     });
+
+                    //If there's no approvedAppointments we can safely cancel.
+                    shift.getAppointments().stream().forEach(appointment -> deleteAppointmentFromDB(appointment.getAppointmentID()));
 
                     //Delete DB
                     shifts.whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(
@@ -760,8 +783,10 @@ public class Database {
                             }
                     );
 
+
+
                 } else {
-                    Toast.makeText(calledFrom, "Cannot delete this shift because it is tied to appointments.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(calledFrom, "This shift is tied to APPROVED appointments.", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -1141,10 +1166,10 @@ public class Database {
         boolean foundInDoctors = checkUserIsInUsers(DOCTOR, EMAIL_ADDRESS, email);
         boolean foundInRequests = checkUserIsInRequests(userType, EMAIL_ADDRESS, email);
         if (userType == UserType.ADMIN)
-            return RequestStatus.APPROVED;
+            return APPROVED;
 
         if ((foundInPatients && userType == PATIENT) || (foundInDoctors && userType == DOCTOR)) {
-            return RequestStatus.APPROVED;
+            return APPROVED;
         } else if (foundInRequests) {
             return getRequestStatusFromRequests(email);
         }
