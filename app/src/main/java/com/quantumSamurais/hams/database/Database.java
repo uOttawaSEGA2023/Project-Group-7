@@ -359,7 +359,6 @@ public class Database {
         void update();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void approveAppointment(long appointmentID) {
         getAppointment(appointmentID).thenAccept(appointment -> {
             getShift(appointment.getShiftID()).thenAccept(shift -> {
@@ -380,7 +379,7 @@ public class Database {
                                 });
                         //Then modify the related appointment
                         CollectionReference appointments = db.collection("users").document("software").collection("appointments");
-                        shifts.whereEqualTo("appointmentID", appointmentID).get()
+                        appointments.whereEqualTo("appointmentID", appointmentID).get()
                                 .addOnSuccessListener(shiftTask -> {
                                     DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
                                     editAppointmentStatus(appointmentReference, RequestStatus.APPROVED);
@@ -444,7 +443,7 @@ public class Database {
                                 });
                         //Then modify the related appointment
                         CollectionReference appointments = db.collection("users").document("software").collection("appointments");
-                        shifts.whereEqualTo("appointmentID", appointmentID).get()
+                        appointments.whereEqualTo("appointmentID", appointmentID).get()
                                 .addOnSuccessListener(shiftTask -> {
                                     DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
                                     editAppointmentStatus(appointmentReference, RequestStatus.APPROVED);
