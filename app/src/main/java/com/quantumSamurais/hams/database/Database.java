@@ -482,11 +482,12 @@ public class Database {
         db.runTransaction(transaction -> {
             Shift shift = transaction.get(shiftReference).toObject(Shift.class);
             ArrayList<Appointment> appointments = (ArrayList<Appointment>) shift.getAppointments();
-            for (Appointment appoinment : appointments) {
-                if (appoinment.getAppointmentID() == appointmentID) {
-                    appoinment.setAppointmentStatus(newStatus);
+            for (Appointment appointment : appointments) {
+                if (appointment.getAppointmentID() == appointmentID) {
+                    appointment.setAppointmentStatus(newStatus);
                 }
             }
+            transaction.update(shiftReference, "appointments", appointments);
 
             return null;
         });

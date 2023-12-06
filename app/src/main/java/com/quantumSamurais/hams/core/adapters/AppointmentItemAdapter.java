@@ -31,17 +31,19 @@ import java.util.ArrayList;
 
 public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItemAdapter.RequestViewHolder> {
     private final RequestsActivityListener requestClickListener;
+    private final OnShowMoreClicked listener;
     private ArrayList<Appointment> appointments; // Renamed from 'requests'
     private final Context currentContext;
     FragmentTab activeTab;
     Database db = Database.getInstance();
 
 
-    public AppointmentItemAdapter(Context context, FragmentTab activeTab, ArrayList<Appointment> appointmentsFromDatabase, RequestsActivityListener listener) {
+    public AppointmentItemAdapter(Context context, FragmentTab activeTab, ArrayList<Appointment> appointmentsFromDatabase, RequestsActivityListener listener, OnShowMoreClicked listenerShowMore) {
         this.activeTab = activeTab;
         this.appointments = new ArrayList<>();
         currentContext = context;
         requestClickListener = listener;
+        this.listener = listenerShowMore;
     }
 
 
@@ -92,6 +94,10 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
 
         }
 
+        public interface OnShowMoreClicked{
+            void onShowMoreClicked(Appointment appointment);
+        }
+
 
 
 
@@ -100,6 +106,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
         ImageButton accept, reject, moreInfo;
         Appointment appointment;
         RequestsActivityListener requestsActivityListener;
+        OnShowMoreClicked listener;
         FragmentTab activeTab;
 
         public RequestViewHolder(@NonNull View itemView, RequestsActivityListener requestClickListener, FragmentTab activeTab) {
@@ -112,11 +119,13 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
 
         }
 
-        private void setData(Appointment appointment) throws Exception {
+        private void setData(Appointment appointment, OnShowMoreClicked listener) throws Exception {
+            this.listener = listener;
             name = itemView.findViewById(R.id.nameRequest);
             emailAddress = itemView.findViewById(R.id.emailAddressRequest);
             date = itemView.findViewById(R.id.dateOfRequest);
             id = itemView.findViewById(R.id.idRequest);
+            this.appointment = appointment;
             Patient patient = appointment.getPatient();
 
 
@@ -141,7 +150,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
                     int position = getAdapterPosition();
 
                     if (position != RecyclerView.NO_POSITION) {
-                        requestsActivityListener.onAcceptClick(position);
+                        Database.getInstance().approveAppointment(appointment.getAppointmentID());
                     }
 
                 }
@@ -151,7 +160,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
                     int position = getAdapterPosition();
 
                     if (position != RecyclerView.NO_POSITION) {
-                        requestsActivityListener.onRejectClick(position);
+                        Database.getInstance().rejectAppointment(appointment.getAppointmentID());
                     }
 
                 }
@@ -161,7 +170,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
                     int position = getAdapterPosition();
 
                     if (position != RecyclerView.NO_POSITION) {
-                        requestsActivityListener.onCancelClick(position);
+                        Database.getInstance().cancelAppointment(appointment.getAppointmentID());
                     }
 
                 }
@@ -172,7 +181,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
                     Intent intent = new Intent();
 
                     if (position != RecyclerView.NO_POSITION) {
-                        requestsActivityListener.onShowMoreClick(position);
+                        listener.onShowMoreClicked(appointment);
                     }
 
                 }
@@ -257,7 +266,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             {
                 holder.setAppointment(appointments.get(position));
                 try {
-                    holder.setData(appointment);
+                    holder.setData(appointment, listener);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

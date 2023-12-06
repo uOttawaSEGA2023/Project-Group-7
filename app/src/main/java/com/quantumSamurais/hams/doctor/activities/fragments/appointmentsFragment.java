@@ -63,7 +63,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         appointments = new ArrayList<>();
 
 
-        requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
+        requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this, this::onShowMoreClick);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         requestsStack.setLayoutManager(layoutManager);
         requestsStack.setAdapter(requestsAdapter);
@@ -122,14 +122,17 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         db.rejectAppointment(idToReject);
     }
 
-
     @Override
     public void onShowMoreClick(int position) {
+        //This we don't care.
+    }
+
+
+    public void onShowMoreClick(Appointment appointment) {
         //Get the selected request from the list
-        Appointment selectedAppointment = appointments.get(position);
         Intent showMoreIntent = new Intent(getActivity(), ShowMoreActivity.class);
         showMoreIntent.putExtra("userType", PATIENT);
-        db.getPatientFromAppointmentID(selectedAppointment.getAppointmentID()).thenAccept(
+        db.getPatientFromAppointmentID(appointment.getAppointmentID()).thenAccept(
                 patient ->
                 {
                     if (patient != null) {
@@ -138,5 +141,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
 
                     }
                 });
+
+
     }
 }

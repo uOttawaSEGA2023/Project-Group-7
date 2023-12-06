@@ -62,7 +62,7 @@ public class appointmentsFragment4Shift extends Fragment implements RequestsActi
         appointments = new ArrayList<>();
 
         Log.d("ShiftID", "The shift ID is " + shiftID);
-        requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
+        requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this, this::onShowMoreClick);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         requestsStack.setLayoutManager(layoutManager);
         requestsStack.setAdapter(requestsAdapter);
@@ -116,14 +116,17 @@ public class appointmentsFragment4Shift extends Fragment implements RequestsActi
         db.rejectAppointment(idToReject);
     }
 
-
     @Override
     public void onShowMoreClick(int position) {
+        //Shouldn't be called
+    }
+
+
+    public void onShowMoreClick(Appointment appointment) {
         //Get the selected request from the list
-        Appointment selectedAppointment = appointments.get(position);
         Intent showMoreIntent = new Intent(getActivity(), ShowMoreActivity.class);
         showMoreIntent.putExtra("userType", PATIENT);
-        db.getPatientFromAppointmentID(selectedAppointment.getAppointmentID()).thenAccept(
+        db.getPatientFromAppointmentID(appointment.getAppointmentID()).thenAccept(
                 patient ->
                 {
                     if (patient != null) {
