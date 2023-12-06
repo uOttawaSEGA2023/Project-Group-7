@@ -1,6 +1,7 @@
 package com.quantumSamurais.hams.doctor.activities.fragments;
 
 import static com.quantumSamurais.hams.core.enums.FragmentTab.ALL_REQUESTS;
+import static com.quantumSamurais.hams.core.enums.FragmentTab.PENDING_REQUESTS;
 import static com.quantumSamurais.hams.core.enums.FragmentTab.REJECTED_REQUESTS;
 import static com.quantumSamurais.hams.doctor.activities.fragments.appointmentsFragment4Shift.newInstance;
 
@@ -56,6 +57,7 @@ public class DoctorViewAppointments4ShiftFragment extends Fragment {
         ViewPagerAdapter vpAdapter = new ViewPagerAdapter(getActivity().getSupportFragmentManager(),
                 FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         vpAdapter.addFragments(newInstance(ALL_REQUESTS, shiftID), "Upcoming");
+        vpAdapter.addFragments(newInstance(PENDING_REQUESTS, shiftID), "Pending");
         vpAdapter.addFragments(newInstance(REJECTED_REQUESTS, shiftID), "Rejected");
 
 

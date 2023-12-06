@@ -82,6 +82,17 @@ public class Shift {
         }
         return false;
     }
+
+    public boolean rejectAppointment(Appointment appointment){
+        if(containsKey(appointment.getAppointmentID())){
+            //check to make
+            appointments.remove(appointment.getAppointmentID());
+            return true;
+        }
+        //in all other cases we couldn't return.
+        return false;
+
+    }
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean cancelAppointment(Appointment appointment){
         LocalDateTime startTime = convertTimeStampToLocalDateTime(startTimeStamp);

@@ -34,12 +34,12 @@ public class appointmentsFragment4Shift extends Fragment implements RequestsActi
     long shiftID;
 
 
-    public void onReceivedAppointments(ArrayList<Appointment> appointments){
+    public void onReceivedAppointments(ArrayList<Appointment> appointments) {
+        Log.d("appointmentsFetching", "We fetched " + appointments.size() + " from DB");
         this.appointments = appointments;
         requestsAdapter.setAppointments(appointments);
-        requestsAdapter.notifyDataSetChanged();
+        //requestsAdapter.notifyDataSetChanged();
     }
-
 
 
     public appointmentsFragment4Shift() {
@@ -48,40 +48,30 @@ public class appointmentsFragment4Shift extends Fragment implements RequestsActi
 
     public static appointmentsFragment4Shift newInstance(FragmentTab activeTab, long shiftID) {
         appointmentsFragment4Shift fragment = new appointmentsFragment4Shift();
-        Bundle args = new Bundle();
-        args.putSerializable("activeTab", activeTab);
-        args.putLong("shiftID", shiftID);
-        fragment.setArguments(args);
+        fragment.activeTab = activeTab;
+        fragment.shiftID = shiftID;
         return fragment;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_requests, container, false);
         requestsStack = view.findViewById(R.id.requestsRecyclerViewFragment);
         db = Database.getInstance();
         appointments = new ArrayList<>();
 
-        Bundle args = getArguments();
-        if (args != null) {
-            activeTab = (FragmentTab) args.getSerializable("activeTab");
-            shiftID = args.getLong("shiftID");
-            Log.d("ShiftID", "The shift ID is " + shiftID);
-            requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-            requestsStack.setLayoutManager(layoutManager);
-            requestsStack.setAdapter(requestsAdapter);
+
+        Log.d("ShiftID", "The shift ID is " + shiftID);
+        requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        requestsStack.setLayoutManager(layoutManager);
+        requestsStack.setAdapter(requestsAdapter);
 
 
-
-
-            return view;
-        }
-        throw new IllegalStateException("This fragment was generated without using the newInstance method and hence has no FragmentTab.");
-
+        return view;
     }
+
 
     @Override
     public void onAttach(Context context) {
@@ -89,20 +79,21 @@ public class appointmentsFragment4Shift extends Fragment implements RequestsActi
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
-        Database.getInstance().getAppointments(shiftID, this::onReceivedAppointments);
+        Database.getInstance().getAppointments(shiftID).thenAccept(appointments -> {
+            if (appointments != null) {
+                Log.d("appointmentsFetchingOnResume","We fetched " + appointments.size() + "appointments on Resume");
+                this.appointments = appointments;
+                //Add event listeners to this
+                Database.getInstance().listenForAppointmentChangeOfStatus(shiftID, this::onReceivedAppointments);
+                requestsAdapter.setAppointments(appointments);
+                //requestsAdapter.notifyDataSetChanged();
+            }
+        });
 
 
-        //Add event listeners to this
-
-        Database.getInstance().listenForAppointmentChangeOfStatus(shiftID, this::onReceivedAppointments);
     }
-
-
-
-
-
 
 
     @Override
@@ -122,7 +113,9 @@ public class appointmentsFragment4Shift extends Fragment implements RequestsActi
 
     @Override
     public void onRejectClick(int position) {
-        //This shouldn't be called
+        Log.d("requests Fragment", "reject click was pressed");
+        long idToReject = appointments.get(position).getAppointmentID();
+        db.rejectAppointment(idToReject);
     }
 
 
@@ -134,15 +127,13 @@ public class appointmentsFragment4Shift extends Fragment implements RequestsActi
         showMoreIntent.putExtra("userType", PATIENT);
         db.getPatientFromAppointmentID(selectedAppointment.getAppointmentID()).thenAccept(
                 patient ->
-        {
-            if (patient != null){
-                showMoreIntent.putExtra("patient", patient);
-                startActivity(showMoreIntent);
+                {
+                    if (patient != null) {
+                        showMoreIntent.putExtra("patient", patient);
+                        startActivity(showMoreIntent);
 
-            }
-        });
-
-
+                    }
+                });
 
 
     }

@@ -160,7 +160,9 @@ public class Database {
         return myPatient;
     }
 
-    /**f
+    /**
+     * f
+     *
      * @param id Id of the request to approve
      */
     public void approveSignUpRequest(long id) {
@@ -260,11 +262,11 @@ public class Database {
                             db.runTransaction(transaction -> {
                                 DocumentSnapshot docSnap = transaction.get(docRef);
                                 Doctor doc = docSnap.toObject(Doctor.class);
-                                HashMap<String, Float> rates =  doc.getRatings();
-                                if(rates == null) {
+                                HashMap<String, Float> rates = doc.getRatings();
+                                if (rates == null) {
                                     rates = new HashMap<>();
                                 }
-                                rates.put(Long.valueOf(appointmentID).toString(),rating);
+                                rates.put(Long.valueOf(appointmentID).toString(), rating);
                                 doc.setRatings(rates);
                                 transaction.set(docRef, doc);
                                 return null;
@@ -285,7 +287,7 @@ public class Database {
     public void addAppointmentRequest(Appointment appointment, UpdateAfterBook callback) {
         DocumentReference softwareDocRef = db.collection("users").document("software");
 
-        db.runTransaction((Transaction.Function<Long>) transaction ->{
+        db.runTransaction((Transaction.Function<Long>) transaction -> {
                     // Get the current shiftID
                     DocumentSnapshot softwareSnapshot = transaction.get(softwareDocRef);
                     Long appointmentID = softwareSnapshot.getLong("appointmentID");
@@ -318,6 +320,12 @@ public class Database {
                                     DocumentReference docRef = shifts.document(shiftIDFirebase);
                                     db.runTransaction(addAppointment -> {
                                         addAppointment.update(docRef, "appointments", FieldValue.arrayUnion(appointment));
+                                        Shift someShift = docRef.get().getResult().toObject(Shift.class);
+                                        getDoctorButSmart(someShift.getDoctorEmailAddress()).thenAccept(doctor -> {
+                                            if(doctor.getAcceptsAppointmentsByDefault()){
+                                                approveAppointment(appointment.getAppointmentID());
+                                            }
+                                        });
                                         return null;
                                     }).addOnCompleteListener(ignored -> {
                                         callback.update();
@@ -354,19 +362,22 @@ public class Database {
                 });
     }
 
-    public void getAppointments(long shiftID, AppointmentCallback onReceivedAppointments) {
+    public CompletableFuture<ArrayList<Appointment>> getAppointments(long shiftID) {
+        CompletableFuture<ArrayList<Appointment>> appointmentsCompletableFuture = new CompletableFuture<>();
         db.collection("users").document("software").
                 collection("appointments").
                 whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(getAppointments ->
-        {
-            if (getAppointments.isSuccessful()){
-                ArrayList<Appointment> appointments = (ArrayList<Appointment>) getAppointments.getResult().toObjects(Appointment.class);
-                onReceivedAppointments.callback(appointments);
-            }
+                {
+                    if (getAppointments.isSuccessful()) {
+                        Log.d("appointmentsFetching", "Fetching appointments was successful");
+                        ArrayList<Appointment> appointments = (ArrayList<Appointment>) getAppointments.getResult().toObjects(Appointment.class);
+                        appointmentsCompletableFuture.complete(appointments);
+                    }
 
-        }).addOnFailureListener(e -> {
-            Log.e("Frick", "Well another L ; " + e.getStackTrace());
+                }).addOnFailureListener(e -> {
+                    Log.e("Frick", "Well another L ; " + e.getStackTrace());
                 });
+        return appointmentsCompletableFuture;
     }
 
     public interface UpdateAfterBook {
@@ -378,14 +389,13 @@ public class Database {
             getShift(appointment.getShiftID()).thenAccept(shift -> {
                 if (shift != null) {
                     //Asynchronous Handling of Shift
-                    if (shift.takeAppointment(appointment)) {
-                        Log.d("Do we even enter here", "bool: " + shift.takeAppointment(appointment));
+                        Log.d("approveAppointmentDB", "bool: " + shift.takeAppointment(appointment));
                         //If we successfully added the appointment to the shift
                         CollectionReference shifts = db.collection("users").document("software").collection("shifts");
                         shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
                                 .addOnSuccessListener(shiftTask -> {
                                     DocumentReference shiftReference = shifts.document(shiftTask.getDocuments().get(0).getId());
-                                    addAppointmentToShift(shiftReference, appointment);
+                                    editAppointmentStatusFromShiftReference(shiftReference, appointment.getAppointmentID(), RequestStatus.APPROVED);
 
                                 }).addOnFailureListener(e -> {
                                     // Handle transaction failure
@@ -401,8 +411,9 @@ public class Database {
                                     // Handle transaction failure
                                     Log.e("approveAppointment", "Transaction failed: ", e);
                                 });
-                    }
+
                 } else {
+                    Log.d("approveAppointmentDB", "Shift with ID " + appointment.getShiftID() + "was not found in DB");
                     // Currently if no shift is found, do nothing.
                 }
             }).exceptionally(e -> {
@@ -414,19 +425,61 @@ public class Database {
 
     }
 
-    private void editAppointmentStatus(DocumentReference toAppointment, RequestStatus newStatus){
+    public void rejectAppointment(long appointmentID) {
+        getAppointment(appointmentID).thenAccept(appointment -> {
+            getShift(appointment.getShiftID()).thenAccept(shift -> {
+                if (shift != null) {
+                    //Asynchronous Handling of Shift
+
+                    Log.d("approveAppointmentDB", "bool: " + shift.takeAppointment(appointment));
+                    //If we successfully added the appointment to the shift
+                    CollectionReference shifts = db.collection("users").document("software").collection("shifts");
+                    shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
+                            .addOnSuccessListener(shiftTask -> {
+                                DocumentReference shiftReference = shifts.document(shiftTask.getDocuments().get(0).getId());
+                                editAppointmentStatusFromShiftReference(shiftReference, appointment.getAppointmentID(), RequestStatus.REJECTED);
+
+                            }).addOnFailureListener(e -> {
+                                // Handle transaction failure
+                                Log.e("approveAppointment", "Transaction failed: ", e);
+                            });
+                    //Then modify the related appointment
+                    CollectionReference appointments = db.collection("users").document("software").collection("appointments");
+                    appointments.whereEqualTo("appointmentID", appointmentID).get()
+                            .addOnSuccessListener(shiftTask -> {
+                                DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
+                                editAppointmentStatus(appointmentReference, RequestStatus.REJECTED);
+                            }).addOnFailureListener(e -> {
+                                // Handle transaction failure
+                                Log.e("approveAppointment", "Transaction failed: ", e);
+                            });
+
+                } else {
+                    Log.d("approveAppointmentDB", "Shift with ID " + appointment.getShiftID() + "was not found in DB");
+                    // Currently if no shift is found, do nothing.
+                }
+            }).exceptionally(e -> {
+                e.printStackTrace();
+                return null;
+            });
+
+        });
+
+    }
+
+    private void editAppointmentStatus(DocumentReference toAppointment, RequestStatus newStatus) {
         db.runTransaction(transaction -> {
             transaction.update(toAppointment, "appointmentStatus", newStatus);
             return null;
         });
     }
 
-    private void editAppointmentStatusFromShiftReference(DocumentReference shiftReference, long appointmentID, RequestStatus newStatus){
-        db.runTransaction(transaction ->  {
-            Shift shift  = transaction.get(shiftReference).toObject(Shift.class);
+    private void editAppointmentStatusFromShiftReference(DocumentReference shiftReference, long appointmentID, RequestStatus newStatus) {
+        db.runTransaction(transaction -> {
+            Shift shift = transaction.get(shiftReference).toObject(Shift.class);
             ArrayList<Appointment> appointments = (ArrayList<Appointment>) shift.getAppointments();
-            for (Appointment appoinment : appointments){
-                if (appoinment.getAppointmentID() == appointmentID){
+            for (Appointment appoinment : appointments) {
+                if (appoinment.getAppointmentID() == appointmentID) {
                     appoinment.setAppointmentStatus(newStatus);
                 }
             }
@@ -435,46 +488,38 @@ public class Database {
         });
     }
 
-    public void rejectAppointment(long appointmentID) {
+    /*public void rejectAppointment(long appointmentID) {
 
         getAppointment(appointmentID).thenAccept(appointment -> {
             if (appointment != null) {
                 getShift(appointment.getShiftID()).thenAccept(shift -> {
-                    if (shift != null ) {
+                    if (shift != null) {
                         Log.d("Shift was not null", "Shift was not null");
-                        if (shift.cancelAppointment(appointment)){
-                            Log.d("We successfully removed shift from local", "time to propagate");
-                            // If we would be able to successfully remove, then do so to reflect changes
-                            CollectionReference shifts = db.collection("users").document("software").collection("shifts");
-                            shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
-                                    .addOnSuccessListener(shiftTask -> {
-                                        DocumentReference shiftReference = shifts.document(shiftTask.getDocuments().get(0).getId());
-                                        editAppointmentStatusFromShiftReference(shiftReference, appointmentID, RequestStatus.REJECTED);
-                                    }).addOnFailureListener(e -> {
-                                        // Handle transaction failure
-                                        Log.e("cancelAppointment", "Transaction failed: ", e);
-                                    });
-                            //Then modify the related appointment
-                            CollectionReference appointments = db.collection("users").document("software").collection("appointments");
-                            appointments.whereEqualTo("appointmentID", appointmentID).get()
-                                    .addOnSuccessListener(shiftTask -> {
-                                        DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
-                                        editAppointmentStatus(appointmentReference, RequestStatus.REJECTED);
-                                    }).addOnFailureListener(e -> {
-                                        // Handle transaction failure
-                                        Log.e("cancelAppointment", "Transaction failed: ", e);
-                                    });
-                        }
-                        else {
-                            Log.d("Frick", "shift was null");
-                        }
 
-
-
+                        CollectionReference shifts = db.collection("users").document("software").collection("shifts");
+                        shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
+                                .addOnSuccessListener(shiftTask -> {
+                                    DocumentReference shiftReference = shifts.document(shiftTask.getDocuments().get(0).getId());
+                                    editAppointmentStatusFromShiftReference(shiftReference, appointmentID, RequestStatus.REJECTED);
+                                }).addOnFailureListener(e -> {
+                                    // Handle transaction failure
+                                    Log.e("cancelAppointment", "Transaction failed: ", e);
+                                });
+                        //Then modify the related appointment
+                        CollectionReference appointments = db.collection("users").document("software").collection("appointments");
+                        appointments.whereEqualTo("appointmentID", appointmentID).get()
+                                .addOnSuccessListener(shiftTask -> {
+                                    DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
+                                    editAppointmentStatus(appointmentReference, RequestStatus.REJECTED);
+                                }).addOnFailureListener(e -> {
+                                    // Handle transaction failure
+                                    Log.e("cancelAppointment", "Transaction failed: ", e);
+                                });
+                    } else {
+                        Log.d("Frick", "shift was null");
                     }
-                    else {
-                        Log.e("Shift was null", "Shift removed was null");
-                    }
+
+
                 }).exceptionally(e -> {
                     Log.e("cancelAppointment", "Error getting shift: ", e);
                     return null;
@@ -483,9 +528,9 @@ public class Database {
         }).exceptionally(e -> {
             Log.e("cancelAppointment", "Error getting appointment: ", e);
             return null;
-        });
+        });*//*
 
-        /*
+        *//*
         CollectionReference myAppointments = db.collection("users").document("software").collection("appointments");
         myAppointments.whereEqualTo("appointmentID", appointmentID).get().addOnCompleteListener(getAppointment -> {
             if (getAppointment.isSuccessful()) {
@@ -500,16 +545,16 @@ public class Database {
                 Log.d("Database", "Error getting documents: ", getAppointment.getException());
             }
 
-        })*/
+        })*//*
         ;
-    }
+    }*/
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void cancelAppointment(long appointmentID) {
         getAppointment(appointmentID).thenAccept(appointment -> {
             if (appointment != null) {
                 getShift(appointment.getShiftID()).thenAccept(shift -> {
-                    if (shift != null && shift.cancelAppointment(appointment)){
+                    if (shift != null) {
                         // If we would be able to successfully remove, then do so to reflect changes
                         CollectionReference shifts = db.collection("users").document("software").collection("shifts");
                         shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
@@ -553,29 +598,30 @@ public class Database {
         CollectionReference appointments = db.collection("users").document("software").collection("appointments");
         appointments.whereEqualTo("appointmentID", appointmentID).get().addOnCompleteListener(
                 appointmentTask -> {
-                    if(appointmentTask.isSuccessful() && !appointmentTask.getResult().isEmpty()){
+                    if (appointmentTask.isSuccessful() && !appointmentTask.getResult().isEmpty()) {
                         Appointment appointmentToGet = appointmentTask.getResult().getDocuments().get(0).toObject(Appointment.class);
                         appointmentCompletableFuture.complete(appointmentToGet);
                     }
                 }).addOnFailureListener(e -> {
-                    Log.e("AppointmentGettingError", "Print: " + e.getStackTrace());
+            Log.e("AppointmentGettingError", "Print: " + e.getStackTrace());
         });
         return appointmentCompletableFuture;
 
     }
 
-    private void removeAppointmentFromShift(DocumentReference toShift, Appointment appointmentToRemove){
+    private void removeAppointmentFromShift(DocumentReference toShift, Appointment appointmentToRemove) {
         db.runTransaction(transaction -> {
             transaction.update(toShift, "appointments", FieldValue.arrayRemove(appointmentToRemove));
-            return  null;
+            return null;
         });
 
 
     }
+
     private void addAppointmentToShift(DocumentReference toShift, Appointment appointmentToAdd) {
         db.runTransaction(transaction -> {
             transaction.update(toShift, "appointments", FieldValue.arrayUnion(appointmentToAdd));
-            return  null;
+            return null;
         });
     }
 
@@ -616,26 +662,26 @@ public class Database {
     public void addShift(Shift shift) {
         DocumentReference softwareDocRef = db.collection("users").document("software");
 
-        db.runTransaction((Transaction.Function<Long>) transaction ->{
-            // Get the current shiftID
-            DocumentSnapshot softwareSnapshot = transaction.get(softwareDocRef);
-            Long shiftID = softwareSnapshot.getLong("shiftID");
-            if (shiftID == null) {
-                shiftID = 0L;
-            }
+        db.runTransaction((Transaction.Function<Long>) transaction -> {
+                    // Get the current shiftID
+                    DocumentSnapshot softwareSnapshot = transaction.get(softwareDocRef);
+                    Long shiftID = softwareSnapshot.getLong("shiftID");
+                    if (shiftID == null) {
+                        shiftID = 0L;
+                    }
 
-            // Initialize the shift ID
-            shift.setShiftID(shiftID);
+                    // Initialize the shift ID
+                    shift.setShiftID(shiftID);
 
-            // Increment the shiftID in the "software" document
-            transaction.update(softwareDocRef, "shiftID", shiftID + 1);
+                    // Increment the shiftID in the "software" document
+                    transaction.update(softwareDocRef, "shiftID", shiftID + 1);
 
-            // Add the new shift to the "shifts" collection
-            DocumentReference newShiftRef = softwareDocRef.collection("shifts").document();
-            transaction.set(newShiftRef, shift);
+                    // Add the new shift to the "shifts" collection
+                    DocumentReference newShiftRef = softwareDocRef.collection("shifts").document();
+                    transaction.set(newShiftRef, shift);
 
-            return shiftID; // Return the shiftID that the shift was set as.
-        }).addOnSuccessListener(new OnSuccessListener<Long>() {
+                    return shiftID; // Return the shiftID that the shift was set as.
+                }).addOnSuccessListener(new OnSuccessListener<Long>() {
                     @Override
                     public void onSuccess(Long idLong) {
                         // Tie the Shift to a Doctor
@@ -679,8 +725,6 @@ public class Database {
     }
 
 
-
-
     public void deleteShift(long shiftID, Context calledFrom) {
         CollectionReference shifts = db.collection("users").document("software").collection("shifts");
         CollectionReference doctors = db.collection("users").document("software").collection("doctors");
@@ -689,10 +733,10 @@ public class Database {
         getShift(shiftID).thenAccept(shift -> {
             if (shift != null) {
                 //Only runs deletion if shift is empty
-                if (shift.getAppointments().isEmpty()){
-                    String doctorEmail =  shift.getDoctorEmailAddress();
+                if (shift.getAppointments().isEmpty()) {
+                    String doctorEmail = shift.getDoctorEmailAddress();
                     doctors.whereEqualTo("email", doctorEmail).get().addOnSuccessListener(getDoctor -> {
-                        for (QueryDocumentSnapshot singularDoctor : getDoctor){
+                        for (QueryDocumentSnapshot singularDoctor : getDoctor) {
                             String doctorDocumentID = singularDoctor.getId();
                             DocumentReference doctorToUntie = doctors.document(doctorDocumentID);
                             deleteShiftFromDoctor(doctorToUntie, shift.getShiftID());
@@ -702,8 +746,8 @@ public class Database {
                     //Delete DB
                     shifts.whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(
                             getShift -> {
-                                if(getShift.isSuccessful()){
-                                    for (QueryDocumentSnapshot document : getShift.getResult()){
+                                if (getShift.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document : getShift.getResult()) {
                                         String documentID = document.getId();
                                         DocumentReference shiftToDelete = shifts.document(documentID);
                                         deleteShiftFromDB(shiftToDelete);
@@ -712,8 +756,7 @@ public class Database {
                             }
                     );
 
-                }
-                else{
+                } else {
                     Toast.makeText(calledFrom, "Cannot delete this shift because it is tied to appointments.", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -729,7 +772,7 @@ public class Database {
 
     }
 
-    public void deleteShiftFromDB(DocumentReference shiftToDelete){
+    public void deleteShiftFromDB(DocumentReference shiftToDelete) {
         db.runTransaction(transaction -> {
             transaction.delete(shiftToDelete);
             return null;
@@ -753,6 +796,7 @@ public class Database {
             Log.d("transaction failure", "Failed to delete shift from doctor", e);
         });
     }
+
     public void listenForShifts(String email, ShiftCallback cb) {
         db.collection("users").document("software").collection("shifts")
                 .whereEqualTo("doctorEmailAddress", email)
@@ -771,7 +815,7 @@ public class Database {
                 });
     }
 
-    public interface ShiftCallback{
+    public interface ShiftCallback {
         void callback(ArrayList<Shift> shifts);
     }
 
@@ -796,11 +840,11 @@ public class Database {
     public void getAllBookable(Patient p, Specialties spec, LocalDate date, AppointmentCallback callback) {
 
         db.collection("users").document("software").collection("shifts").get().addOnSuccessListener(value -> {
-           ArrayList<Appointment> appointments = new ArrayList<>();
-           for(Shift shift: value.toObjects(Shift.class)) {
-              db.collection("users").document("software").collection("doctors").
-                      whereEqualTo("email", shift.getDoctorEmailAddress()).get()
-                      .addOnSuccessListener(doc -> {
+            ArrayList<Appointment> appointments = new ArrayList<>();
+            for (Shift shift : value.toObjects(Shift.class)) {
+                db.collection("users").document("software").collection("doctors").
+                        whereEqualTo("email", shift.getDoctorEmailAddress()).get()
+                        .addOnSuccessListener(doc -> {
                             Doctor doctor = doc.toObjects(Doctor.class).get(0);
                             LocalDateTime startTime = shift.getStartTime().truncatedTo(ChronoUnit.SECONDS);
                             LocalDateTime endTime = shift.getEndTime().truncatedTo(ChronoUnit.SECONDS);
@@ -808,19 +852,19 @@ public class Database {
                             LocalDate startDate = shift.getStartTime().toLocalDate();
                             LocalDate endDate = shift.getEndTime().toLocalDate();
 
-                            while(!currTime.isEqual(endTime)) {
-                                Appointment next = new Appointment(currTime,currTime.plusMinutes(30),shift,doctor.getFirstName(),doctor.getSpecialties(),p,RequestStatus.PENDING);
-                                if(doctor.getSpecialties().contains(spec) && (date.isEqual(startDate) || date.isEqual(endDate) || (date.isAfter(startDate) && date.isBefore(endDate)))) {
-                                    if(shift.takeAppointment(next)) {
+                            while (!currTime.isEqual(endTime)) {
+                                Appointment next = new Appointment(currTime, currTime.plusMinutes(30), shift, doctor.getFirstName(), doctor.getSpecialties(), p, RequestStatus.PENDING);
+                                if (doctor.getSpecialties().contains(spec) && (date.isEqual(startDate) || date.isEqual(endDate) || (date.isAfter(startDate) && date.isBefore(endDate)))) {
+                                    if (shift.takeAppointment(next)) {
                                         appointments.add(next);
                                     }
                                 }
                                 currTime = currTime.plusMinutes(30).truncatedTo(ChronoUnit.SECONDS);
                             }
-                      }).addOnCompleteListener(ignored -> {
-                  callback.callback(appointments);
-              });
-           }
+                        }).addOnCompleteListener(ignored -> {
+                            callback.callback(appointments);
+                        });
+            }
         });
     }
 
@@ -849,7 +893,7 @@ public class Database {
 
     public void getPatientAppointments(Patient patient, AppointmentCallback callback) {
         DocumentReference softwareRef = db.collection("users").document("software");
-        softwareRef.collection("appointments").whereEqualTo("patient",patient).get().addOnSuccessListener(result -> {
+        softwareRef.collection("appointments").whereEqualTo("patient", patient).get().addOnSuccessListener(result -> {
             callback.callback((ArrayList<Appointment>) result.toObjects(Appointment.class));
         });
     }
@@ -879,12 +923,12 @@ public class Database {
         db.collection("users").document("software").collection("shifts").
                 whereEqualTo("doctorEmailAddress", email).get().addOnSuccessListener(
                         getShifts -> {
-                            if (!getShifts.isEmpty()){
+                            if (!getShifts.isEmpty()) {
+                                Log.d("doctorAppointmentsFetching", "getShifts succeeded");
                                 //Parse all the appointments
-                                for (DocumentSnapshot shiftDocument : getShifts.getDocuments()){
-                                    Shift workerShift = shiftDocument.toObject(Shift.class);
-                                    ArrayList<Appointment> appointmentsFromShift = (ArrayList<Appointment>) workerShift.getAppointments();
-                                    for (Appointment appointment: appointmentsFromShift){
+                                for (Shift shift : getShifts.toObjects(Shift.class)) {
+                                    ArrayList<Appointment> appointmentsFromShift = (ArrayList<Appointment>) shift.getAppointments();
+                                    for (Appointment appointment : appointmentsFromShift) {
                                         appointments.add(appointment);
                                     }
                                 }
@@ -899,7 +943,8 @@ public class Database {
                 });
         return null;
     }
-    public interface AppointmentsListener{
+
+    public interface AppointmentsListener {
         public void onAppointmentsReceived(ArrayList<Appointment> appointments);
     }
 
@@ -910,18 +955,17 @@ public class Database {
      * @param email : the email address of the doctor we're trying to access.
      **/
     public void getShifts(ArrayList<Long> shiftIDs, ShiftsCallback callback) {
-        if (shiftIDs.isEmpty()){
+        if (shiftIDs.isEmpty()) {
             callback.onReceiveShifts(new ArrayList<>());
-        }
-        else{
+        } else {
             Database.getInstance().db.collection("users").document("software").
                     collection("shifts").
                     whereIn("shiftID", shiftIDs).get().addOnCompleteListener(getShifts -> {
 
-                        if (getShifts.isSuccessful()){
+                        if (getShifts.isSuccessful()) {
                             ArrayList<Shift> shiftsDup = new ArrayList<>();
 
-                            for (QueryDocumentSnapshot shiftDocument : getShifts.getResult()){
+                            for (QueryDocumentSnapshot shiftDocument : getShifts.getResult()) {
                                 shiftsDup.add(shiftDocument.toObject(Shift.class));
                             }
                             callback.onReceiveShifts(shiftsDup);
@@ -932,7 +976,7 @@ public class Database {
 
     }
 
-    public interface ShiftsCallback{
+    public interface ShiftsCallback {
         void onReceiveShifts(ArrayList<Shift> shifts);
     }
     // </editor-fold>
@@ -1004,13 +1048,13 @@ public class Database {
         return documents.get(0).toObject(Doctor.class);
     }
 
-    public CompletableFuture<Doctor> getDoctorButSmart(String email){
+    public CompletableFuture<Doctor> getDoctorButSmart(String email) {
         CompletableFuture<Doctor> doctorCompletableFuture = new CompletableFuture<>();
         CollectionReference doctors = db.collection("users").document("software").collection("doctors");
         doctors.whereEqualTo("email", email).get().addOnSuccessListener(getDoctor ->
         {
-            if (getDoctor != null){
-                for (Doctor singularDoctor : getDoctor.toObjects(Doctor.class)){
+            if (getDoctor != null) {
+                for (Doctor singularDoctor : getDoctor.toObjects(Doctor.class)) {
                     doctorCompletableFuture.complete(singularDoctor);
                 }
 

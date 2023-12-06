@@ -35,17 +35,11 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     Doctor myDoctor;
 
 
-    public void onReceivedAppointments(ArrayList<Appointment> appointments){
-        if (myDoctor.getAcceptsAppointmentsByDefault()){
-            for (Appointment appointment: appointments){
-                Database.getInstance().approveAppointment(appointment.getAppointmentID());
-            }
-        }
+    public void onReceivedAppointments(ArrayList<Appointment> appointments) {
         this.appointments = appointments;
         requestsAdapter.setAppointments(appointments);
         requestsAdapter.notifyDataSetChanged();
     }
-
 
 
     public appointmentsFragment() {
@@ -55,10 +49,8 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
 
     public static appointmentsFragment newInstance(FragmentTab activeTab, Doctor doctor) {
         appointmentsFragment fragment = new appointmentsFragment();
+        fragment.activeTab = activeTab;
         fragment.setMyDoctor(doctor);
-        Bundle args = new Bundle();
-        args.putSerializable("activeTab", activeTab);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -70,23 +62,18 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
 
         appointments = new ArrayList<>();
 
-        Bundle args = getArguments();
-        if (args != null) {
-            activeTab = (FragmentTab) args.getSerializable("activeTab");
-            requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-            requestsStack.setLayoutManager(layoutManager);
-            requestsStack.setAdapter(requestsAdapter);
+
+        requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        requestsStack.setLayoutManager(layoutManager);
+        requestsStack.setAdapter(requestsAdapter);
 
 
-
-
-
-            return view;
-        }
-        throw new IllegalStateException("This fragment was generated without using the newInstance method and hence has no FragmentTab.");
-
+        return view;
     }
+
+
+
 
     @Override
     public void onAttach(Context context) {
@@ -94,18 +81,21 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     }
 
 
-    public void setMyDoctor(Doctor someDoctor){myDoctor = someDoctor;}
+    public void setMyDoctor(Doctor someDoctor) {
+        myDoctor = someDoctor;
+    }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
 
         db = Database.getInstance();
         Database.getInstance().getDoctorAppointments(myDoctor.getEmail(), this::onReceivedAppointments);
         //Add event listeners to this
-        for (long shiftID : myDoctor.getShiftIDs()){
+        for (long shiftID : myDoctor.getShiftIDs()) {
             Database.getInstance().listenForAppointmentChangeOfStatus(shiftID, this::onReceivedAppointments);
         }
+
 
     }
 
@@ -119,7 +109,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     }
 
     @Override
-    public void onCancelClick(int position){
+    public void onCancelClick(int position) {
         Log.d("requests Fragment", "cancel click was pressed");
         long idToCancel = appointments.get(position).getAppointmentID();
         db.cancelAppointment(idToCancel);
@@ -133,8 +123,6 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     }
 
 
-
-
     @Override
     public void onShowMoreClick(int position) {
         //Get the selected request from the list
@@ -143,12 +131,12 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         showMoreIntent.putExtra("userType", PATIENT);
         db.getPatientFromAppointmentID(selectedAppointment.getAppointmentID()).thenAccept(
                 patient ->
-        {
-            if (patient != null){
-                showMoreIntent.putExtra("patient", patient);
-                startActivity(showMoreIntent);
+                {
+                    if (patient != null) {
+                        showMoreIntent.putExtra("patient", patient);
+                        startActivity(showMoreIntent);
 
-            }
-        });
+                    }
+                });
     }
 }

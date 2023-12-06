@@ -100,13 +100,16 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
         ImageButton accept, reject, moreInfo;
         Appointment appointment;
         RequestsActivityListener requestsActivityListener;
+        FragmentTab activeTab;
 
-        public RequestViewHolder(@NonNull View itemView, RequestsActivityListener requestClickListener) {
+        public RequestViewHolder(@NonNull View itemView, RequestsActivityListener requestClickListener, FragmentTab activeTab) {
             super(itemView);
             requestsActivityListener = requestClickListener;
             accept = itemView.findViewById(R.id.accept);
             reject = itemView.findViewById(R.id.deny);
             moreInfo = itemView.findViewById(R.id.showMore);
+            this.activeTab = activeTab;
+
         }
 
         private void setData(Appointment appointment) throws Exception {
@@ -125,14 +128,14 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             id.setText(appointment.getAppointmentID().toString());
 
 
-            setOnClickListeners(appointment);
+            setOnClickListeners(appointment, activeTab);
         }
 
         public void setAppointment(Appointment appointment) {
             this.appointment = appointment;
         }
 
-        private void setOnClickListeners(Appointment appointment) {
+        private void setOnClickListeners(Appointment appointment, FragmentTab activeTab) {
             View.OnClickListener acceptListener = view -> {
                 if (requestsActivityListener != null) {
                     int position = getAdapterPosition();
@@ -176,15 +179,44 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             };
             //Always there.
             moreInfo.setOnClickListener(showMoreListener);
+            switch (activeTab){
+                case ALL_REQUESTS:
+                    //All Requests is a standin for Approved
+                    accept.setVisibility(GONE);
 
-            if (appointment.getAppointmentStatus() == APPROVED && !appointment.appointmentIsPassed()) {
-                accept.setVisibility(GONE);
+                    reject.setVisibility(View.VISIBLE);
+                    reject.setEnabled(true);
+                    reject.setOnClickListener(cancelListener);
+                    break;
+
+                case PENDING_REQUESTS:
+                    //For Pending set both
+                    accept.setVisibility(View.VISIBLE);
+                    accept.setEnabled(true);
+                    accept.setOnClickListener(acceptListener);
+                    reject.setVisibility(View.VISIBLE);
+                    reject.setEnabled(true);
+                    reject.setOnClickListener(rejectListener);
+                    break;
+                case REJECTED_REQUESTS:
+                    reject.setVisibility(GONE);
+
+                    accept.setVisibility(View.VISIBLE);
+                    accept.setEnabled(true);
+                    accept.setOnClickListener(acceptListener);
+                    break;
+                case PAST:
+                    accept.setVisibility(GONE);
+                    reject.setVisibility(GONE);
+            }
+
+
+          /*  if (appointment.getAppointmentStatus() == APPROVED && !appointment.appointmentIsPassed()) {
+
             } else {
                 //Since the view might be recycled from an object which was REJECTED
                 //To make sure the reject button is accessible we have to set it the onclick
-                accept.setVisibility(View.VISIBLE);
-                accept.setEnabled(true);
-                accept.setOnClickListener(acceptListener);
+
             }
 
             //It only makes sense to have X button for requests that are pending.
@@ -193,22 +225,19 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             } else {
                 //Since the view might be recycled from an object which was REJECTED
                 //To make sure the reject button is accessible we have to set it the onclick
-                reject.setVisibility(View.VISIBLE);
-                reject.setEnabled(true);
-                reject.setOnClickListener(cancelListener); //If the appointment is not rejected, then it's approved
+                 //If the appointment is not rejected, then it's approved
             }
 
             //It only makes sense to have X button for requests that are in the future
             if (appointment.appointmentIsPassed()) {
-                accept.setVisibility(GONE);
-                reject.setVisibility(GONE);
+
             } else {
                 //Since the view might be recycled from an object which was REJECTED
                 //To make sure the reject button is accessible we have to set it the onclick
                 reject.setVisibility(View.VISIBLE);
                 reject.setEnabled(true);
                 reject.setOnClickListener(rejectListener);
-            }
+            }*/
         }
 
     }
@@ -217,7 +246,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
     @Override
     public AppointmentItemAdapter.RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(currentContext).inflate(R.layout.patient_appointment, parent,false);
-        return new RequestViewHolder(v, requestClickListener);
+        return new RequestViewHolder(v, requestClickListener, activeTab);
     }
 
     @Override

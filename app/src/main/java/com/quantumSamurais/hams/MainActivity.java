@@ -7,6 +7,8 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.quantumSamurais.hams.doctor.activities.DoctorMain;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,9 +20,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setup();
         addListeners();
-        //Intent debug = new Intent(this, DoctorMain.class);
-        //debug.putExtra("doctorEmailAddress", "ange6@gmail.com");
-        //startActivity(debug);
+        Intent debug = new Intent(this, DoctorMain.class);
+        debug.putExtra("doctorEmailAddress", "ange6@gmail.com");
+        startActivity(debug);
     }
 
     public void setup() {
