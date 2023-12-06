@@ -21,6 +21,7 @@ import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.patient.activities.PatientBookAppointmentActivity;
 import com.quantumSamurais.hams.patient.activities.RateDoctorFragment;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,7 +124,6 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
         public AppointmentViewHolder(@NonNull View itemView) {
             super(itemView);
             bindViews(itemView);
-            //TODO: Display Request Status
         }
 
         public void bindViews(View v) {
@@ -171,7 +171,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
 
         public void rateCb(float rating) {
             Log.d("Rating Callback (AppointmentListAdapter:165)", "Rating was: " + rating);
-          //  Database.getInstance().rateDoctorDB(thisApp.getShiftID(),(int) Math.floor(rating));
+            Database.getInstance().rateDoctorDB(thisApp.getAppointmentID(), thisApp.getShiftID(),rating);
             thisApp.setRated(true);
         }
 
@@ -179,8 +179,11 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
             Database.getInstance().addAppointmentRequest(thisApp,listener);
         }
         public void cancelAppointment(View v) {
-            //TODO: Check not before 60 min
-            Database.getInstance().cancelAppointment(thisApp.getAppointmentID());
+            if(thisApp.getStartTimeLocalDate().minusMinutes(60).isAfter(LocalDateTime.now())) {
+                Database.getInstance().cancelAppointment(thisApp.getAppointmentID());
+            } else {
+                Toast.makeText(context,"Can not cancel appointment that starts within the next 60 minutes",Toast.LENGTH_SHORT).show();
+            }
 
         }
 
