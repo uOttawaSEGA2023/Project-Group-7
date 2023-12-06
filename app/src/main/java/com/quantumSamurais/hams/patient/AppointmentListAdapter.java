@@ -117,7 +117,7 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
 
     public static class AppointmentViewHolder extends RecyclerView.ViewHolder {
         ImageButton cancelBtn, showMoreBtn, rateBtn;
-        TextView docName, startTime, endTime, status, id;
+        TextView docName, startTime, endTime, status;
 
         Appointment thisApp;
         Context context;
@@ -137,7 +137,6 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
                 startTime = v.findViewById(R.id.appointStartTime);
                 endTime = v.findViewById(R.id.appointEndTime);
                 status = v.findViewById(R.id.appointStatus);
-                id = v.findViewById(R.id.id);
         }
 
         public void setViewData(boolean isPassed, boolean isBooking, FragmentManager man, Context context) {
@@ -198,7 +197,6 @@ public class AppointmentListAdapter extends RecyclerView.Adapter<AppointmentList
             startTime.setText(appointment.getStartTimeLocalDate().toString());
             endTime.setText(appointment.getEndTimeLocalDate().toString());
             status.setText(thisApp.getAppointmentStatus().toString());
-            id.setText(Long.valueOf(appointment.getAppointmentID()).toString());
         }
     }
 }

@@ -2,13 +2,29 @@ package com.quantumSamurais.hams;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.quantumSamurais.hams.doctor.activities.DoctorMain;
 
+import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
+import com.quantumSamurais.hams.login.LoginActivity;
+import com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;
+import com.quantumSamurais.hams.appointment.Appointment;
+import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.database.RequestStatus;
+import com.quantumSamurais.hams.doctor.Specialties;
+import com.quantumSamurais.hams.doctor.activities.DoctorMain;
+import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
+import com.quantumSamurais.hams.login.LoginActivity;
+import com.quantumSamurais.hams.patient.Patient;
+import com.quantumSamurais.hams.patient.activities.PatientMainActivity;
+import com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;
+import com.quantumSamurais.hams.utils.ArrayUtils;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,9 +36,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setup();
         addListeners();
-        Intent debug = new Intent(this, DoctorMain.class);
-        debug.putExtra("doctorEmailAddress", "ange6@gmail.com");
-        startActivity(debug);
     }
 
     public void setup() {
