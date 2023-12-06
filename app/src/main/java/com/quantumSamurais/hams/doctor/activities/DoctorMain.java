@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -154,6 +155,9 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         TimePicker startTimePicker = dialogView.findViewById(R.id.startTimePicker);
         TimePicker endTimePicker = dialogView.findViewById(R.id.endTimePicker);
 
+        startTimePicker.setIs24HourView(true);
+        endTimePicker.setIs24HourView(true);
+
         dialogBuilder.setPositiveButton("Add", (dialog, which) -> {
             int year = datePicker.getYear();
             int month = datePicker.getMonth() + 1;
@@ -163,17 +167,19 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
             int endHour = endTimePicker.getHour();
             int endMinute = endTimePicker.getMinute();
 
+
+
             LocalDate selectedDate = LocalDate.of(year, month, day);
             LocalDateTime startDateTime = LocalDateTime.of(selectedDate, LocalTime.of(startHour, startMinute));
             LocalDateTime endDateTime = LocalDateTime.of(selectedDate, LocalTime.of(endHour, endMinute));
 
             if (isValidNewShift(startDateTime, endDateTime)) {
-                    // Use the getDoctor method to get the latest doctor information
-                    Doctor updatedDoctor = db.getDoctor(myDoctor.getEmail());
-                    Database.getInstance().addShift(new Shift(updatedDoctor.getEmail(), startDateTime, endDateTime));
-                    updatedDoctor =  db.getDoctor(myDoctor.getEmail());
-                    //Listener
-                    Database.getInstance().getShifts(updatedDoctor.getShiftIDs(), this::listenForUpdatesToShifts);
+                // Use the getDoctor method to get the latest doctor information
+                Doctor updatedDoctor = db.getDoctor(myDoctor.getEmail());
+                Database.getInstance().addShift(new Shift(updatedDoctor.getEmail(), startDateTime, endDateTime));
+                updatedDoctor =  db.getDoctor(myDoctor.getEmail());
+                //Listener
+                Database.getInstance().getShifts(updatedDoctor.getShiftIDs(), this::listenForUpdatesToShifts);
             } else {
                 Toast.makeText(this, "Invalid shift. Please check the date and time.", Toast.LENGTH_SHORT).show();
             }
@@ -182,8 +188,43 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         dialogBuilder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
 
         AlertDialog alertDialog = dialogBuilder.create();
+
+        TimePicker.OnTimeChangedListener timeChangedListener = new TimePicker.OnTimeChangedListener() {
+            private Handler handler = new Handler();
+            private Runnable runnable;
+
+            @Override
+            public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+                if (runnable != null) {
+                    handler.removeCallbacks(runnable);
+                }
+                runnable = () -> {
+                    if (minute % 30 != 0) {
+                        int adjustedMinute = (minute + 15) / 30 * 30 % 60;
+                        view.setMinute(adjustedMinute);
+                    }
+                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(
+                            startTimePicker.getMinute() % 30 == 0 && endTimePicker.getMinute() % 30 == 0
+                    );
+                };
+                handler.postDelayed(runnable, 500); // Delay of 500 ms
+            }
+        };
+
+        startTimePicker.setOnTimeChangedListener(timeChangedListener);
+        endTimePicker.setOnTimeChangedListener(timeChangedListener);
+
+        alertDialog.setOnShowListener(dialog -> {
+            Button addButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            addButton.setEnabled(startTimePicker.getMinute() % 30 == 0 && endTimePicker.getMinute() % 30 == 0);
+        });
+
         alertDialog.show();
     }
+
+
+
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private boolean isValidNewShift(LocalDateTime startTime, LocalDateTime endTime) {

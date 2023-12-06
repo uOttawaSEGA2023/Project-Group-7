@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.admin.adapters.SpecialtyItemAdapter;
 import com.quantumSamurais.hams.doctor.Specialties;
+import com.quantumSamurais.hams.patient.Patient;
 import com.quantumSamurais.hams.user.UserType;
 
 import java.util.ArrayList;
@@ -55,14 +56,19 @@ public class ShowMoreActivity extends AppCompatActivity {
                     setContentView(R.layout.activity_show_more_patient);
                     setupPatient();
 
-                    //Duplicated from above since the ids, and intents are the same for the relevant
-                    //fields.
-                    firstName.setText("First Name: " + intent.getStringExtra("firstName"));
-                    lastName.setText("Last Name: " + intent.getStringExtra("lastName"));
-                    email.setText("Email Address: " + intent.getStringExtra("email"));
-                    phoneNumber.setText("Phone Number: " + intent.getStringExtra("phoneNumber"));
-                    address.setText("Postal Address: " + intent.getStringExtra("address"));
-                    healthCardNumber.setText("Health Card Number: " + intent.getStringExtra("healthCardNumber"));
+                    if (intent.getSerializableExtra("patient") != null){
+                        Patient patient = (Patient) intent.getSerializableExtra("patient");
+                        //Duplicated from above since the ids, and intents are the same for the relevant
+                        //fields.
+                        firstName.setText("First Name: " + patient.getFirstName());
+                        lastName.setText("Last Name: " + patient.getLastName());
+                        email.setText("Email Address: " + patient.getEmail());
+                        phoneNumber.setText("Phone Number: " + patient.getPhone());
+                        address.setText("Postal Address: " + patient.getAddress());
+                        healthCardNumber.setText("Health Card Number: " + patient.getHealthCardNumber());
+                    }
+
+
 
                 case ADMIN:
                     //I literally won't pass this
