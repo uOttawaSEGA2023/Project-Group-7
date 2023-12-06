@@ -1,11 +1,11 @@
 package com.quantumSamurais.hams.doctor.activities.fragments;
 
 import static com.quantumSamurais.hams.core.enums.FragmentTab.ALL_REQUESTS;
+import static com.quantumSamurais.hams.core.enums.FragmentTab.PAST;
 import static com.quantumSamurais.hams.core.enums.FragmentTab.PENDING_REQUESTS;
 import static com.quantumSamurais.hams.core.enums.FragmentTab.REJECTED_REQUESTS;
 import static com.quantumSamurais.hams.doctor.activities.fragments.appointmentsFragment.newInstance;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,16 +13,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
-import com.quantumSamurais.hams.core.adapters.ViewPagerAdapter;
-import com.quantumSamurais.hams.doctor.Doctor;
 import com.quantumSamurais.hams.R;
+import com.quantumSamurais.hams.core.adapters.ViewPagerAdapter;
+import com.quantumSamurais.hams.database.Database;
+import com.quantumSamurais.hams.doctor.Doctor;
 
 public class DoctorViewAppointmentsFragment extends Fragment {
 
@@ -63,13 +63,26 @@ public class DoctorViewAppointmentsFragment extends Fragment {
 
         tabLayout.setupWithViewPager(viewPager);
 
+        Database.getInstance().getDoctorButSmart(myDoctor.getEmail()).thenAccept(doctor -> {
+            if (doctor != null){
+                myDoctor = doctor;
+                ViewPagerAdapter vpAdapter = new ViewPagerAdapter(getActivity().getSupportFragmentManager(),
+                        FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+                vpAdapter.addFragments(newInstance(ALL_REQUESTS, myDoctor), "Upcoming");
+                vpAdapter.addFragments(newInstance(PENDING_REQUESTS, myDoctor), "Pending");
+                vpAdapter.addFragments(newInstance(REJECTED_REQUESTS, myDoctor), "Rejected");
+                vpAdapter.addFragments(newInstance(PAST, myDoctor), "Past");
+                viewPager.setAdapter(vpAdapter);
+            }
+        }).exceptionally(e -> {
 
-        ViewPagerAdapter vpAdapter = new ViewPagerAdapter(getActivity().getSupportFragmentManager(),
-                FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
-        vpAdapter.addFragments(newInstance(ALL_REQUESTS, myDoctor), "All Requests");
-        vpAdapter.addFragments(newInstance(PENDING_REQUESTS, myDoctor), "Pending");
-        vpAdapter.addFragments(newInstance(REJECTED_REQUESTS, myDoctor), "Rejected");
-        viewPager.setAdapter(vpAdapter);
+                Log.e("Why can't life be easy", "T-T : " + e.getStackTrace());
+                return null;
+        });
+
+
+
+
 
         nameView = view.findViewById(R.id.textView4);
         nameView.setText(myDoctor.getFirstName());

@@ -1,13 +1,16 @@
 package com.quantumSamurais.hams.doctor.adapters;
 
+import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Button;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
- 
+
 import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Shift;
 
@@ -16,13 +19,20 @@ import java.util.List;
 public class DoctorShiftsAdapter extends RecyclerView.Adapter<DoctorShiftsAdapter.ShiftViewHolder> {
 
     private List<Shift> shifts;
+
+    private static OnButtonClickedListener listener;
+
+    public interface OnButtonClickedListener {
+        void onButtonClicked(int position);
+    }
     private static OnDeleteClickListener deleteClickListener;
     public interface OnDeleteClickListener {
         void onDeleteClick(int position);
     }
-    public DoctorShiftsAdapter(List<Shift> shifts, OnDeleteClickListener deleteClickListener) {
+    public DoctorShiftsAdapter(List<Shift> shifts, OnDeleteClickListener deleteClickListener, OnButtonClickedListener listener) {
         this.shifts = shifts;
         this.deleteClickListener = deleteClickListener;
+        this.listener = listener;
     }
 
     @NonNull
@@ -37,9 +47,10 @@ public class DoctorShiftsAdapter extends RecyclerView.Adapter<DoctorShiftsAdapte
         Shift shift = shifts.get(position);
 
         // Set your shift information to the views
-        holder.textViewDate.setText("Date: " + shift.getStartTime().getDayOfYear());
+        holder.textViewDate.setText("Date: " + shift.getStartTime().getMonth());
         holder.textViewStartTime.setText("Start Time: " + shift.getStartTime());
         holder.textViewEndTime.setText("End Time: " + shift.getEndTime());
+        holder.textViewShiftID.setText(Long.valueOf(shift.getShiftID()).toString());
     }
 
     @Override
@@ -59,19 +70,28 @@ public class DoctorShiftsAdapter extends RecyclerView.Adapter<DoctorShiftsAdapte
 
     public static class ShiftViewHolder extends RecyclerView.ViewHolder {
 
-        TextView textViewDate, textViewStartTime, textViewEndTime;
-        Button btnDeleteShift;
+        TextView textViewDate, textViewStartTime, textViewEndTime, textViewShiftID;
+        Button btnDeleteShift, buttonShowAppointments;
 
         public ShiftViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewDate = itemView.findViewById(R.id.textViewDate);
             textViewStartTime = itemView.findViewById(R.id.textViewStartTime);
             textViewEndTime = itemView.findViewById(R.id.textViewEndTime);
+            textViewShiftID = itemView.findViewById(R.id.shiftID);
+            buttonShowAppointments = itemView.findViewById(R.id.see_appointments);
+            buttonShowAppointments.setOnClickListener(v -> {
+                if (listener != null){
+                    if (getAdapterPosition() != NO_POSITION){
+                        listener.onButtonClicked(getAdapterPosition());
+                    }
+                }
+            });
             btnDeleteShift = itemView.findViewById(R.id.btnDeleteShift);
             btnDeleteShift.setOnClickListener(v -> {
                 if (deleteClickListener != null) {
                     int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
+                    if (position != NO_POSITION) {
                         deleteClickListener.onDeleteClick(position);
                     }
                 }

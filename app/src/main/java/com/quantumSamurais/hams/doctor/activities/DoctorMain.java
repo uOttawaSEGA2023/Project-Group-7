@@ -31,6 +31,7 @@ import com.quantumSamurais.hams.R;
 import com.quantumSamurais.hams.appointment.Shift;
 import com.quantumSamurais.hams.database.Database;
 import com.quantumSamurais.hams.doctor.Doctor;
+import com.quantumSamurais.hams.doctor.activities.fragments.DoctorViewAppointments4ShiftFragment;
 import com.quantumSamurais.hams.doctor.activities.fragments.DoctorViewAppointmentsFragment;
 import com.quantumSamurais.hams.doctor.adapters.DoctorShiftsAdapter;
 import com.quantumSamurais.hams.ui.settings.SettingFragment;
@@ -75,7 +76,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         shifts =  new ArrayList<>();
         setContentView(R.layout.main_doctor_view);
         // imp
-        shiftsAdapter = new DoctorShiftsAdapter(shifts, this);
+        shiftsAdapter = new DoctorShiftsAdapter(shifts, this, this::onSeeAppointments);
         shiftsStack = findViewById(R.id.shiftsRecyclerView);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         shiftsStack.setLayoutManager(layoutManager);
@@ -138,7 +139,7 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         firstName.setText(myDoctor.getFirstName());
         Log.d("doctor", "This is my name: " + myDoctor.toString());
         //Setting up the RecyclerView for Shifts
-        shiftsAdapter = new DoctorShiftsAdapter(shifts, this);
+        shiftsAdapter = new DoctorShiftsAdapter(shifts, this, this::onSeeAppointments);
         shiftsStack = findViewById(R.id.shiftsRecyclerView);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         shiftsStack.setLayoutManager(layoutManager);
@@ -251,6 +252,20 @@ public class DoctorMain extends AppCompatActivity implements DoctorShiftsAdapter
         }
 
         return true;
+    }
+
+    public void onSeeAppointments(int position){
+        Shift shiftToInvestigate = shiftsAdapter.getShiftAt(position);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        fragment = new DoctorViewAppointments4ShiftFragment(shiftToInvestigate.getShiftID());
+        transaction.addToBackStack("tag of fragment");
+        transaction.add(fragment, "your container id");
+        transaction.commit();
+
+        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
+
+
     }
 
 

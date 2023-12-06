@@ -21,26 +21,20 @@ import com.quantumSamurais.hams.core.adapters.AppointmentItemAdapter;
 import com.quantumSamurais.hams.core.enums.FragmentTab;
 import com.quantumSamurais.hams.core.listeners.RequestsActivityListener;
 import com.quantumSamurais.hams.database.Database;
-import com.quantumSamurais.hams.doctor.Doctor;
 
 import java.util.ArrayList;
 
 
-public class appointmentsFragment extends Fragment implements RequestsActivityListener {
+public class appointmentsFragment4Shift extends Fragment implements RequestsActivityListener {
     FragmentTab activeTab;
     AppointmentItemAdapter requestsAdapter;
     RecyclerView requestsStack;
     Database db;
     ArrayList<Appointment> appointments;
-    Doctor myDoctor;
+    long shiftID;
 
 
     public void onReceivedAppointments(ArrayList<Appointment> appointments){
-        if (myDoctor.getAcceptsAppointmentsByDefault()){
-            for (Appointment appointment: appointments){
-                Database.getInstance().approveAppointment(appointment.getAppointmentID());
-            }
-        }
         this.appointments = appointments;
         requestsAdapter.setAppointments(appointments);
         requestsAdapter.notifyDataSetChanged();
@@ -48,16 +42,15 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
 
 
 
-    public appointmentsFragment() {
+    public appointmentsFragment4Shift() {
         // Required empty public constructor
-
     }
 
-    public static appointmentsFragment newInstance(FragmentTab activeTab, Doctor doctor) {
-        appointmentsFragment fragment = new appointmentsFragment();
-        fragment.setMyDoctor(doctor);
+    public static appointmentsFragment4Shift newInstance(FragmentTab activeTab, long shiftID) {
+        appointmentsFragment4Shift fragment = new appointmentsFragment4Shift();
         Bundle args = new Bundle();
         args.putSerializable("activeTab", activeTab);
+        args.putLong("shiftID", shiftID);
         fragment.setArguments(args);
         return fragment;
     }
@@ -65,19 +58,21 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_requests, container, false);
         requestsStack = view.findViewById(R.id.requestsRecyclerViewFragment);
-
+        db = Database.getInstance();
         appointments = new ArrayList<>();
 
         Bundle args = getArguments();
         if (args != null) {
             activeTab = (FragmentTab) args.getSerializable("activeTab");
+            shiftID = args.getLong("shiftID");
+            Log.d("ShiftID", "The shift ID is " + shiftID);
             requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
             requestsStack.setLayoutManager(layoutManager);
             requestsStack.setAdapter(requestsAdapter);
-
 
 
 
@@ -93,21 +88,21 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
         super.onAttach(context);
     }
 
-
-    public void setMyDoctor(Doctor someDoctor){myDoctor = someDoctor;}
-
     @Override
     public void onResume(){
         super.onResume();
+        Database.getInstance().getAppointments(shiftID, this::onReceivedAppointments);
 
-        db = Database.getInstance();
-        Database.getInstance().getDoctorAppointments(myDoctor.getEmail(), this::onReceivedAppointments);
+
         //Add event listeners to this
-        for (long shiftID : myDoctor.getShiftIDs()){
-            Database.getInstance().listenForAppointmentChangeOfStatus(shiftID, this::onReceivedAppointments);
-        }
 
+        Database.getInstance().listenForAppointmentChangeOfStatus(shiftID, this::onReceivedAppointments);
     }
+
+
+
+
+
 
 
     @Override
@@ -119,7 +114,7 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
     }
 
     @Override
-    public void onCancelClick(int position){
+    public void onCancelClick(int position) {
         Log.d("requests Fragment", "cancel click was pressed");
         long idToCancel = appointments.get(position).getAppointmentID();
         db.cancelAppointment(idToCancel);
@@ -127,12 +122,8 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
 
     @Override
     public void onRejectClick(int position) {
-        Log.d("requests Fragment", "reject click was pressed");
-        long idToReject = appointments.get(position).getAppointmentID();
-        db.rejectAppointment(idToReject);
+        //This shouldn't be called
     }
-
-
 
 
     @Override
@@ -150,5 +141,9 @@ public class appointmentsFragment extends Fragment implements RequestsActivityLi
 
             }
         });
+
+
+
+
     }
 }

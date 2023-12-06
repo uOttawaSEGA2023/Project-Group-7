@@ -83,14 +83,14 @@ public class Shift {
         return false;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public boolean cancelAppointment(long appointmentID){
+    public boolean cancelAppointment(Appointment appointment){
         LocalDateTime startTime = convertTimeStampToLocalDateTime(startTimeStamp);
         LocalDateTime endTime = convertTimeStampToLocalDateTime(endTimeStamp);
-        if(containsKey(appointmentID)){
+        if(containsKey(appointment.getAppointmentID())){
             //check to make
-            boolean atLeast60HoursBefore = MINUTES.between(startTime, endTime) >= 60;
-            if (atLeast60HoursBefore){
-                appointments.remove(appointmentID);
+            boolean atLeast60MinutesBefore = MINUTES.between(appointment.getStartTimeLocalDate(), LocalDateTime.now()) >= 60;
+            if (atLeast60MinutesBefore){
+                appointments.remove(appointment.getAppointmentID());
                 return true;}
         }
         //in all other cases we couldn't return.

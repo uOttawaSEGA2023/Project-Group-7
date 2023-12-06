@@ -153,5 +153,9 @@ public class Appointment implements Serializable  {
         pastAppointmentFlag = endTime.isBefore(LocalDateTime.now());
         return  pastAppointmentFlag;
     }
+
+    public void setAppointmentStatus(RequestStatus newStatus) {
+        appointmentStatus = newStatus;
+    }
 }
 
