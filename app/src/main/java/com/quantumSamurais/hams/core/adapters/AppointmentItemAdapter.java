@@ -1,5 +1,6 @@
 package com.quantumSamurais.hams.core.adapters;
 
+import static android.view.View.GONE;
 import static com.quantumSamurais.hams.database.RequestStatus.APPROVED;
 import static com.quantumSamurais.hams.database.RequestStatus.PENDING;
 import static com.quantumSamurais.hams.database.RequestStatus.REJECTED;
@@ -38,7 +39,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
 
     public AppointmentItemAdapter(Context context, FragmentTab activeTab, ArrayList<Appointment> appointmentsFromDatabase, RequestsActivityListener listener) {
         this.activeTab = activeTab;
-        setAppointments(appointmentsFromDatabase);
+        this.appointments = new ArrayList<>();
         currentContext = context;
         requestClickListener = listener;
     }
@@ -50,7 +51,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             case ALL_REQUESTS:
                 ArrayList<Appointment> approvedAppointments = new ArrayList<>();
                 for (Appointment appointment : appointmentsFromDatabase){
-                    if (appointment.getAppointmentStatus() == APPROVED){
+                    if (appointment.getAppointmentStatus() == APPROVED && !appointment.appointmentIsPassed()){
                         approvedAppointments.add(appointment);
                     }
                 }
@@ -59,7 +60,7 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             case PENDING_REQUESTS:
                 ArrayList<Appointment> pendingAppointments = new ArrayList<>();
                 for (Appointment appointment : appointmentsFromDatabase){
-                    if (appointment.getAppointmentStatus() == PENDING){
+                    if (appointment.getAppointmentStatus() == PENDING && !appointment.appointmentIsPassed()){
                         pendingAppointments.add(appointment);
                     }
                 }
@@ -69,11 +70,21 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
             case REJECTED_REQUESTS:
                 ArrayList<Appointment> rejectedAppointments = new ArrayList<>();
                 for (Appointment appointment : appointmentsFromDatabase){
-                    if (appointment.getAppointmentStatus() == REJECTED){
+                    if (appointment.getAppointmentStatus() == REJECTED && !appointment.appointmentIsPassed()){
                         rejectedAppointments.add(appointment);
                     }
                 }
                 tempAppointments = rejectedAppointments;
+                break;
+
+            case PAST:
+                ArrayList<Appointment> passedAppointments = new ArrayList<>();
+                for (Appointment appointment : appointmentsFromDatabase){
+                    if (appointment.appointmentIsPassed() && appointment.getAppointmentStatus() == APPROVED){
+                        passedAppointments.add(appointment);
+                    }
+                }
+                tempAppointments = passedAppointments;
                 break;
         }
         appointments = tempAppointments;
@@ -142,6 +153,16 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
 
                 }
             };
+            View.OnClickListener cancelListener = view -> {
+                if (requestsActivityListener != null) {
+                    int position = getAdapterPosition();
+
+                    if (position != RecyclerView.NO_POSITION) {
+                        requestsActivityListener.onCancelClick(position);
+                    }
+
+                }
+            };
             View.OnClickListener showMoreListener = view -> {
                 if (requestsActivityListener != null) {
                     int position = getAdapterPosition();
@@ -154,22 +175,39 @@ public class AppointmentItemAdapter extends RecyclerView.Adapter<AppointmentItem
                 }
             };
             //Always there.
-            accept.setOnClickListener(acceptListener);
             moreInfo.setOnClickListener(showMoreListener);
 
+            if (appointment.getAppointmentStatus() == APPROVED && !appointment.appointmentIsPassed()) {
+                accept.setVisibility(GONE);
+            } else {
+                //Since the view might be recycled from an object which was REJECTED
+                //To make sure the reject button is accessible we have to set it the onclick
+                accept.setVisibility(View.VISIBLE);
+                accept.setEnabled(true);
+                accept.setOnClickListener(acceptListener);
+            }
 
             //It only makes sense to have X button for requests that are pending.
-            if (appointment.getAppointmentStatus() == REJECTED) {
-                reject.setVisibility(View.INVISIBLE); // Hide the button
-                reject.setEnabled(false); // Make the button uninteractable
+            if (appointment.getAppointmentStatus() == REJECTED && !appointment.appointmentIsPassed()) {
+                reject.setVisibility(GONE);
+            } else {
+                //Since the view might be recycled from an object which was REJECTED
+                //To make sure the reject button is accessible we have to set it the onclick
+                reject.setVisibility(View.VISIBLE);
+                reject.setEnabled(true);
+                reject.setOnClickListener(cancelListener); //If the appointment is not rejected, then it's approved
+            }
+
+            //It only makes sense to have X button for requests that are in the future
+            if (appointment.appointmentIsPassed()) {
+                accept.setVisibility(GONE);
+                reject.setVisibility(GONE);
             } else {
                 //Since the view might be recycled from an object which was REJECTED
                 //To make sure the reject button is accessible we have to set it the onclick
                 reject.setVisibility(View.VISIBLE);
                 reject.setEnabled(true);
                 reject.setOnClickListener(rejectListener);
-
-
             }
         }
 

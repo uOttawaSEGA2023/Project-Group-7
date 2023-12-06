@@ -1,17 +1,11 @@
 package com.quantumSamurais.hams;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioGroup;
-import android.widget.Toast;
 
-import com.quantumSamurais.hams.doctor.activities.DoctorSignUpActivity;
-import com.quantumSamurais.hams.login.LoginActivity;
-import com.quantumSamurais.hams.patient.activities.PatientSignUpActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -24,6 +18,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setup();
         addListeners();
+        //Intent debug = new Intent(this, DoctorMain.class);
+        //debug.putExtra("doctorEmailAddress", "ange6@gmail.com");
+        //startActivity(debug);
     }
 
     public void setup() {

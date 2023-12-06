@@ -146,6 +146,11 @@ public class requestsFragment extends Fragment implements RequestsActivityListen
     }
 
     @Override
+    public void onCancelClick(int position){
+        //This shouldn't happen.
+    }
+
+    @Override
     public void onRejectClick(int position) {
         stopDataRefresh();
         Log.d("requests Fragment", "reject click was pressed");

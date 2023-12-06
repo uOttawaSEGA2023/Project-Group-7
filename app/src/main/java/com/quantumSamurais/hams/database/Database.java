@@ -45,7 +45,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -140,7 +139,7 @@ public class Database {
         }).start();
     }
 
-    public Patient getPatientFromAppointmentID(long appointmentID) {
+    public CompletableFuture<Patient> getPatientFromAppointmentID(long appointmentID) {
 
         Supplier<Patient> findPatientFromAppointmentID = () -> {
             QuerySnapshot appointments;
@@ -158,10 +157,10 @@ public class Database {
             return null;
         };
         CompletableFuture<Patient> myPatient = supplyAsync(findPatientFromAppointmentID, myThreadPool);
-        return myPatient.join();
+        return myPatient;
     }
 
-    /**
+    /**f
      * @param id Id of the request to approve
      */
     public void approveSignUpRequest(long id) {
@@ -355,6 +354,21 @@ public class Database {
                 });
     }
 
+    public void getAppointments(long shiftID, AppointmentCallback onReceivedAppointments) {
+        db.collection("users").document("software").
+                collection("appointments").
+                whereEqualTo("shiftID", shiftID).get().addOnCompleteListener(getAppointments ->
+        {
+            if (getAppointments.isSuccessful()){
+                ArrayList<Appointment> appointments = (ArrayList<Appointment>) getAppointments.getResult().toObjects(Appointment.class);
+                onReceivedAppointments.callback(appointments);
+            }
+
+        }).addOnFailureListener(e -> {
+            Log.e("Frick", "Well another L ; " + e.getStackTrace());
+                });
+    }
+
     public interface UpdateAfterBook {
         void update();
     }
@@ -407,17 +421,13 @@ public class Database {
         });
     }
 
-    private void editAppointmentStatusFromShiftReference(DocumentReference shiftReference, Appointment appointmentToRemove){
+    private void editAppointmentStatusFromShiftReference(DocumentReference shiftReference, long appointmentID, RequestStatus newStatus){
         db.runTransaction(transaction ->  {
             Shift shift  = transaction.get(shiftReference).toObject(Shift.class);
             ArrayList<Appointment> appointments = (ArrayList<Appointment>) shift.getAppointments();
-            Iterator iterator = appointments.iterator();
-            while (iterator.hasNext()){
-
-            }
             for (Appointment appoinment : appointments){
-                if (appoinment.getAppointmentID() == appointmentToRemove.getAppointmentID()){
-
+                if (appoinment.getAppointmentID() == appointmentID){
+                    appoinment.setAppointmentStatus(newStatus);
                 }
             }
 
@@ -430,28 +440,40 @@ public class Database {
         getAppointment(appointmentID).thenAccept(appointment -> {
             if (appointment != null) {
                 getShift(appointment.getShiftID()).thenAccept(shift -> {
-                    if (shift != null && shift.cancelAppointment(appointment.getAppointmentID())) {
-                        // If we would be able to successfully remove, then do so to reflect changes
-                        CollectionReference shifts = db.collection("users").document("software").collection("shifts");
-                        shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
-                                .addOnSuccessListener(shiftTask -> {
-                                    DocumentReference shiftReference = shifts.document(shiftTask.getDocuments().get(0).getId());
-                                    editAppointmentStatusFromShiftReference(shiftReference, appointment);
-                                }).addOnFailureListener(e -> {
-                                    // Handle transaction failure
-                                    Log.e("cancelAppointment", "Transaction failed: ", e);
-                                });
-                        //Then modify the related appointment
-                        CollectionReference appointments = db.collection("users").document("software").collection("appointments");
-                        appointments.whereEqualTo("appointmentID", appointmentID).get()
-                                .addOnSuccessListener(shiftTask -> {
-                                    DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
-                                    editAppointmentStatus(appointmentReference, RequestStatus.APPROVED);
-                                }).addOnFailureListener(e -> {
-                                    // Handle transaction failure
-                                    Log.e("cancelAppointment", "Transaction failed: ", e);
-                                });
+                    if (shift != null ) {
+                        Log.d("Shift was not null", "Shift was not null");
+                        if (shift.cancelAppointment(appointment)){
+                            Log.d("We successfully removed shift from local", "time to propagate");
+                            // If we would be able to successfully remove, then do so to reflect changes
+                            CollectionReference shifts = db.collection("users").document("software").collection("shifts");
+                            shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
+                                    .addOnSuccessListener(shiftTask -> {
+                                        DocumentReference shiftReference = shifts.document(shiftTask.getDocuments().get(0).getId());
+                                        editAppointmentStatusFromShiftReference(shiftReference, appointmentID, RequestStatus.REJECTED);
+                                    }).addOnFailureListener(e -> {
+                                        // Handle transaction failure
+                                        Log.e("cancelAppointment", "Transaction failed: ", e);
+                                    });
+                            //Then modify the related appointment
+                            CollectionReference appointments = db.collection("users").document("software").collection("appointments");
+                            appointments.whereEqualTo("appointmentID", appointmentID).get()
+                                    .addOnSuccessListener(shiftTask -> {
+                                        DocumentReference appointmentReference = appointments.document(shiftTask.getDocuments().get(0).getId());
+                                        editAppointmentStatus(appointmentReference, RequestStatus.REJECTED);
+                                    }).addOnFailureListener(e -> {
+                                        // Handle transaction failure
+                                        Log.e("cancelAppointment", "Transaction failed: ", e);
+                                    });
+                        }
+                        else {
+                            Log.d("Frick", "shift was null");
+                        }
 
+
+
+                    }
+                    else {
+                        Log.e("Shift was null", "Shift removed was null");
                     }
                 }).exceptionally(e -> {
                     Log.e("cancelAppointment", "Error getting shift: ", e);
@@ -487,7 +509,7 @@ public class Database {
         getAppointment(appointmentID).thenAccept(appointment -> {
             if (appointment != null) {
                 getShift(appointment.getShiftID()).thenAccept(shift -> {
-                    if (shift != null && shift.cancelAppointment(appointment.getAppointmentID())) {
+                    if (shift != null && shift.cancelAppointment(appointment)){
                         // If we would be able to successfully remove, then do so to reflect changes
                         CollectionReference shifts = db.collection("users").document("software").collection("shifts");
                         shifts.whereEqualTo("shiftID", shift.getShiftID()).get()
@@ -980,6 +1002,24 @@ public class Database {
         }
 
         return documents.get(0).toObject(Doctor.class);
+    }
+
+    public CompletableFuture<Doctor> getDoctorButSmart(String email){
+        CompletableFuture<Doctor> doctorCompletableFuture = new CompletableFuture<>();
+        CollectionReference doctors = db.collection("users").document("software").collection("doctors");
+        doctors.whereEqualTo("email", email).get().addOnSuccessListener(getDoctor ->
+        {
+            if (getDoctor != null){
+                for (Doctor singularDoctor : getDoctor.toObjects(Doctor.class)){
+                    doctorCompletableFuture.complete(singularDoctor);
+                }
+
+            }
+        }).addOnFailureListener(e ->
+        {
+            Log.e("Shit", "This failed : " + e.getStackTrace());
+        });
+        return doctorCompletableFuture;
     }
 
     /**
