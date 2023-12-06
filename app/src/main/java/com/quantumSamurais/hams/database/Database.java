@@ -549,7 +549,6 @@ public class Database {
         ;
     }*/
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void cancelAppointment(long appointmentID) {
         getAppointment(appointmentID).thenAccept(appointment -> {
             if (appointment != null) {
