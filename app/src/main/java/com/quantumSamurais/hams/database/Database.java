@@ -9,13 +9,11 @@ import static com.quantumSamurais.hams.utils.ValidationType.HEALTH_CARD_NUMBER;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -320,16 +318,22 @@ public class Database {
                                     DocumentReference docRef = shifts.document(shiftIDFirebase);
                                     db.runTransaction(addAppointment -> {
                                         addAppointment.update(docRef, "appointments", FieldValue.arrayUnion(appointment));
-                                        Shift someShift = docRef.get().getResult().toObject(Shift.class);
-                                        getDoctorButSmart(someShift.getDoctorEmailAddress()).thenAccept(doctor -> {
-                                            if(doctor.getAcceptsAppointmentsByDefault()){
-                                                approveAppointment(appointment.getAppointmentID());
-                                            }
-                                        });
+
                                         return null;
                                     }).addOnCompleteListener(ignored -> {
                                         callback.update();
                                     });
+
+                                    //Then checks if it should auto approve.
+                                    docRef.get().addOnCompleteListener(getShift ->{
+                                                getDoctorButSmart(getShift.getResult().toObject(Shift.class).getDoctorEmailAddress()).thenAccept(doctor -> {
+                                                    if(doctor.getAcceptsAppointmentsByDefault()){
+                                                        approveAppointment(appointment.getAppointmentID());
+                                                    }
+                                                });
+                                            }
+                                            );
+
                                 }
                             } else {
                                 Log.d("DatabaseAppointmentAddingFailure", "Error getting documents: ", shift.getException());

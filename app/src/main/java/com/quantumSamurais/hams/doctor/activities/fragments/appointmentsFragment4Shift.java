@@ -61,13 +61,11 @@ public class appointmentsFragment4Shift extends Fragment implements RequestsActi
         db = Database.getInstance();
         appointments = new ArrayList<>();
 
-
         Log.d("ShiftID", "The shift ID is " + shiftID);
         requestsAdapter = new AppointmentItemAdapter(getActivity(), activeTab, appointments, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         requestsStack.setLayoutManager(layoutManager);
         requestsStack.setAdapter(requestsAdapter);
-
 
         return view;
     }
